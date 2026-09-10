@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E6F2FF"/>
+      <stop offset="100%" stop-color="#DDF5E9"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#138A5B"/>
+      <stop offset="100%" stop-color="#0B5D42"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="600" height="400" rx="24" fill="url(#bg)"/>
+
+  <!-- Protective Shield Background -->
+  <path d="M 300 40 C 400 40 460 70 460 170 C 460 270 340 340 300 360 C 260 340 140 270 140 170 C 140 70 200 40 300 40 Z" fill="url(#shieldGrad)" opacity="0.15"/>
+
+  <!-- Senior Grandmother Character (Smiling) -->
+  <g transform="translate(180, 70)">
+    <!-- Hair -->
+    <circle cx="120" cy="110" r="75" fill="#D0D7DE"/>
+    <circle cx="90" cy="90" r="45" fill="#E1E4E8"/>
+    <circle cx="150" cy="90" r="45" fill="#E1E4E8"/>
+
+    <!-- Head -->
+    <circle cx="120" cy="130" r="55" fill="#FCE0D1"/>
+
+    <!-- Glasses -->
+    <circle cx="100" cy="125" r="18" fill="none" stroke="#1D5D9B" stroke-width="4"/>
+    <circle cx="140" cy="125" r="18" fill="none" stroke="#1D5D9B" stroke-width="4"/>
+    <line x1="118" y1="125" x2="122" y2="125" stroke="#1D5D9B" stroke-width="4"/>
+    <line x1="82" y1="125" x2="72" y2="120" stroke="#1D5D9B" stroke-width="3"/>
+    <line x1="158" y1="125" x2="168" y2="120" stroke="#1D5D9B" stroke-width="3"/>
+
+    <!-- Eyes -->
+    <circle cx="100" cy="125" r="4" fill="#17324D"/>
+    <circle cx="140" cy="125" r="4" fill="#17324D"/>
+
+    <!-- Smile -->
+    <path d="M 104 150 Q 120 168 136 150" fill="none" stroke="#D94A4A" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Clothes -->
+    <path d="M 50 230 C 50 180 190 180 190 230 Z" fill="#138A5B"/>
+
+    <!-- Smartphone held with care -->
+    <rect x="95" y="170" width="50" height="90" rx="8" fill="#17324D" stroke="#FFFFFF" stroke-width="3"/>
+    <rect x="99" y="176" width="42" height="74" rx="4" fill="#E6F2FF"/>
+    
+    <!-- Glowing Shield on Phone Screen -->
+    <path d="M 120 195 C 130 195 135 200 135 210 C 135 220 123 228 120 230 C 117 228 105 220 105 210 C 105 200 110 195 120 195 Z" fill="#138A5B"/>
+    <path d="M 115 212 L 118 215 L 125 207" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Floating Digital Safety Icons -->
+  <g transform="translate(420, 100)">
+    <circle cx="30" cy="30" r="30" fill="#FFFFFF" shadow="true"/>
+    <path d="M 30 15 C 38 15 42 18 42 27 C 42 36 32 42 30 45 C 28 42 18 36 18 27 C 18 18 22 15 30 15 Z" fill="#138A5B"/>
+  </g>
+
+  <g transform="translate(100, 220)">
+    <circle cx="25" cy="25" r="25" fill="#FFFFFF"/>
+    <text x="25" y="33" font-size="22" text-anchor="middle">🔒</text>
+  </g>
+
+  <g transform="translate(440, 240)">
+    <circle cx="25" cy="25" r="25" fill="#FFFFFF"/>
+    <text x="25" y="33" font-size="22" text-anchor="middle">💬</text>
+  </g>
+</svg>

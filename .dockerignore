@@ -1,0 +1,15 @@
+node_modules
+.git
+.env
+.env.*
+*.log
+database/*.db
+database/*.db-shm
+database/*.db-wal
+uploads/*
+python/__pycache__
+__pycache__
+*.pyc
+server copy.js
+Documentacao_Tecnica_Idoso_Seguro_Manaus.pdf
+generate_pdf.py

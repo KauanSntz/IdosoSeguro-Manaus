@@ -1,0 +1,30 @@
+{
+  "name": "idoso-seguro-manaus",
+  "version": "1.0.0",
+  "description": "Sistema web acessível, educativo e preventivo para segurança digital de pessoas idosas.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "db:init": "node -e \"require('./src/database/db.js').initDb()\"",
+    "test": "node tests/backend.test.js"
+  },
+  "keywords": [
+    "idoso",
+    "seguranca-digital",
+    "ux-ui",
+    "acessibilidade",
+    "wcag",
+    "emag",
+    "manaus"
+  ],
+  "author": "Equipe Idoso Seguro+ Manaus",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "multer": "^1.4.5-lts.1",
+    "sqlite3": "^5.1.7"
+  }
+}

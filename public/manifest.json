@@ -1,0 +1,25 @@
+{
+  "short_name": "IdosoSeguro+",
+  "name": "Idoso Seguro+ Manaus",
+  "description": "Segurança digital acessível e simples para pessoas idosas em Manaus.",
+  "icons": [
+    {
+      "src": "/assets/brand/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/brand/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/#welcome",
+  "background_color": "#F8FBFA",
+  "theme_color": "#138A5B",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "pt-BR"
+}

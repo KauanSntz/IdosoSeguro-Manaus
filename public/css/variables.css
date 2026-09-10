@@ -1,0 +1,62 @@
+/* Design Tokens & Theme Variables */
+:root {
+    /* Color Palette */
+    --color-primary: #138A5B;
+    --color-primary-dark: #0B5D42;
+    --color-primary-light: #DDF5E9;
+    
+    --color-secondary: #1D5D9B;
+    --color-secondary-light: #E6F2FF;
+    
+    --color-bg: #F8FBFA;
+    --color-surface: #FFFFFF;
+    
+    --color-text: #17324D;
+    --color-text-muted: #506579;
+    
+    --color-warning: #F4B740;
+    --color-danger: #D94A4A;
+    --color-success: #138A5B;
+
+    --color-border: #E1E8EE;
+
+    /* Accessibility Font Scaling */
+    --font-scale: 1;
+    --font-base-size: calc(18px * var(--font-scale));
+
+    /* Button and Touch Target Sizes */
+    --btn-min-height: 56px;
+    --btn-radius: 16px;
+
+    /* Shadows & Radii */
+    --card-radius: 20px;
+    --shadow-soft: 0 4px 20px rgba(19, 138, 91, 0.08);
+    --shadow-hover: 0 8px 30px rgba(19, 138, 91, 0.15);
+
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+}
+
+/* High Contrast Mode Overrides */
+body.high-contrast {
+    --color-primary: #00FF66;
+    --color-primary-dark: #003311;
+    --color-primary-light: #003311;
+    
+    --color-secondary: #66B2FF;
+    --color-secondary-light: #001A33;
+    
+    --color-bg: #000000;
+    --color-surface: #121212;
+    
+    --color-text: #FFFFFF;
+    --color-text-muted: #E0E0E0;
+    
+    --color-warning: #FFCC00;
+    --color-danger: #FF4D4D;
+    --color-success: #00FF66;
+
+    --color-border: #FFFFFF;
+    --shadow-soft: 0 0 0 2px #FFFFFF;
+}

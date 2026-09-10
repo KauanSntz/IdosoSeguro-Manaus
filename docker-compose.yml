@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: idoso_seguro_manaus
+    restart: unless-stopped
+    user: "1001:1001"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "8085:3000"
+    volumes:
+      - ./database:/app/database
+      - ./uploads:/app/uploads
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s

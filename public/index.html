@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Idoso Seguro+ Manaus — Aplicação web acessível e preventiva de segurança digital para pessoas idosas.">
+    <meta name="theme-color" content="#138A5B">
+    <title>Idoso Seguro+ Manaus</title>
+    
+    <!-- Favicon & PWA Manifest -->
+    <link rel="icon" type="image/png" href="/assets/brand/favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/assets/brand/icon-192.png">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Skip Link for Keyboard Accessibility -->
+    <a href="#app-view" class="skip-link">Pular para o conteúdo principal</a>
+
+    <!-- Main Mobile-First Container -->
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header" role="banner">
+            <a href="#home" style="display: flex; align-items: center; gap: 10px;">
+                <img src="/assets/brand/logo-horizontal.png" alt="Idoso Seguro+ Manaus Logo" class="brand-logo-img">
+            </a>
+
+            <div style="display: flex; gap: 8px;">
+                <button onclick="window.router.navigate('acessibilidade')" class="btn-icon-text" aria-label="Acessibilidade">
+                    ⚙️
+                </button>
+                <button onclick="window.router.navigate('ajuda')" class="btn-icon-text" aria-label="Ajuda">
+                    ❓
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dynamic Viewport -->
+        <main id="app-view" class="main-content" role="main" tabIndex="-1">
+            <div class="loader-box">
+                <div class="spinner"></div>
+                <p class="subtitle-main">Carregando Idoso Seguro+...</p>
+            </div>
+        </main>
+
+        <!-- Navigation Bar -->
+        <nav class="bottom-nav" aria-label="Navegação Principal">
+            <a href="#home" class="nav-item">
+                <span class="nav-icon">🏠</span>
+                <span>Início</span>
+            </a>
+            <a href="#ensinar" class="nav-item">
+                <span class="nav-icon">📚</span>
+                <span>Ensinar</span>
+            </a>
+            <a href="#assistir" class="nav-item">
+                <span class="nav-icon">🛡️</span>
+                <span>Assistir</span>
+            </a>
+            <a href="#acessibilidade" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span>Acessar</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Application JavaScript Modules -->
+    <script src="/js/accessibility.js"></script>
+    <script src="/js/speech.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/router.js"></script>
+    
+    <!-- Page Renderers -->
+    <script src="/js/pages/welcome.js"></script>
+    <script src="/js/pages/home.js"></script>
+    <script src="/js/pages/ensinar.js"></script>
+    <script src="/js/pages/conteudo.js"></script>
+    <script src="/js/pages/quiz.js"></script>
+    <script src="/js/pages/assistir.js"></script>
+    <script src="/js/pages/analisar.js"></script>
+    <script src="/js/pages/resultado.js"></script>
+    <script src="/js/pages/acessibilidade.js"></script>
+    <script src="/js/pages/ajuda.js"></script>
+
+    <!-- App Entrypoint -->
+    <script src="/js/app.js"></script>
+
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('[PWA] Service Worker registrado com sucesso.'))
+                    .catch(err => console.error('[PWA] Falha ao registrar Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>
