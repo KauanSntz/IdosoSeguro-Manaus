@@ -24,16 +24,16 @@
     <div class="app-container">
         
         <!-- Header -->
-        <header class="app-header" role="banner">
-            <a href="#home" style="display: flex; align-items: center; gap: 10px;">
+        <header class="app-header" id="main-app-header" role="banner">
+            <a href="#home" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
                 <img src="/assets/brand/logo-horizontal.png" alt="Idoso Seguro+ Manaus Logo" class="brand-logo-img">
             </a>
 
             <div style="display: flex; gap: 8px;">
-                <button onclick="window.router.navigate('acessibilidade')" class="btn-icon-text" aria-label="Acessibilidade">
+                <button onclick="window.router.navigate('acessibilidade')" class="btn-header-action" aria-label="Configurações de Acessibilidade" title="Acessibilidade">
                     ⚙️
                 </button>
-                <button onclick="window.router.navigate('ajuda')" class="btn-icon-text" aria-label="Ajuda">
+                <button onclick="window.router.navigate('duvidas')" class="btn-header-action help" aria-label="Dúvidas e Ajuda" title="Dúvidas">
                     ❓
                 </button>
             </div>
@@ -47,23 +47,27 @@
             </div>
         </main>
 
-        <!-- Navigation Bar -->
-        <nav class="bottom-nav" aria-label="Navegação Principal">
-            <a href="#home" class="nav-item">
+        <!-- Barra Inferior Oficial (5 itens fixos: Início | Ensinar | Assistir | Acessibilidade | Dúvidas) -->
+        <nav class="bottom-nav" aria-label="Navegação Principal Oficial">
+            <a href="#home" class="nav-item" data-nav="home" id="nav-home">
                 <span class="nav-icon">🏠</span>
                 <span>Início</span>
             </a>
-            <a href="#ensinar" class="nav-item">
-                <span class="nav-icon">📚</span>
+            <a href="#ensinar" class="nav-item" data-nav="ensinar" id="nav-ensinar">
+                <span class="nav-icon">📖</span>
                 <span>Ensinar</span>
             </a>
-            <a href="#assistir" class="nav-item">
+            <a href="#assistir" class="nav-item" data-nav="assistir" id="nav-assistir">
                 <span class="nav-icon">🛡️</span>
                 <span>Assistir</span>
             </a>
-            <a href="#acessibilidade" class="nav-item">
+            <a href="#acessibilidade" class="nav-item" data-nav="acessibilidade" id="nav-acessibilidade">
                 <span class="nav-icon">⚙️</span>
-                <span>Acessar</span>
+                <span>Acessibilidade</span>
+            </a>
+            <a href="#duvidas" class="nav-item" data-nav="duvidas" id="nav-duvidas">
+                <span class="nav-icon" style="color: #D94A4A;">❓</span>
+                <span>Dúvidas</span>
             </a>
         </nav>
     </div>

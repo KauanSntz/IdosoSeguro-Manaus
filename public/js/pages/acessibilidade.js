@@ -8,14 +8,14 @@ async function renderAcessibilidadePage() {
     const speed = mgr.prefs.ttsSpeed;
 
     return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                 <div>
-                    <h2 class="title-primary">⚙️ Acessibilidade</h2>
-                    <p class="subtitle-main">Ajuste o aplicativo para o seu conforto visual e auditivo.</p>
+                    <h2 class="title-primary" style="margin: 0;">⚙️ Acessibilidade</h2>
+                    <p class="subtitle-main" style="margin-top: 4px;">Ajuste para seu conforto visual e auditivo.</p>
                 </div>
-                <button onclick="window.speechManager.toggleSpeak('Configurações de acessibilidade. Ajuste o tamanho do texto, ative alto contraste ou mude a velocidade da voz.')" class="btn-icon-text">
-                    🔊 Ouvir
+                <button onclick="window.speechManager.toggleSpeak('Configurações de acessibilidade. Ajuste o tamanho do texto, ative alto contraste ou mude a velocidade da voz.')" class="btn-voice-official" aria-label="Ouvir esta tela">
+                    🔊 OUVIR ESTA TELA
                 </button>
             </div>
 

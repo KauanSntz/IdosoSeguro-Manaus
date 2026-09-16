@@ -68,10 +68,23 @@ class Router {
     }
 
     updateNavHighlight(currentPath) {
+        let activeSection = 'home';
+        if (currentPath === 'welcome' || currentPath === 'home' || currentPath === '') {
+            activeSection = 'home';
+        } else if (currentPath.startsWith('ensinar') || currentPath.startsWith('conteudo') || currentPath.startsWith('quiz') || currentPath.startsWith('resultado')) {
+            activeSection = 'ensinar';
+        } else if (currentPath.startsWith('assistir') || currentPath.startsWith('analisar')) {
+            activeSection = 'assistir';
+        } else if (currentPath.startsWith('acessibilidade')) {
+            activeSection = 'acessibilidade';
+        } else if (currentPath.startsWith('duvidas') || currentPath.startsWith('ajuda')) {
+            activeSection = 'duvidas';
+        }
+
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
-            const target = item.getAttribute('href').replace(/^#/, '');
-            if (currentPath.startsWith(target)) {
+            const dataNav = item.getAttribute('data-nav') || item.getAttribute('href').replace(/^#/, '');
+            if (dataNav === activeSection) {
                 item.classList.add('active');
             } else {
                 item.classList.remove('active');

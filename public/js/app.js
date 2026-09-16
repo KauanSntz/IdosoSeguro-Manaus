@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.router.addRoute('resultado/:id', renderResultadoPage);
     window.router.addRoute('acessibilidade', renderAcessibilidadePage);
     window.router.addRoute('ajuda', renderAjudaPage);
+    window.router.addRoute('duvidas', renderAjudaPage);
 
     // Initial trigger
     window.router.handleRoute();

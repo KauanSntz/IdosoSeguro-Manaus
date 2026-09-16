@@ -29,13 +29,13 @@ async function renderConteudoPage(params) {
     const fullTextToSpeak = `${topic.title}. ${content.introduction}. Sinais de alerta: ${(content.warning_signs || []).join('. ')}. Recomendações: ${(content.safe_actions || []).join('. ')}`;
 
     return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <button onclick="window.router.navigate('ensinar')" class="btn-icon-text">
-                    ⬅️ Voltar aos Tópicos
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button onclick="window.router.navigate('ensinar')" class="btn-outline" style="width: auto; padding: 8px 16px; min-height: 44px; border-radius: 20px; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                    ← Voltar aos Tópicos
                 </button>
-                <button onclick="window.speechManager.toggleSpeak('${fullTextToSpeak.replace(/'/g, "\\'")}')" class="btn btn-voice" style="width: auto; padding: 8px 16px;">
-                    🔊 Ouvir Explicação
+                <button onclick="window.speechManager.toggleSpeak('${fullTextToSpeak.replace(/'/g, "\\'")}')" class="btn-voice-official" aria-label="Ouvir esta tela">
+                    🔊 OUVIR ESTA TELA
                 </button>
             </div>
 
@@ -74,11 +74,11 @@ async function renderConteudoPage(params) {
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-                    <button onclick="window.router.navigate('quiz/${topic.slug}')" class="btn btn-primary">
-                        🎯 PRATICAR AGORA (QUIZ)
+                    <button onclick="window.router.navigate('quiz/${topic.slug}')" class="btn btn-primary btn-pill" style="min-height: 56px; font-size: 1.15rem; font-weight: 800;">
+                        🎯 PRATICAR AGORA (QUIZ) &nbsp;➔
                     </button>
-                    <button onclick="window.router.navigate('ensinar')" class="btn btn-outline">
-                        📚 Ver outros assuntos
+                    <button onclick="window.router.navigate('ensinar')" class="btn btn-outline btn-pill" style="min-height: 54px; font-size: 1.1rem; font-weight: 700;">
+                        📖 Ver outros assuntos &nbsp;➔
                     </button>
                 </div>
             </div>

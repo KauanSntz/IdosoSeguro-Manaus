@@ -67,6 +67,17 @@ class SpeechManager {
         indicators.forEach(el => {
             el.style.display = speaking ? 'inline-block' : 'none';
         });
+
+        const voiceButtons = document.querySelectorAll('.btn-voice-official');
+        voiceButtons.forEach(btn => {
+            if (speaking) {
+                btn.classList.add('speaking');
+                btn.setAttribute('aria-pressed', 'true');
+            } else {
+                btn.classList.remove('speaking');
+                btn.setAttribute('aria-pressed', 'false');
+            }
+        });
     }
 
     startRecognition(onResultCallback, onErrorCallback) {
