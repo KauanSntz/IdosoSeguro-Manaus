@@ -50,7 +50,7 @@ async function renderEnsinarPage() {
                         Manaus mais seguro para todos!
                     </p>
                 </div>
-                <img src="/assets/illustrations/banner-ensinar.png" alt="Casal de idosos acenando amigavelmente" style="width: 110px; height: auto; object-fit: contain; flex-shrink: 0;">
+                <img src="/assets/illustrations/banner-ensinar.png" alt="Casal de idosos acenando amigavelmente" style="width: 145px; height: 95px; object-fit: contain; flex-shrink: 0;">
             </div>
 
             <!-- Cabeçalho de Seção com Botão de Voz -->

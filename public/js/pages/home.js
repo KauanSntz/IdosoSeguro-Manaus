@@ -41,7 +41,7 @@ async function renderHomePage() {
                     <img src="/assets/illustrations/senhor-assistir.png" alt="Idoso simpático pedindo verificação de segurança" class="mode-card-character">
                     <div class="mode-card-info">
                         <div class="mode-card-header assistir">
-                            <span style="font-size: 26px;">🛡️</span>
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="#E1EEFB" stroke="#1D5D9B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                             <span>MODO ASSISTIR</span>
                         </div>
                         <p class="mode-card-phrase">

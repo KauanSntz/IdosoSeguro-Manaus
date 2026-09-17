@@ -175,11 +175,11 @@
 }
 
 .mode-card-character {
-    width: 110px;
-    height: 110px;
+    width: 115px;
+    height: 115px;
     object-fit: contain;
-    border-radius: 16px;
     flex-shrink: 0;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.05));
 }
 
 .mode-card-info {
@@ -341,11 +341,12 @@
 }
 
 .quiz-scenario-character {
-    width: 110px;
+    width: 115px;
     height: auto;
-    max-height: 140px;
+    max-height: 145px;
     object-fit: contain;
     flex-shrink: 0;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.06));
 }
 
 .quiz-question-title {
@@ -460,10 +461,11 @@
 }
 
 .quiz-feedback-character {
-    width: 95px;
+    width: 105px;
     height: auto;
     object-fit: contain;
     flex-shrink: 0;
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.06));
 }
 
 /* Telas de Resultado */

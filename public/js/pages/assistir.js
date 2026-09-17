@@ -10,7 +10,7 @@ async function renderAssistirPage() {
             <div style="background: linear-gradient(135deg, #EAF2F9 0%, #DCECF9 100%); border: 2px solid #C4DDF2; border-radius: 22px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: 0 3px 12px rgba(29, 93, 155, 0.08);">
                 <div style="flex: 1;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                        <span style="font-size: 26px;">🛡️</span>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="#E1EEFB" stroke="#1D5D9B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         <h2 style="font-size: calc(1.3rem * var(--font-scale)); font-weight: 800; color: var(--color-secondary); margin: 0;">
                             Modo Assistir
                         </h2>

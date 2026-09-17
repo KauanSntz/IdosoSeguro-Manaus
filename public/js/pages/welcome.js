@@ -6,14 +6,9 @@ async function renderWelcomePage() {
 
     return `
         <div class="card text-center" style="gap: 20px; padding: 24px 20px; border-radius: 24px; border: 2px solid #E6EEF4;">
-            <!-- 1. IdosoSeguro+ Manaus -->
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                <img src="/assets/brand/logo-horizontal.png" alt="IdosoSeguro+ Manaus" style="max-height: 58px; width: auto; object-fit: contain;">
-            </div>
-
-            <!-- 2. Casal de idosos (estilo desenho animado) -->
+            <!-- 2. Casal de idosos (ilustração 3D acolhedora) -->
             <div style="position: relative; display: flex; justify-content: center; margin: 4px 0;">
-                <img src="/assets/illustrations/casal-capa.png" alt="Casal de idosos sorrindo e usando celular com segurança" style="width: 100%; max-width: 320px; height: auto; object-fit: contain; border-radius: 20px; box-shadow: 0 4px 15px rgba(19, 138, 91, 0.08);">
+                <img src="/assets/illustrations/casal-capa.png" alt="Casal de idosos sorrindo e usando celular com segurança" style="width: 100%; max-width: 360px; height: auto; object-fit: cover; border-radius: 22px; box-shadow: 0 8px 24px rgba(19, 138, 91, 0.12);">
             </div>
 
             <!-- 3. Slogan oficial -->
