@@ -2,13 +2,13 @@
 
 -- 1. Topics
 INSERT INTO education_topics (slug, title, description, icon, image, category) VALUES
-('links-suspeitos', 'Links Suspeitos', 'Como reconhecer endereços virtuais perigosos antes de clicar.', '🔗', '/assets/illustrations/links-suspeitos.png', 'Segurança Web'),
-('golpes-whatsapp', 'Golpes no WhatsApp', 'Aprenda a identificar clonagem de perfil e falsos pedidos de parentes.', '💬', '/assets/illustrations/whatsapp-golpe.png', 'Redes Sociais'),
-('senhas-dados', 'Senhas e Dados', 'Como proteger suas senhas e evitar compartilhar códigos secretos.', '🔐', '/assets/illustrations/senha-segura.png', 'Privacidade'),
-('pix-transferencias', 'Pix e Transferências', 'Cuidados essenciais ao realizar pagamentos e transferências no celular.', '💰', '/assets/illustrations/pix-seguro.png', 'Finanças'),
-('falsa-central', 'Falsa Central Bancária', 'Saiba como os golpistas se passam por bancos por ligação ou mensagem.', '🏦', '/assets/illustrations/verificar-mensagem.png', 'Fraudes'),
-('promocoes-falsas', 'Promoções Falsas', 'Desconfie de prêmios fáceis, sorteios e ofertas de produtos grátis.', '🎁', '/assets/illustrations/aprender-seguranca.png', 'Oportunidades'),
-('dados-pessoais', 'Proteção de Dados', 'Mantenha seu CPF, RG e comprovantes em segurança.', '👤', '/assets/illustrations/ajuda.png', 'Privacidade');
+('links-suspeitos', 'Links Suspeitos', 'Como reconhecer endereços virtuais perigosos antes de clicar.', '🔗', '/assets/illustrations/links-suspeitos.svg', 'Segurança Web'),
+('golpes-whatsapp', 'Golpes no WhatsApp', 'Aprenda a identificar clonagem de perfil e falsos pedidos de parentes.', '💬', '/assets/illustrations/whatsapp-golpe.svg', 'Redes Sociais'),
+('senhas-dados', 'Senhas e Dados', 'Como proteger suas senhas e evitar compartilhar códigos secretos.', '🔐', '/assets/illustrations/senha-segura.svg', 'Privacidade'),
+('pix-transferencias', 'Pix e Transferências', 'Cuidados essenciais ao realizar pagamentos e transferências no celular.', '💰', '/assets/illustrations/pix-seguro.svg', 'Finanças'),
+('falsa-central', 'Falsa Central Bancária', 'Saiba como os golpistas se passam por bancos por ligação ou mensagem.', '🏦', '/assets/illustrations/verificar-mensagem.svg', 'Fraudes'),
+('promocoes-falsas', 'Promoções Falsas', 'Desconfie de prêmios fáceis, sorteios e ofertas de produtos grátis.', '🎁', '/assets/illustrations/aprender-seguranca.svg', 'Oportunidades'),
+('dados-pessoais', 'Proteção de Dados', 'Mantenha seu CPF, RG e comprovantes em segurança.', '👤', '/assets/illustrations/ajuda.svg', 'Privacidade');
 
 -- 2. Educational Content
 

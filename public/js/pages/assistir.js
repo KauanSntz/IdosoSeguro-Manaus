@@ -19,7 +19,7 @@ async function renderAssistirPage() {
                         Na dúvida, peça ajuda antes de agir.
                     </p>
                 </div>
-                <img src="/assets/illustrations/senhor-assistir.png" alt="Idoso simpático oferecendo ajuda" style="width: 100px; height: auto; object-fit: contain; flex-shrink: 0;">
+                <img src="/assets/illustrations/banner-assistir.png" alt="Idoso simpático acenando para ajudar" style="width: 110px; height: auto; object-fit: contain; flex-shrink: 0;">
             </div>
 
             <!-- Barra de Orientação com Botão de Voz -->
