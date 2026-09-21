@@ -62,13 +62,24 @@ class SpeechManager {
         }
     }
 
+    speakCurrentPage() {
+        if (this.currentPageText) {
+            this.toggleSpeak(this.currentPageText);
+        } else {
+            const view = document.getElementById('app-view');
+            if (view) {
+                this.toggleSpeak(view.innerText);
+            }
+        }
+    }
+
     updateSpeakingUI(speaking) {
         const indicators = document.querySelectorAll('.speaking-status');
         indicators.forEach(el => {
             el.style.display = speaking ? 'inline-block' : 'none';
         });
 
-        const voiceButtons = document.querySelectorAll('.btn-voice-official');
+        const voiceButtons = document.querySelectorAll('.btn-voice-official, .btn-voice-small, .btn-header-voice');
         voiceButtons.forEach(btn => {
             if (speaking) {
                 btn.classList.add('speaking');

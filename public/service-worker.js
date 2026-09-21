@@ -1,4 +1,4 @@
-const CACHE_NAME = 'idoso-seguro-v3';
+const CACHE_NAME = 'idoso-seguro-v4';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -20,6 +20,7 @@ const ASSETS_TO_CACHE = [
     '/assets/illustrations/senhora-ensinar.png',
     '/assets/illustrations/senhor-assistir.png',
     '/assets/illustrations/banner-ensinar.png',
+    '/assets/illustrations/banner-ensinar-celular.png',
     '/assets/illustrations/banner-assistir.png',
     '/assets/illustrations/senhora-quiz.png',
     '/assets/illustrations/senhora-explicando.png',

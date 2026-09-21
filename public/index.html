@@ -29,14 +29,9 @@
                 <img src="/assets/brand/logo-horizontal.png" alt="Idoso Seguro+ Manaus Logo" class="brand-logo-img">
             </a>
 
-            <div style="display: flex; gap: 8px;">
-                <button onclick="window.router.navigate('acessibilidade')" class="btn-header-action" aria-label="Configurações de Acessibilidade" title="Acessibilidade">
-                    ⚙️
-                </button>
-                <button onclick="window.router.navigate('duvidas')" class="btn-header-action help" aria-label="Dúvidas e Ajuda" title="Dúvidas">
-                    ❓
-                </button>
-            </div>
+            <button id="btn-header-voice" onclick="window.speechManager.speakCurrentPage()" class="btn-header-voice" aria-label="Ouvir esta tela">
+                🔊 Ouvir tela
+            </button>
         </header>
 
         <!-- Main Dynamic Viewport -->

@@ -2,13 +2,13 @@
 
 -- 1. Topics
 INSERT INTO education_topics (slug, title, description, icon, image, category) VALUES
-('links-suspeitos', 'Links Suspeitos', 'Como reconhecer endereços virtuais perigosos antes de clicar.', '🔗', '/assets/illustrations/links-suspeitos.svg', 'Segurança Web'),
-('golpes-whatsapp', 'Golpes no WhatsApp', 'Aprenda a identificar clonagem de perfil e falsos pedidos de parentes.', '💬', '/assets/illustrations/whatsapp-golpe.svg', 'Redes Sociais'),
-('senhas-dados', 'Senhas e Dados', 'Como proteger suas senhas e evitar compartilhar códigos secretos.', '🔐', '/assets/illustrations/senha-segura.svg', 'Privacidade'),
-('pix-transferencias', 'Pix e Transferências', 'Cuidados essenciais ao realizar pagamentos e transferências no celular.', '💰', '/assets/illustrations/pix-seguro.svg', 'Finanças'),
-('falsa-central', 'Falsa Central Bancária', 'Saiba como os golpistas se passam por bancos por ligação ou mensagem.', '🏦', '/assets/illustrations/verificar-mensagem.svg', 'Fraudes'),
-('promocoes-falsas', 'Promoções Falsas', 'Desconfie de prêmios fáceis, sorteios e ofertas de produtos grátis.', '🎁', '/assets/illustrations/aprender-seguranca.svg', 'Oportunidades'),
-('dados-pessoais', 'Proteção de Dados', 'Mantenha seu CPF, RG e comprovantes em segurança.', '👤', '/assets/illustrations/ajuda.svg', 'Privacidade');
+('links-suspeitos', 'Links Suspeitos', 'Aprenda a reconhecer links perigosos antes de clicar.', '🔗', '/assets/illustrations/links-suspeitos.svg', 'Segurança Web'),
+('golpes-whatsapp', 'Golpes no WhatsApp', 'Aprenda a reconhecer perfis falsos e pedidos de dinheiro.', '💬', '/assets/illustrations/whatsapp-golpe.svg', 'Redes Sociais'),
+('senhas-dados', 'Senhas e Dados', 'Proteja suas senhas e nunca compartilhe códigos secretos.', '🔐', '/assets/illustrations/senha-segura.svg', 'Privacidade'),
+('pix-transferencias', 'Pix e Transferências', 'Cuidados essenciais ao fazer pagamentos no celular.', '💰', '/assets/illustrations/pix-seguro.svg', 'Finanças'),
+('falsa-central', 'Falsa Central Bancária', 'Saiba quando golpistas se passam pelo seu banco.', '🏦', '/assets/illustrations/verificar-mensagem.svg', 'Fraudes'),
+('promocoes-falsas', 'Promoções Falsas', 'Desconfie de prêmios fáceis e produtos grátis.', '🎁', '/assets/illustrations/aprender-seguranca.svg', 'Oportunidades'),
+('dados-pessoais', 'Proteção de Dados', 'Mantenha seu CPF e documentos em segurança.', '👤', '/assets/illustrations/ajuda.svg', 'Privacidade');
 
 -- 2. Educational Content
 

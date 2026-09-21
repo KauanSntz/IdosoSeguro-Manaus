@@ -217,7 +217,160 @@
     word-break: break-word;
 }
 
-/* Tópicos Grid & Cards */
+/* Botões de Voz no Header e Inline */
+.btn-header-voice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #EBF5FD;
+    color: var(--color-secondary);
+    border: 1.5px solid #BEDEF8;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-header-voice:hover, .btn-header-voice:active {
+    background-color: #D3ECFD;
+    border-color: var(--color-secondary);
+    transform: scale(1.02);
+}
+
+.btn-header-voice.speaking {
+    background-color: var(--color-secondary);
+    color: #FFFFFF;
+    border-color: var(--color-secondary);
+    animation: voicePulse 1.2s infinite ease-in-out;
+}
+
+.btn-voice-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #F0F7FC;
+    color: var(--color-secondary);
+    border: 1.5px solid #BEDEF8;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: calc(0.92rem * var(--font-scale));
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: auto;
+    align-self: flex-start;
+}
+
+.btn-voice-small:hover, .btn-voice-small:active {
+    background-color: #DBEDFA;
+    border-color: var(--color-secondary);
+}
+
+.btn-voice-small.speaking {
+    background-color: var(--color-secondary);
+    color: #FFFFFF;
+    border-color: var(--color-secondary);
+    animation: voicePulse 1.2s infinite ease-in-out;
+}
+
+/* Tópicos em Lista Vertical (Modo Ensinar - Rolagem & Alto Contraste) */
+.topic-vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.topic-card-vertical {
+    background-color: #FFFFFF;
+    border: 2px solid #B8D5C4; /* Contraste firme no verde pastel */
+    border-radius: 22px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    min-height: 90px;
+}
+
+.topic-card-vertical:hover, .topic-card-vertical:active {
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+    box-shadow: 0 6px 20px rgba(19, 138, 91, 0.12);
+    background-color: #FAFDFB;
+}
+
+.topic-card-vertical-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.topic-card-icon-box {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    background-color: #E8F6EF;
+    border: 1.5px solid #C2E5D4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.topic-card-vertical-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.topic-title-large {
+    font-size: calc(1.3rem * var(--font-scale));
+    font-weight: 800;
+    color: var(--color-primary-dark);
+    margin: 0;
+    line-height: 1.25;
+    word-break: break-word;
+}
+
+.topic-desc-large {
+    font-size: calc(1.04rem * var(--font-scale));
+    color: #2F3E46;
+    font-weight: 600;
+    line-height: 1.35;
+    margin: 0;
+    word-break: break-word;
+}
+
+.topic-card-vertical-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1.5px solid #EBF3EE;
+    color: var(--color-primary);
+    font-weight: 800;
+    font-size: calc(0.98rem * var(--font-scale));
+    letter-spacing: 0.3px;
+}
+
+.topic-card-vertical-action .topic-arrow {
+    font-size: 1.15rem;
+    transition: transform 0.2s;
+}
+
+.topic-card-vertical:hover .topic-arrow {
+    transform: translateX(4px);
+}
+
+/* Tópicos Grid & Cards (Legado) */
 .topic-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
