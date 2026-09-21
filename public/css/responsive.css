@@ -10,7 +10,7 @@
     background-color: var(--color-surface);
     box-shadow: 0 0 35px rgba(0, 0, 0, 0.08);
     position: relative;
-    padding-bottom: 95px; /* Bottom nav space */
+    padding-bottom: calc(115px + env(safe-area-inset-bottom, 0px)); /* Espaço amplo para a barra inferior */
 }
 
 /* Header Navbar */
@@ -35,7 +35,7 @@
 /* Main Viewport */
 .main-content {
     flex: 1;
-    padding: 20px 18px;
+    padding: 20px 18px calc(24px + env(safe-area-inset-bottom, 0px)) 18px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -50,13 +50,13 @@
     width: 100%;
     max-width: 500px;
     background-color: #FFFFFF;
-    border-top: 1.5px solid #E1E8EE;
+    border-top: 2px solid #DCE6ED;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 6px;
+    padding: 6px 4px calc(8px + env(safe-area-inset-bottom, 0px)) 4px;
     z-index: 1000;
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08);
 }
 
 .nav-item {
@@ -65,15 +65,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    color: #506579;
-    font-size: calc(0.78rem * var(--font-scale));
-    font-weight: 700;
-    padding: 6px 2px;
+    gap: 2px;
+    color: #415465;
+    padding: 6px 1px;
     border-radius: 12px;
     transition: all 0.2s;
     text-decoration: none;
-    min-height: 52px;
+    min-height: 62px; /* Área de toque ampliada para idosos */
 }
 
 .nav-item:hover {
@@ -82,13 +80,75 @@
 }
 
 .nav-item.active {
-    color: var(--color-primary);
+    color: var(--color-primary-dark);
     background-color: #DDF5E9;
 }
 
 .nav-icon {
-    font-size: 22px;
-    line-height: 1;
+    font-size: 26px; /* Ícones ampliados */
+    line-height: 1.1;
+    display: block;
+}
+
+.nav-label {
+    font-size: calc(0.85rem * var(--font-scale)); /* Textos aumentados */
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    display: block;
+}
+
+/* Ajuste legível para Acessibilidade sem cortar */
+.nav-item[data-nav="acessibilidade"] .nav-label {
+    font-size: calc(0.80rem * var(--font-scale));
+    letter-spacing: -0.3px;
+}
+
+/* Extra Small Mobile Devices Protection (evita qualquer corte em telas pequenas) */
+@media (max-width: 400px) {
+    .main-content {
+        padding: 16px 14px calc(24px + env(safe-area-inset-bottom, 0px)) 14px;
+    }
+
+    .mode-card {
+        padding: 16px 14px;
+        gap: 14px;
+    }
+
+    .mode-card-content {
+        gap: 12px;
+    }
+
+    .mode-card-character {
+        width: 86px;
+        height: 86px;
+    }
+
+    .mode-card-header {
+        font-size: 1.05rem;
+    }
+
+    .mode-card-phrase {
+        font-size: 0.96rem;
+    }
+
+    .btn {
+        font-size: 1.05rem;
+        padding: 12px 14px;
+    }
+
+    .nav-icon {
+        font-size: 24px;
+    }
+
+    .nav-label {
+        font-size: 0.78rem;
+    }
+
+    .nav-item[data-nav="acessibilidade"] .nav-label {
+        font-size: 0.72rem;
+        letter-spacing: -0.4px;
+    }
 }
 
 /* Desktop Expansion */
@@ -105,3 +165,4 @@
         border: 1px solid #D5E0DA;
     }
 }
+

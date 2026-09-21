@@ -155,7 +155,7 @@
     background-color: #FFFFFF;
     border: 2px solid #E3ECF3;
     border-radius: 24px;
-    padding: 22px;
+    padding: 20px 18px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -171,12 +171,12 @@
 .mode-card-content {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
 }
 
 .mode-card-character {
-    width: 115px;
-    height: 115px;
+    width: 105px;
+    height: 105px;
     object-fit: contain;
     flex-shrink: 0;
     filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.05));
@@ -184,6 +184,7 @@
 
 .mode-card-info {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -193,8 +194,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 1.25rem;
+    font-size: calc(1.18rem * var(--font-scale));
     font-weight: 800;
+    line-height: 1.25;
+    flex-wrap: wrap;
+    word-break: break-word;
 }
 
 .mode-card-header.ensinar {
@@ -206,10 +210,11 @@
 }
 
 .mode-card-phrase {
-    font-size: 1.05rem;
+    font-size: calc(1.02rem * var(--font-scale));
     color: var(--color-text);
-    line-height: 1.4;
+    line-height: 1.35;
     font-weight: 500;
+    word-break: break-word;
 }
 
 /* Tópicos Grid & Cards */
