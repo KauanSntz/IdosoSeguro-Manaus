@@ -71,14 +71,14 @@ class Router {
         let activeSection = 'home';
         if (currentPath === 'welcome' || currentPath === 'home' || currentPath === '') {
             activeSection = 'home';
-        } else if (currentPath.startsWith('ensinar') || currentPath.startsWith('conteudo') || currentPath.startsWith('quiz') || currentPath.startsWith('resultado')) {
-            activeSection = 'ensinar';
+        } else if (currentPath.startsWith('aprender') || currentPath.startsWith('ensinar') || currentPath.startsWith('conteudo') || currentPath.startsWith('quiz') || currentPath.startsWith('resultado') || currentPath.startsWith('fechamento')) {
+            activeSection = 'aprender';
         } else if (currentPath.startsWith('assistir') || currentPath.startsWith('analisar')) {
             activeSection = 'assistir';
         } else if (currentPath.startsWith('acessibilidade')) {
             activeSection = 'acessibilidade';
-        } else if (currentPath.startsWith('duvidas') || currentPath.startsWith('ajuda')) {
-            activeSection = 'duvidas';
+        } else if (currentPath.startsWith('ajuda') || currentPath.startsWith('duvidas')) {
+            activeSection = 'ajuda';
         }
 
         const navItems = document.querySelectorAll('.nav-item');

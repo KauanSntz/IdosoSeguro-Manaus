@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Register SPA Routes
     window.router.addRoute('welcome', renderWelcomePage);
     window.router.addRoute('home', renderHomePage);
+    window.router.addRoute('aprender', renderEnsinarPage);
     window.router.addRoute('ensinar', renderEnsinarPage);
     window.router.addRoute('conteudo/:slug', renderConteudoPage);
     window.router.addRoute('quiz/:slug', renderQuizPage);
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.router.addRoute('acessibilidade', renderAcessibilidadePage);
     window.router.addRoute('ajuda', renderAjudaPage);
     window.router.addRoute('duvidas', renderAjudaPage);
+    window.router.addRoute('fechamento', renderFechamentoPage);
 
     // Initial trigger
     window.router.handleRoute();

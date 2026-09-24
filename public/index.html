@@ -25,32 +25,28 @@
         
         <!-- Header -->
         <header class="app-header" id="main-app-header" role="banner">
-            <a href="#home" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-                <img src="/assets/brand/logo-horizontal.png" alt="Idoso Seguro+ Manaus Logo" class="brand-logo-img">
+            <a href="#home" style="display: flex; align-items: center; justify-content: center; width: 100%; text-decoration: none;">
+                <img src="/assets/brand/logo-horizontal.png" alt="IdosoSeguro+ Manaus Logo" class="brand-logo-img">
             </a>
-
-            <button id="btn-header-voice" onclick="window.speechManager.speakCurrentPage()" class="btn-header-voice" aria-label="Ouvir esta tela">
-                🔊 Ouvir tela
-            </button>
         </header>
 
         <!-- Main Dynamic Viewport -->
         <main id="app-view" class="main-content" role="main" tabIndex="-1">
             <div class="loader-box">
                 <div class="spinner"></div>
-                <p class="subtitle-main">Carregando Idoso Seguro+...</p>
+                <p class="subtitle-main">Carregando IdosoSeguro+ Manaus...</p>
             </div>
         </main>
 
-        <!-- Barra Inferior Oficial (5 itens fixos: Início | Ensinar | Assistir | Acessibilidade | Dúvidas) -->
+        <!-- Barra Inferior Oficial (5 itens fixos: Início | Aprender | Assistir | Acessibilidade | Ajuda) -->
         <nav class="bottom-nav" aria-label="Navegação Principal Oficial">
             <a href="#home" class="nav-item" data-nav="home" id="nav-home">
                 <span class="nav-icon">🏠</span>
                 <span class="nav-label">Início</span>
             </a>
-            <a href="#ensinar" class="nav-item" data-nav="ensinar" id="nav-ensinar">
+            <a href="#aprender" class="nav-item" data-nav="aprender" id="nav-aprender">
                 <span class="nav-icon">📖</span>
-                <span class="nav-label">Ensinar</span>
+                <span class="nav-label">Aprender</span>
             </a>
             <a href="#assistir" class="nav-item" data-nav="assistir" id="nav-assistir">
                 <span class="nav-icon">🛡️</span>
@@ -60,9 +56,9 @@
                 <span class="nav-icon">⚙️</span>
                 <span class="nav-label">Acessibilidade</span>
             </a>
-            <a href="#duvidas" class="nav-item" data-nav="duvidas" id="nav-duvidas">
+            <a href="#ajuda" class="nav-item" data-nav="ajuda" id="nav-ajuda">
                 <span class="nav-icon" style="color: #D94A4A;">❓</span>
-                <span class="nav-label">Dúvidas</span>
+                <span class="nav-label">Ajuda</span>
             </a>
         </nav>
     </div>
@@ -84,6 +80,7 @@
     <script src="/js/pages/resultado.js"></script>
     <script src="/js/pages/acessibilidade.js"></script>
     <script src="/js/pages/ajuda.js"></script>
+    <script src="/js/pages/fechamento.js"></script>
 
     <!-- App Entrypoint -->
     <script src="/js/app.js"></script>

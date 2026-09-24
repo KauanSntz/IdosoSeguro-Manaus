@@ -7,8 +7,8 @@ class TopicRepository {
     }
 
     async findBySlug(slug) {
-        const sqlTopic = `SELECT id, slug, title, description, icon, image, category FROM education_topics WHERE slug = ?`;
-        const topic = await getAsync(sqlTopic, [slug]);
+        const sqlTopic = `SELECT id, slug, title, description, icon, image, category FROM education_topics WHERE slug = ? OR (slug = 'cpf-documentos' AND ? = 'dados-pessoais')`;
+        const topic = await getAsync(sqlTopic, [slug, slug]);
 
         if (!topic) return null;
 

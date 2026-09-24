@@ -1,5 +1,6 @@
 /**
- * 07 — Submeter Conteúdo para Análise (Texto, Link, Imagem, Áudio)
+ * 07 — Submeter Conteúdo para Análise (Mensagem, Link, Imagem, Áudio)
+ * Rigorosamente alinhado com o Guia de Reconstrução IdosoSeguro+ Manaus (Fotos 33 a 36)
  */
 async function renderAnalisarPage(params) {
     const type = params.type || 'texto';
@@ -18,36 +19,49 @@ async function renderAnalisarPage(params) {
 }
 
 function renderTextForm() {
+    const speech = "Verificar Mensagem. Cole, digite ou fale a mensagem recebida para verificar a segurança.";
     return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <button onclick="window.router.navigate('assistir')" class="btn-icon-text">⬅️ Escolher outro</button>
-                <button onclick="window.speechManager.toggleSpeak('Cole ou escreva a mensagem que deixou você em dúvida. Se preferir, use o botão Falar para ditar o texto.')" class="btn-icon-text">🔊 Ouvir</button>
+        <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 28px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button onclick="window.router.navigate('assistir')" class="btn-outline" style="width: auto; padding: 8px 14px; min-height: 44px; border-radius: 20px; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px;">
+                    ⬅️ ESCOLHER OUTRO TIPO DE VERIFICAÇÃO
+                </button>
+                <button onclick="window.speechManager.toggleSpeak('${speech}')" class="btn-voice-official" aria-label="Ouvir esta tela">
+                    🔊 OUVIR ESTA TELA
+                </button>
             </div>
 
-            <div class="card" style="gap: 20px;">
-                <h2 class="title-primary" style="font-size: 1.5rem;">💬 Verificar Mensagem</h2>
-                <p class="subtitle-main">Cole ou escreva abaixo a mensagem recebida no WhatsApp, SMS ou e-mail:</p>
-
-                <div class="form-group">
-                    <label for="input-analysis-text" class="form-label">Mensagem suspeita:</label>
-                    <textarea id="input-analysis-text" class="form-textarea" placeholder="Exemplo: Urgente! Seu benefício foi bloqueado. Clique no link para recadastrar..."></textarea>
+            <div class="card" style="gap: 18px; border-radius: 24px; padding: 22px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 36px;">💬</span>
+                    <h2 class="title-primary" style="font-size: calc(1.4rem * var(--font-scale)); margin: 0;">
+                        Verificar Mensagem
+                    </h2>
                 </div>
 
-                <button onclick="triggerVoiceInput('input-analysis-text')" class="btn btn-voice">
+                <p class="subtitle-main" style="margin: 0; font-size: calc(1.05rem * var(--font-scale));">
+                    Cole, digite ou fale abaixo a mensagem recebida no WhatsApp, SMS ou e-mail:
+                </p>
+
+                <div class="form-group" style="margin: 0;">
+                    <label for="input-analysis-text" class="form-label" style="font-size: calc(1rem * var(--font-scale)); font-weight: 700;">Mensagem suspeita:</label>
+                    <textarea id="input-analysis-text" class="form-textarea" style="min-height: 120px; font-size: calc(1.05rem * var(--font-scale));" placeholder="Exemplo: Urgente! Seu benefício foi bloqueado. Clique no link para recadastrar..."></textarea>
+                </div>
+
+                <button onclick="triggerVoiceInput('input-analysis-text')" class="btn btn-voice" style="min-height: 54px; font-size: calc(1.1rem * var(--font-scale)); font-weight: 800;">
                     🎤 FALAR EM VEZ DE DIGITAR
                 </button>
 
-                <div style="background-color: var(--color-primary-light); padding: 14px; border-radius: 12px; font-size: 0.95rem; color: var(--color-primary-dark);">
-                    🔒 <strong>Sua privacidade importa:</strong> Você decide o que deseja analisar. Evite enviar senhas secretas ou dados bancários pessoais.
+                <div style="background-color: var(--color-primary-light); padding: 14px 16px; border-radius: 14px; font-size: calc(0.95rem * var(--font-scale)); color: var(--color-primary-dark); line-height: 1.4;">
+                    🔒 <strong>Sua privacidade importa:</strong> Evite enviar senhas ou dados bancários pessoais.
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button onclick="submitTextAnalysis()" class="btn btn-secondary">
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 6px;">
+                    <button onclick="submitTextAnalysis()" class="btn btn-secondary btn-pill" style="min-height: 58px; font-size: calc(1.2rem * var(--font-scale)); font-weight: 800;">
                         🔍 VERIFICAR MENSAGEM
                     </button>
-                    <button onclick="window.router.navigate('assistir')" class="btn btn-outline">
-                        Cancelar
+                    <button onclick="window.router.navigate('assistir')" class="btn btn-outline btn-pill" style="min-height: 52px; font-size: calc(1.05rem * var(--font-scale)); font-weight: 700;">
+                        VOLTAR ÀS OPÇÕES
                     </button>
                 </div>
             </div>
@@ -56,28 +70,41 @@ function renderTextForm() {
 }
 
 function renderLinkForm() {
+    const speech = "Verificar Link. Cole o link aqui para verificar se ele é seguro antes de clicar.";
     return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <button onclick="window.router.navigate('assistir')" class="btn-icon-text">⬅️ Escolher outro</button>
-                <button onclick="window.speechManager.toggleSpeak('Cole o endereço do site ou link que deixou você em dúvida.')" class="btn-icon-text">🔊 Ouvir</button>
+        <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 28px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button onclick="window.router.navigate('assistir')" class="btn-outline" style="width: auto; padding: 8px 14px; min-height: 44px; border-radius: 20px; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px;">
+                    ⬅️ ESCOLHER OUTRO TIPO DE VERIFICAÇÃO
+                </button>
+                <button onclick="window.speechManager.toggleSpeak('${speech}')" class="btn-voice-official" aria-label="Ouvir esta tela">
+                    🔊 OUVIR ESTA TELA
+                </button>
             </div>
 
-            <div class="card" style="gap: 20px;">
-                <h2 class="title-primary" style="font-size: 1.5rem;">🔗 Verificar Link ou Site</h2>
-                <p class="subtitle-main">Cole abaixo o endereço do site que enviaram para você:</p>
+            <div class="card" style="gap: 18px; border-radius: 24px; padding: 22px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 36px;">🔗</span>
+                    <h2 class="title-primary" style="font-size: calc(1.4rem * var(--font-scale)); margin: 0;">
+                        Verificar Link
+                    </h2>
+                </div>
 
-                <div class="form-group">
-                    <label for="input-analysis-link" class="form-label">Endereço do Link (URL):</label>
-                    <input id="input-analysis-link" type="text" class="form-input" placeholder="Exemplo: http://banc0-atualiza-conta.site">
+                <p class="subtitle-main" style="margin: 0; font-size: calc(1.05rem * var(--font-scale));">
+                    Cole o link aqui antes de clicar:
+                </p>
+
+                <div class="form-group" style="margin: 0;">
+                    <label for="input-analysis-link" class="form-label" style="font-size: calc(1rem * var(--font-scale)); font-weight: 700;">Cole o link aqui:</label>
+                    <input id="input-analysis-link" type="text" class="form-input" style="min-height: 52px; font-size: calc(1.05rem * var(--font-scale));" placeholder="Exemplo: http://banc0-atualiza-conta.site">
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-                    <button onclick="submitLinkAnalysis()" class="btn btn-secondary">
+                    <button onclick="submitLinkAnalysis()" class="btn btn-secondary btn-pill" style="min-height: 58px; font-size: calc(1.2rem * var(--font-scale)); font-weight: 800;">
                         🔍 VERIFICAR LINK
                     </button>
-                    <button onclick="window.router.navigate('assistir')" class="btn btn-outline">
-                        Cancelar
+                    <button onclick="window.router.navigate('assistir')" class="btn btn-outline btn-pill" style="min-height: 52px; font-size: calc(1.05rem * var(--font-scale)); font-weight: 700;">
+                        VOLTAR ÀS OPÇÕES
                     </button>
                 </div>
             </div>
@@ -86,33 +113,46 @@ function renderLinkForm() {
 }
 
 function renderImageForm() {
+    const speech = "Verificar Imagem ou Comprovante. Escolha uma foto ou conte o que aparece na imagem.";
     return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <button onclick="window.router.navigate('assistir')" class="btn-icon-text">⬅️ Escolher outro</button>
-                <button onclick="window.speechManager.toggleSpeak('Selecione uma imagem ou foto do comprovante para verificar.')" class="btn-icon-text">🔊 Ouvir</button>
+        <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 28px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button onclick="window.router.navigate('assistir')" class="btn-outline" style="width: auto; padding: 8px 14px; min-height: 44px; border-radius: 20px; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px;">
+                    ⬅️ ESCOLHER OUTRO TIPO DE VERIFICAÇÃO
+                </button>
+                <button onclick="window.speechManager.toggleSpeak('${speech}')" class="btn-voice-official" aria-label="Ouvir esta tela">
+                    🔊 OUVIR ESTA TELA
+                </button>
             </div>
 
-            <div class="card" style="gap: 20px;">
-                <h2 class="title-primary" style="font-size: 1.5rem;">🖼️ Verificar Imagem ou Print</h2>
-                <p class="subtitle-main">Selecione uma foto da tela ou descreva a imagem em dúvida:</p>
-
-                <div class="form-group">
-                    <label for="input-analysis-image" class="form-label">Escolher imagem do celular:</label>
-                    <input id="input-analysis-image" type="file" accept="image/*" class="form-input">
+            <div class="card" style="gap: 18px; border-radius: 24px; padding: 22px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 36px;">🖼️</span>
+                    <h2 class="title-primary" style="font-size: calc(1.4rem * var(--font-scale)); margin: 0;">
+                        Imagem ou Comprovante
+                    </h2>
                 </div>
 
-                <div class="form-group">
-                    <label for="input-image-desc" class="form-label">Ou descreva o que está escrito na foto:</label>
-                    <input id="input-image-desc" type="text" class="form-input" placeholder="Exemplo: Foto de comprovante de Pix no valor de R$ 500">
+                <p class="subtitle-main" style="margin: 0; font-size: calc(1.05rem * var(--font-scale));">
+                    Selecione uma imagem ou descreva o que aparece nela:
+                </p>
+
+                <div class="form-group" style="margin: 0;">
+                    <label for="input-analysis-image" class="form-label" style="font-size: calc(1rem * var(--font-scale)); font-weight: 700;">Escolher imagem do celular:</label>
+                    <input id="input-analysis-image" type="file" accept="image/*" class="form-input" style="padding: 10px; font-size: 1rem;">
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button onclick="submitImageAnalysis()" class="btn btn-secondary">
+                <div class="form-group" style="margin: 0;">
+                    <label for="input-image-desc" class="form-label" style="font-size: calc(1rem * var(--font-scale)); font-weight: 700;">Se preferir, conte o que aparece na imagem:</label>
+                    <input id="input-image-desc" type="text" class="form-input" style="min-height: 52px; font-size: calc(1.05rem * var(--font-scale));" placeholder="Exemplo: Comprovante de transferência Pix no valor de 500 reais">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                    <button onclick="submitImageAnalysis()" class="btn btn-secondary btn-pill" style="min-height: 58px; font-size: calc(1.2rem * var(--font-scale)); font-weight: 800;">
                         🔍 VERIFICAR IMAGEM
                     </button>
-                    <button onclick="window.router.navigate('assistir')" class="btn btn-outline">
-                        Cancelar
+                    <button onclick="window.router.navigate('assistir')" class="btn btn-outline btn-pill" style="min-height: 52px; font-size: calc(1.05rem * var(--font-scale)); font-weight: 700;">
+                        VOLTAR ÀS OPÇÕES
                     </button>
                 </div>
             </div>
@@ -121,32 +161,45 @@ function renderImageForm() {
 }
 
 function renderAudioForm() {
+    const speech = "Verificar Áudio de Voz. Fale ou escreva o que você ouviu no áudio.";
     return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <button onclick="window.router.navigate('assistir')" class="btn-icon-text">⬅️ Escolher outro</button>
-                <button onclick="window.speechManager.toggleSpeak('Fale a mensagem de voz que você ouviu ou digite o resumo da mensagem de áudio.')" class="btn-icon-text">🔊 Ouvir</button>
+        <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 28px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button onclick="window.router.navigate('assistir')" class="btn-outline" style="width: auto; padding: 8px 14px; min-height: 44px; border-radius: 20px; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px;">
+                    ⬅️ ESCOLHER OUTRO TIPO DE VERIFICAÇÃO
+                </button>
+                <button onclick="window.speechManager.toggleSpeak('${speech}')" class="btn-voice-official" aria-label="Ouvir esta tela">
+                    🔊 OUVIR ESTA TELA
+                </button>
             </div>
 
-            <div class="card" style="gap: 20px;">
-                <h2 class="title-primary" style="font-size: 1.5rem;">🎤 Verificar Áudio de Voz</h2>
-                <p class="subtitle-main">Fale a mensagem para o aplicativo ou escreva o que a pessoa disse no áudio:</p>
-
-                <div class="form-group">
-                    <label for="input-analysis-audio" class="form-label">O que a pessoa falou no áudio?</label>
-                    <textarea id="input-analysis-audio" class="form-textarea" placeholder="Exemplo: A voz disse que era do meu filho e precisava de um Pix para pagar a oficina..."></textarea>
+            <div class="card" style="gap: 18px; border-radius: 24px; padding: 22px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 36px;">🎤</span>
+                    <h2 class="title-primary" style="font-size: calc(1.4rem * var(--font-scale)); margin: 0;">
+                        Verificar Áudio de Voz
+                    </h2>
                 </div>
 
-                <button onclick="triggerVoiceInput('input-analysis-audio')" class="btn btn-voice">
+                <p class="subtitle-main" style="margin: 0; font-size: calc(1.05rem * var(--font-scale));">
+                    Fale ou escreva o que você ouviu no áudio:
+                </p>
+
+                <div class="form-group" style="margin: 0;">
+                    <label for="input-analysis-audio" class="form-label" style="font-size: calc(1rem * var(--font-scale)); font-weight: 700;">O que você ouviu?</label>
+                    <textarea id="input-analysis-audio" class="form-textarea" style="min-height: 120px; font-size: calc(1.05rem * var(--font-scale));" placeholder="Exemplo: A pessoa disse que era do banco e precisava que eu fizesse um Pix..."></textarea>
+                </div>
+
+                <button onclick="triggerVoiceInput('input-analysis-audio')" class="btn btn-voice" style="min-height: 54px; font-size: calc(1.1rem * var(--font-scale)); font-weight: 800;">
                     🎤 FALAR A MENSAGEM AGORA
                 </button>
 
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button onclick="submitAudioAnalysis()" class="btn btn-secondary">
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                    <button onclick="submitAudioAnalysis()" class="btn btn-secondary btn-pill" style="min-height: 58px; font-size: calc(1.2rem * var(--font-scale)); font-weight: 800;">
                         🔍 VERIFICAR ÁUDIO
                     </button>
-                    <button onclick="window.router.navigate('assistir')" class="btn btn-outline">
-                        Cancelar
+                    <button onclick="window.router.navigate('assistir')" class="btn btn-outline btn-pill" style="min-height: 52px; font-size: calc(1.05rem * var(--font-scale)); font-weight: 700;">
+                        VOLTAR ÀS OPÇÕES
                     </button>
                 </div>
             </div>
@@ -158,92 +211,77 @@ function renderAudioForm() {
 window.triggerVoiceInput = function(targetId) {
     if (window.speechManager) {
         window.speechManager.startRecognition((transcript) => {
-            const input = document.getElementById(targetId);
-            if (input) input.value = transcript;
+            const el = document.getElementById(targetId);
+            if (el) {
+                el.value = transcript;
+                el.focus();
+            }
         });
     }
 };
 
-window.showAnalyzingLoader = function() {
-    const view = document.getElementById('app-view');
-    view.innerHTML = `
-        <div class="card text-center loader-box">
-            <span style="font-size: 50px;">🛡️</span>
-            <div class="spinner"></div>
-            <h2 class="title-primary">Estamos verificando...</h2>
-            <p class="subtitle-main">Estamos procurando sinais que merecem atenção no conteúdo enviado. Isso leva apenas alguns segundos.</p>
-        </div>
-    `;
-    if (window.speechManager) {
-        window.speechManager.speak('Estamos verificando o seu conteúdo. Por favor aguarde alguns segundos.');
-    }
-};
-
 window.submitTextAnalysis = async function() {
-    const text = document.getElementById('input-analysis-text').value;
-    if (!text.trim()) {
-        alert('Por favor, cole ou digite a mensagem antes de verificar.');
+    const text = document.getElementById('input-analysis-text').value.trim();
+    if (!text) {
+        alert('Por favor, digite ou fale a mensagem antes de verificar.');
         return;
     }
-    showAnalyzingLoader();
-    const result = await window.apiClient.analyzeText(text);
-    if (result && result.id) {
-        window.router.navigate(`resultado/${result.id}`);
-    } else {
-        alert('Não foi possível realizar a análise neste momento.');
-        window.router.navigate('assistir');
-    }
+    await executeAnalysis('text', text);
 };
 
 window.submitLinkAnalysis = async function() {
-    const link = document.getElementById('input-analysis-link').value;
-    if (!link.trim()) {
-        alert('Por favor, informe o link antes de verificar.');
+    const link = document.getElementById('input-analysis-link').value.trim();
+    if (!link) {
+        alert('Por favor, digite ou cole o link antes de verificar.');
         return;
     }
-    showAnalyzingLoader();
-    const result = await window.apiClient.analyzeLink(link);
-    if (result && result.id) {
-        window.router.navigate(`resultado/${result.id}`);
-    } else {
-        alert('Não foi possível realizar a análise.');
-        window.router.navigate('assistir');
-    }
+    await executeAnalysis('link', link);
 };
 
 window.submitImageAnalysis = async function() {
     const fileInput = document.getElementById('input-analysis-image');
-    const descInput = document.getElementById('input-image-desc');
-    const file = fileInput.files[0];
-    const desc = descInput.value;
-
-    if (!file && !desc.trim()) {
-        alert('Selecione um arquivo de imagem ou digite a descrição do comprovante.');
+    const desc = document.getElementById('input-image-desc').value.trim();
+    
+    let content = desc || (fileInput.files.length > 0 ? fileInput.files[0].name : '');
+    if (!content) {
+        alert('Por favor, selecione uma imagem ou escreva o que aparece nela.');
         return;
     }
-
-    showAnalyzingLoader();
-    const result = await window.apiClient.analyzeImage(file || desc);
-    if (result && result.id) {
-        window.router.navigate(`resultado/${result.id}`);
-    } else {
-        alert('Falha ao analisar imagem.');
-        window.router.navigate('assistir');
-    }
+    await executeAnalysis('image', content);
 };
 
 window.submitAudioAnalysis = async function() {
-    const text = document.getElementById('input-analysis-audio').value;
-    if (!text.trim()) {
-        alert('Por favor, fale ou digite o resumo da mensagem de voz.');
+    const text = document.getElementById('input-analysis-audio').value.trim();
+    if (!text) {
+        alert('Por favor, fale ou digite o que você ouviu antes de verificar.');
         return;
     }
-    showAnalyzingLoader();
-    const result = await window.apiClient.analyzeAudio(text);
-    if (result && result.id) {
-        window.router.navigate(`resultado/${result.id}`);
-    } else {
-        alert('Falha ao analisar áudio.');
+    await executeAnalysis('audio', text);
+};
+
+async function executeAnalysis(type, content) {
+    const container = document.getElementById('app-view');
+    if (container) {
+        container.innerHTML = `
+            <div class="loader-box" style="padding: 40px 20px;">
+                <div class="spinner"></div>
+                <h3 style="color: var(--color-primary-dark); margin-top: 18px; font-size: 1.3rem;">Estamos verificando com atenção e carinho...</h3>
+                <p style="color: var(--color-text-muted); font-size: 1.05rem;">Segurança e cuidado para sua tranquilidade.</p>
+            </div>
+        `;
+    }
+
+    try {
+        const response = await window.apiClient.analyzeContent(type, content);
+        if (response && response.success && response.analysis) {
+            window.router.navigate(`resultado/${response.analysis.id}`);
+        } else {
+            alert('Não foi possível concluir a análise agora. Tente novamente.');
+            window.router.navigate('assistir');
+        }
+    } catch (e) {
+        console.error('Erro na análise:', e);
+        alert('Ocorreu uma instabilidade na verificação. Tente novamente.');
         window.router.navigate('assistir');
     }
-};
+}

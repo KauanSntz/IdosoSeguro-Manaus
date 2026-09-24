@@ -2,8 +2,8 @@ const { allAsync, getAsync, runAsync } = require('../database/db');
 
 class QuizRepository {
     async findByTopicSlug(slug) {
-        const sqlTopic = `SELECT id, slug, title FROM education_topics WHERE slug = ?`;
-        const topic = await getAsync(sqlTopic, [slug]);
+        const sqlTopic = `SELECT id, slug, title FROM education_topics WHERE slug = ? OR (slug = 'cpf-documentos' AND ? = 'dados-pessoais')`;
+        const topic = await getAsync(sqlTopic, [slug, slug]);
 
         if (!topic) return null;
 

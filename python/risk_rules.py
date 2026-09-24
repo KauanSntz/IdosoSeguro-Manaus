@@ -10,7 +10,7 @@ TOPIC_MAPPINGS = {
     'senha': 'senhas-dados',
     'banco': 'falsa-central',
     'promocao': 'promocoes-falsas',
-    'dados': 'dados-pessoais'
+    'dados': 'cpf-documentos'
 }
 
 def determine_risk_level(score):

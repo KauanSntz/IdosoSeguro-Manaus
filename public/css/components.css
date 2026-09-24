@@ -538,9 +538,28 @@
     transform: translateY(-2px);
 }
 
-.quiz-option-btn.selected {
+.quiz-option-btn.choice-correct {
     border-color: var(--color-primary);
     background-color: #EDF9F3;
+}
+
+.quiz-option-btn.choice-correct .quiz-circle-badge {
+    background-color: var(--color-primary);
+    color: #FFFFFF;
+}
+
+.quiz-option-btn.choice-correct .quiz-check-indicator {
+    display: inline-block;
+}
+
+.quiz-option-btn.choice-user-incorrect {
+    border-color: #64748B;
+    background-color: #F8FAFC;
+}
+
+.quiz-option-btn.choice-user-incorrect .quiz-circle-badge {
+    background-color: #64748B;
+    color: #FFFFFF;
 }
 
 .quiz-circle-badge {
@@ -558,12 +577,6 @@
     transition: all 0.2s;
 }
 
-.quiz-option-btn.selected .quiz-circle-badge,
-.quiz-circle-badge.active-green {
-    background-color: var(--color-primary);
-    color: #FFFFFF;
-}
-
 .quiz-option-text {
     flex: 1;
     font-size: 1.15rem;
@@ -572,14 +585,26 @@
     line-height: 1.35;
 }
 
-.quiz-check-indicator {
-    font-size: 24px;
-    color: var(--color-primary);
+.quiz-user-choice-badge {
     display: none;
+    font-size: 0.85rem;
+    font-weight: 800;
+    background-color: #475569;
+    color: #FFFFFF;
+    padding: 4px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
 }
 
-.quiz-option-btn.selected .quiz-check-indicator {
+.quiz-option-btn.choice-user-incorrect .quiz-user-choice-badge {
     display: inline-block;
+}
+
+.quiz-check-indicator {
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--color-primary);
+    display: none;
 }
 
 /* Feedback Box (Explicação Acolhedora) */

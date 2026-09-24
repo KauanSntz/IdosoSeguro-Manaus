@@ -1,4 +1,4 @@
-const CACHE_NAME = 'idoso-seguro-v4';
+const CACHE_NAME = 'idoso-seguro-v5';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -14,6 +14,17 @@ const ASSETS_TO_CACHE = [
     '/js/api.js',
     '/js/accessibility.js',
     '/js/speech.js',
+    '/js/pages/welcome.js',
+    '/js/pages/home.js',
+    '/js/pages/ensinar.js',
+    '/js/pages/conteudo.js',
+    '/js/pages/quiz.js',
+    '/js/pages/assistir.js',
+    '/js/pages/analisar.js',
+    '/js/pages/resultado.js',
+    '/js/pages/acessibilidade.js',
+    '/js/pages/ajuda.js',
+    '/js/pages/fechamento.js',
     '/assets/brand/logo-horizontal.png',
     '/assets/brand/symbol.png',
     '/assets/illustrations/casal-capa.png',
