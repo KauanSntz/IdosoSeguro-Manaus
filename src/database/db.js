@@ -71,21 +71,31 @@ async function initDb() {
                         return reject(err);
                     }
 
-                    // Check if topics already exist before seeding
-                    const row = await getAsync('SELECT COUNT(*) as count FROM education_topics');
-                    if (row && row.count === 0) {
-                        console.log('[Database] Populando dados de semente (seed.sql)...');
+                    // Check if topics or quizzes need to be updated to the latest revision
+                    const topic7 = await getAsync("SELECT title FROM education_topics WHERE id = 7");
+                    const quizCount = await getAsync("SELECT COUNT(*) as count FROM quiz_questions");
+                    const needsUpdate = !topic7 || topic7.title !== 'CPF e Documentos' || (quizCount && quizCount.count < 7);
+
+                    if (needsUpdate) {
+                        console.log('[Database] Atualizando dados com a versão mais recente do seed.sql...');
                         const seedSql = fs.readFileSync(seedPath, 'utf-8');
-                        db.exec(seedSql, (seedErr) => {
+                        const cleanAndSeed = `
+                            DELETE FROM quiz_answers;
+                            DELETE FROM quiz_questions;
+                            DELETE FROM education_content;
+                            DELETE FROM education_topics;
+                        ` + seedSql;
+
+                        db.exec(cleanAndSeed, (seedErr) => {
                             if (seedErr) {
-                                console.error('[Database] Erro ao executar seed.sql:', seedErr);
+                                console.error('[Database] Erro ao aplicar seed.sql:', seedErr);
                                 return reject(seedErr);
                             }
-                            console.log('[Database] Banco de dados populado com sucesso!');
+                            console.log('[Database] Banco de dados atualizado com sucesso para o Guia Oficial!');
                             resolve(true);
                         });
                     } else {
-                        console.log('[Database] Dados já existentes, pulando semente.');
+                        console.log('[Database] Dados já existentes e atualizados.');
                         resolve(true);
                     }
                 });
