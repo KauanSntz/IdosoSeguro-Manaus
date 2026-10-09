@@ -1,72 +1,82 @@
-/**
- * Tela de Ajuda e Orientações Rápidas
- */
-async function renderAjudaPage() {
-    const helpSpeech = "Ajuda e Dúvidas. Respostas rápidas para ajudar você. Como verificar uma mensagem recebida: toque em Assistir, escolha o tipo de verificação e toque em Verificar. Como ouvir orientações em voz alta: toque no botão Ouvir esta tela. O que fazer se alguém pedir Pix ou senha: não informe, não transfira e confirme pelo canal oficial. Dica de Ouro: Na dúvida, não tenha pressa. Pare, pense e depois aja.";
+import { 
+  createPageHeader, 
+  createVoiceButton, 
+  createAlert,
+  createStack,
+  createCard 
+} from '../components.js';
 
-    return `
-        <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 28px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                <div>
-                    <h2 class="title-primary" style="margin: 0; font-size: calc(1.5rem * var(--font-scale)); color: var(--color-primary-dark);">
-                        ❓ AJUDA E DÚVIDAS
-                    </h2>
-                    <p class="subtitle-main" style="margin-top: 4px; font-size: calc(1.05rem * var(--font-scale));">
-                        Respostas rápidas para ajudar você.
-                    </p>
-                </div>
-                <button onclick="window.speechManager.toggleSpeak('${helpSpeech}')" class="btn-voice-official" aria-label="Ouvir esta tela">
-                    🔊 OUVIR ESTA TELA
-                </button>
-            </div>
+export async function renderAjudaPage() {
+  const speech = 'Ajuda e dúvidas frequentes. Aqui você encontra respostas para as perguntas mais comuns sobre o aplicativo.';
 
-            <div class="card" style="gap: 18px; border-radius: 24px; padding: 22px 20px;">
-                <div style="display: flex; justify-content: center; margin-bottom: 6px;">
-                    <img src="/assets/illustrations/ajuda.svg" alt="Orientação e ajuda" style="height: 120px; width: auto; object-fit: contain;">
-                </div>
+  const faqs = [
+    {
+      q: 'Como meus dados são tratados?',
+      a: 'O conteúdo que você envia para verificação (mensagens, links, descrições) não é armazenado em nenhum banco de dados, nem em logs, nem em arquivos. A análise acontece apenas na memória do sistema no momento da verificação e o resultado é mostrado apenas para você. Não há histórico de análises.'
+    },
+    {
+      q: 'O aplicativo grava minha voz ou acessa minha câmera?',
+      a: 'Não. O botão de microfone usa o reconhecimento de voz do seu navegador para transformar o que você fala em texto. O áudio não sai do seu dispositivo. Para imagens, você escolhe uma foto da galeria ou descreve o que vê — a foto não é enviada para análise.'
+    },
+    {
+      q: 'O resultado diz se é golpe ou não?',
+      a: 'Não. O sistema mostra sinais de alerta encontrados (como urgência, pedido de senha, link suspeito) e dá orientações de segurança. O resultado é apenas orientativo. A decisão final é sempre sua. Na dúvida, confirme por canais oficiais.'
+    },
+    {
+      q: 'Preciso de internet para usar?',
+      a: 'Sim. O aplicativo precisa de internet para buscar as aulas, o quiz e para fazer a análise de segurança (que roda no servidor).'
+    },
+    {
+      q: 'Como faço para aumentar o tamanho da letra?',
+      a: 'Vá em "Acessibilidade" no menu inferior e use os botões de tamanho de texto (A pequeno, normal, grande, muito grande). A preferência fica salva no seu navegador.'
+    },
+    {
+      q: 'O que é o modo "Aprender"?',
+      a: 'São 7 aulas curtas sobre golpes comuns: Links Suspeitos, Golpes no WhatsApp, Senhas e Dados, Pix e Transferências, Falsa Central Bancária, Promoções Falsas e CPF e Documentos. Cada aula tem sinais de alerta, como se proteger, um exemplo e um quiz no final.'
+    },
+    {
+      q: 'O que é o modo "Assistir"?',
+      a: 'Você envia voluntariamente uma mensagem, link, descrição de imagem ou texto de áudio suspeito. O sistema analisa e mostra o nível de risco (baixo, atenção, alto), os indícios encontrados e orientações do que fazer.'
+    }
+  ];
 
-                <div style="padding-bottom: 14px; border-bottom: 1.5px solid var(--color-border);">
-                    <h3 style="font-size: calc(1.15rem * var(--font-scale)); font-weight: 800; color: var(--color-primary-dark); margin: 0 0 6px 0;">
-                        1. Como verificar uma mensagem recebida?
-                    </h3>
-                    <p style="font-size: calc(1.02rem * var(--font-scale)); color: var(--color-text); margin: 0; line-height: 1.45;">
-                        No menu inferior, toque em <strong>Assistir</strong>, escolha o tipo de verificação, cole ou fale o conteúdo e toque em <strong>Verificar</strong>.
-                    </p>
-                </div>
+  const faqsHtml = faqs.map((faq, i) => `
+    <details class="card" style="padding: var(--space-4);">
+      <summary style="font-weight: var(--font-weight-bold); font-size: var(--font-size-lg); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        ${faq.q}
+        <svg class="nav-icon" style="color: var(--color-text-muted); transition: transform var(--transition-fast);" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
+      </summary>
+      <p style="margin-top: var(--space-3); color: var(--color-text-secondary); line-height: var(--line-height-body);">${faq.a}</p>
+    </details>
+  `).join('');
 
-                <div style="padding-bottom: 14px; border-bottom: 1.5px solid var(--color-border);">
-                    <h3 style="font-size: calc(1.15rem * var(--font-scale)); font-weight: 800; color: var(--color-primary-dark); margin: 0 0 6px 0;">
-                        2. Como ouvir as orientações em voz alta?
-                    </h3>
-                    <p style="font-size: calc(1.02rem * var(--font-scale)); color: var(--color-text); margin: 0; line-height: 1.45;">
-                        Toque no botão azul <strong>🔊 OUVIR ESTA TELA</strong> presente em todas as telas do aplicativo.
-                    </p>
-                </div>
+  return `
+    <div class="ajuda-page stack-lg">
+      ${createPageHeader('Ajuda e Dúvidas Frequentes', { 
+        backHref: '#home', 
+        backLabel: 'VOLTAR',
+        voiceText: speech, 
+        voiceLabel: 'Ouvir esta tela',
+        showScreenReaderToggle: true
+      })}
 
-                <div style="padding-bottom: 14px; border-bottom: 1.5px solid var(--color-border);">
-                    <h3 style="font-size: calc(1.15rem * var(--font-scale)); font-weight: 800; color: var(--color-primary-dark); margin: 0 0 6px 0;">
-                        3. O que fazer se alguém pedir Pix, senha ou código?
-                    </h3>
-                    <p style="font-size: calc(1.02rem * var(--font-scale)); color: var(--color-text); margin: 0; line-height: 1.45;">
-                        Não informe senhas ou códigos e não faça transferências. Desligue a chamada e confirme diretamente pelo canal oficial do seu banco.
-                    </p>
-                </div>
+      <div class="card stack-lg">
+        <header>
+          <h2 class="title-secondary">Ajuda e Dúvidas Frequentes</h2>
+          <p class="subtitle-main">Encontre respostas rápidas para as perguntas mais comuns.</p>
+        </header>
 
-                <!-- Dica de Ouro -->
-                <div style="background: linear-gradient(135deg, #FFF9EB 0%, #FFF3D6 100%); border: 2px solid #FCD34D; border-radius: 18px; padding: 16px 18px; display: flex; align-items: flex-start; gap: 12px;">
-                    <span style="font-size: 28px; line-height: 1;">💡</span>
-                    <div>
-                        <strong style="color: #8A6000; font-size: calc(1.05rem * var(--font-scale)); display: block; margin-bottom: 2px;">Dica de Ouro:</strong>
-                        <p style="font-size: calc(1.05rem * var(--font-scale)); font-weight: 700; color: #1E293B; margin: 0; line-height: 1.35;">
-                            "Na dúvida, não tenha pressa. Pare, pense e depois aja."
-                        </p>
-                    </div>
-                </div>
-
-                <button onclick="window.router.navigate('home')" class="btn btn-primary btn-pill" style="margin-top: 10px; min-height: 58px; font-size: calc(1.2rem * var(--font-scale)); font-weight: 800;">
-                    🏠 VOLTAR AO INÍCIO &nbsp;➔
-                </button>
-            </div>
+        <div class="faqs-list stack-md">
+          ${faqsHtml}
         </div>
-    `;
+
+        ${createAlert('info', 'Não encontrou sua dúvida?', 'Entre em contato com a Prefeitura de Manaus pelos canais oficiais de atendimento.', 'info')}
+      </div>
+
+      <button class="btn btn-outline btn-block back-button" data-action="navigate" data-href="#home" style="margin-top: var(--space-4);">
+        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#home"></use></svg>
+        <span>VOLTAR AO INÍCIO</span>
+      </button>
+    </div>
+  `;
 }

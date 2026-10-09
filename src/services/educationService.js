@@ -1,6 +1,7 @@
-const topicRepository = require('../repositories/topicRepository');
+import topicRepository from '../repositories/topicRepository.js';
+import quizRepository from '../repositories/quizRepository.js';
 
-class EducationService {
+export class EducationService {
     async getAllTopics() {
         return await topicRepository.findAll();
     }
@@ -12,6 +13,14 @@ class EducationService {
         }
         return topic;
     }
+
+    async getQuizByTopicSlug(slug) {
+        const quiz = await quizRepository.findByTopicSlug(slug);
+        if (!quiz) {
+            throw new Error(`Quiz para o tópico '${slug}' não encontrado.`);
+        }
+        return quiz;
+    }
 }
 
-module.exports = new EducationService();
+export default new EducationService();

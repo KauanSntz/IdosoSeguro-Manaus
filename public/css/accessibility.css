@@ -1,94 +1,371 @@
-/* Accessibility Controls & Screen Reader Styles */
+/* Accessibility - IdosoSeguro+ Manaus */
 
-/* Skip Link for Keyboard Navigation */
-.skip-link {
-    position: absolute;
-    top: -100px;
-    left: 10px;
-    background: var(--color-secondary);
-    color: #FFFFFF;
-    padding: 12px 20px;
-    border-radius: 8px;
-    z-index: 9999;
-    font-weight: bold;
-    transition: top 0.2s ease;
+/* ========================================
+   HIGH CONTRAST OVERRIDES
+   ======================================== */
+html[data-high-contrast="true"] .btn-primary,
+html[data-high-contrast="true"] .btn-secondary {
+  border-width: var(--border-width-strong);
 }
 
-.skip-link:focus {
-    top: 10px;
+html[data-high-contrast="true"] .card {
+  border-width: var(--border-width-strong);
 }
 
-/* Screen Reader Only Utilities */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+html[data-high-contrast="true"] .form-input,
+html[data-high-contrast="true"] .form-textarea,
+html[data-high-contrast="true"] .form-select {
+  border-width: var(--border-width-strong);
 }
 
-/* Top Accessibility Toolbar */
-.access-toolbar {
-    background-color: var(--color-surface);
-    border-bottom: 2px solid var(--color-border);
-    padding: 8px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+html[data-high-contrast="true"] .quiz-option {
+  border-width: var(--border-width-strong);
 }
 
-.access-toolbar-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+html[data-high-contrast="true"] .nav-item {
+  border: var(--border-width) solid transparent;
 }
 
-.btn-icon-text {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 10px;
-    background-color: var(--color-bg);
-    border: 1px solid var(--color-border);
-    font-size: calc(0.9rem * var(--font-scale));
-    font-weight: 600;
-    color: var(--color-text);
+html[data-high-contrast="true"] .nav-item.active,
+html[data-high-contrast="true"] .nav-item:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
-.btn-icon-text:hover {
-    background-color: var(--color-primary-light);
-}
+/* ========================================
+   FONT SCALE OVERRIDES
+   ======================================== */
+html[data-font-scale="small"] .hero-illustration { max-height: 180px; }
+html[data-font-scale="large"] .hero-illustration { max-height: 260px; }
+html[data-font-scale="xlarge"] .hero-illustration { max-height: 300px; }
 
-/* Voice Indicator Pulse */
-.speaking-indicator {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: var(--color-danger);
-    animation: pulse 1s infinite alternate;
-}
+html[data-font-scale="small"] .nav-label { font-size: 10px; }
+html[data-font-scale="large"] .nav-label { font-size: 13px; }
+html[data-font-scale="xlarge"] .nav-label { font-size: 14px; }
 
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(1.4); opacity: 0.5; }
-}
-
-/* Reduced Motion Respect */
+/* ========================================
+   REDUCED MOTION
+   ======================================== */
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
+  html[data-reduced-motion="true"] *,
+  html[data-reduced-motion="true"] *::before,
+  html[data-reduced-motion="true"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html[data-reduced-motion="true"] .spinner {
+    animation: none;
+    border-top-color: transparent;
+  }
+
+  html[data-reduced-motion="true"] .btn-voice.speaking .voice-icon {
+    animation: none;
+  }
+
+  html[data-reduced-motion="true"] .speaking-indicator .dot {
+    animation: none;
+  }
+
+  html[data-reduced-motion="true"] .quiz-feedback {
+    animation: none;
+  }
+}
+
+/* ========================================
+   TOUCH TARGETS
+   ======================================== */
+@media (pointer: coarse) {
+  .btn {
+    min-height: var(--btn-height-lg);
+  }
+
+  .quiz-option {
+    min-height: 60px;
+  }
+
+  .form-input,
+  .form-textarea,
+  .form-select {
+    min-height: var(--btn-height-lg);
+  }
+
+  .nav-item {
+    min-height: var(--touch-target-large);
+    min-width: var(--touch-target-large);
+  }
+
+  .toolbar-btn {
+    min-height: var(--touch-target-comfortable);
+  }
+}
+
+/* ========================================
+   FOCUS VISIBLE ENHANCEMENTS
+   ======================================== */
+:focus-visible {
+  outline: 3px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.nav-item:focus-visible,
+.quiz-option:focus-visible,
+.toolbar-btn:focus-visible,
+.form-input:focus-visible,
+.form-textarea:focus-visible,
+.form-select:focus-visible,
+.card-interactive:focus-visible {
+  outline: 3px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   TEXT SPACING (WCAG 1.4.12)
+   ======================================== */
+@media (max-width: 100%) {
+  :root {
+    --line-height-body: 1.6;
+    --line-height-heading: 1.3;
+  }
+}
+
+/* ========================================
+   SCREEN READER ONLY
+   ======================================== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================
+   LANDMARKS
+   ======================================== */
+main[role="main"],
+nav[role="navigation"],
+header[role="banner"],
+footer[role="contentinfo"],
+aside[role="complementary"],
+section[aria-labelledby],
+article {
+  /* Landmarks are semantic, no visual styles needed */
+}
+
+/* ========================================
+   LIVE REGIONS
+   ======================================== */
+[aria-live="polite"],
+[aria-live="assertive"] {
+  /* Visual styles handled by components */
+}
+
+/* ========================================
+   HIGH CONTRAST FOCUS FOR INTERACTIVE ELEMENTS
+   ======================================== */
+@media (prefers-contrast: high) {
+  :focus-visible {
+    outline-width: 4px;
+    outline-offset: 3px;
+  }
+}
+
+/* ========================================
+   ZOOM SUPPORT
+   ======================================== */
+@media screen and (max-width: 320px) {
+  html {
+    font-size: calc(var(--font-base-size) * 0.9);
+  }
+
+  .app-header {
+    height: 56px;
+  }
+
+  .bottom-nav {
+    height: 68px;
+  }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+@media print {
+  .app-header,
+  .bottom-nav,
+  .btn,
+  .btn-voice,
+  .access-toolbar,
+  .skip-link {
+    display: none !important;
+  }
+
+  .main-content {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .card {
+    border: 1px solid #ccc;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}
+
+/* ========================================
+   SCREEN READER MODE (Deficiente Visual)
+   ======================================== */
+
+html[data-screen-reader="true"] {
+  --screen-reader-overlay: rgba(19, 52, 119, 0.95);
+}
+
+.screen-reader-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-toast);
+  background: var(--color-secondary);
+  color: var(--color-text-on-secondary);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-lg);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+.sr-indicator-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: var(--container-max);
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.sr-indicator-content svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.sr-indicator-content span {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+}
+
+.sr-indicator-content .btn {
+  flex-shrink: 0;
+}
+
+.sr-focused {
+  outline: 4px solid var(--color-secondary) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(29, 78, 122, 0.3) !important;
+  border-radius: var(--radius-md);
+  transition: outline 0.1s, box-shadow 0.1s;
+}
+
+/* Esconder botões de voz normais quando modo leitor ativo */
+html[data-screen-reader="true"] .btn-voice:not([data-action="toggle-screen-reader"]),
+html[data-screen-reader="true"] [data-voice-btn]:not([data-action="toggle-screen-reader"]) {
+  display: none !important;
+}
+
+/* Botão de toggle screen reader */
+[data-action="toggle-screen-reader"] {
+  position: relative;
+}
+
+[data-action="toggle-screen-reader"].active {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-text-on-primary) !important;
+}
+
+[data-action="toggle-screen-reader"] .btn-label {
+  transition: opacity 0.2s;
+}
+
+/* Ajustes para o modo leitor em telas pequenas */
+@media (max-width: 480px) {
+  .sr-indicator-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .sr-indicator-content .btn {
+    width: 100%;
+  }
+}
+
+/* Chunk atual sendo lido */
+.sr-current-chunk {
+  outline: 3px solid var(--color-primary) !important;
+  outline-offset: 2px !important;
+  background: var(--color-primary-lighter) !important;
+  border-radius: var(--radius-md);
+  transition: outline 0.1s, background 0.1s;
+}
+
+/* Indicador de posição (ex: "3 de 12") */
+.sr-position-indicator {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  background: var(--color-secondary);
+  color: var(--color-text-on-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  z-index: var(--z-tooltip);
+  pointer-events: none;
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.2s ease;
+}
+
+/* Heading atual em foco */
+.sr-current-heading {
+  outline: 3px solid var(--color-amber) !important;
+  outline-offset: 2px !important;
+}
+
+/* Elemento com foco de teclado no modo leitor */
+html[data-screen-reader="true"] .sr-current-chunk:focus-visible,
+html[data-screen-reader="true"] .sr-current-chunk:focus {
+  outline: 3px solid var(--color-primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(29, 78, 122, 0.4) !important;
+}
+
+/* Elemento com foco duplo (chunk atual + foco teclado) */
+html[data-screen-reader="true"] .sr-current-chunk.sr-focused {
+  outline: 4px solid var(--color-primary) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(29, 78, 122, 0.4) !important;
+  background: var(--color-primary-light) !important;
+}
+
+/* Indicador de loading no modo leitor */
+html[data-screen-reader="true"] .loader {
+  border: 2px solid var(--color-primary);
 }

@@ -1,14 +1,14 @@
-const { allAsync, getAsync } = require('../database/db');
+import { allAsync, getAsync } from '../database/db.js';
 
-class TopicRepository {
+export class TopicRepository {
     async findAll() {
         const sql = `SELECT id, slug, title, description, icon, image, category FROM education_topics ORDER BY id ASC`;
         return await allAsync(sql);
     }
 
     async findBySlug(slug) {
-        const sqlTopic = `SELECT id, slug, title, description, icon, image, category FROM education_topics WHERE slug = ? OR (slug = 'cpf-documentos' AND ? = 'dados-pessoais')`;
-        const topic = await getAsync(sqlTopic, [slug, slug]);
+        const sqlTopic = `SELECT id, slug, title, description, icon, image, category FROM education_topics WHERE slug = ?`;
+        const topic = await getAsync(sqlTopic, [slug]);
 
         if (!topic) return null;
 
@@ -36,4 +36,4 @@ class TopicRepository {
     }
 }
 
-module.exports = new TopicRepository();
+export default new TopicRepository();

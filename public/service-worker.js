@@ -1,82 +1,80 @@
-const CACHE_NAME = 'idoso-seguro-v5';
-const ASSETS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/css/style.css',
-    '/css/reset.css',
-    '/css/variables.css',
-    '/css/components.css',
-    '/css/accessibility.css',
-    '/css/responsive.css',
-    '/js/app.js',
-    '/js/router.js',
-    '/js/api.js',
-    '/js/accessibility.js',
-    '/js/speech.js',
-    '/js/pages/welcome.js',
-    '/js/pages/home.js',
-    '/js/pages/ensinar.js',
-    '/js/pages/conteudo.js',
-    '/js/pages/quiz.js',
-    '/js/pages/assistir.js',
-    '/js/pages/analisar.js',
-    '/js/pages/resultado.js',
-    '/js/pages/acessibilidade.js',
-    '/js/pages/ajuda.js',
-    '/js/pages/fechamento.js',
-    '/assets/brand/logo-horizontal.png',
-    '/assets/brand/symbol.png',
-    '/assets/illustrations/casal-capa.png',
-    '/assets/illustrations/senhora-ensinar.png',
-    '/assets/illustrations/senhor-assistir.png',
-    '/assets/illustrations/banner-ensinar.png',
-    '/assets/illustrations/banner-ensinar-celular.png',
-    '/assets/illustrations/banner-assistir.png',
-    '/assets/illustrations/senhora-quiz.png',
-    '/assets/illustrations/senhora-explicando.png',
-    '/assets/illustrations/senhora-comemorando.png',
-    '/assets/illustrations/senhora-medalha.png'
+const CACHE_NAME = 'idoso-seguro-v1';
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/css/variables.css',
+  '/css/components.css',
+  '/css/accessibility.css',
+  '/css/responsive.css',
+  '/js/router.js',
+  '/js/api.js',
+  '/js/speech.js',
+  '/js/accessibility.js',
+  '/js/app.js',
+  '/js/sw-register.js',
+  '/js/components.js',
+  '/js/events.js',
+  '/assets/icons.svg',
+  '/assets/logo.svg'
 ];
 
+function isCacheableRequest(request) {
+  const url = new URL(request.url);
+  return url.origin === location.origin && request.method === 'GET';
+}
+
 self.addEventListener('install', (event) => {
-    self.skipWaiting();
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            console.log('[Service Worker] Pré-carregando arquivos estáticos no cache');
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
-    );
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
+      .catch((err) => console.error('[SW] Install failed:', err))
+  );
 });
 
 self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('[Service Worker] Removendo cache antigo:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        }).then(() => self.clients.claim())
-    );
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(
+        keys.filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', (event) => {
-    // Network first for API requests, Network-first or Cache fallback for others
-    if (event.request.url.includes('/api/')) {
-        event.respondWith(fetch(event.request));
-    } else {
-        event.respondWith(
-            fetch(event.request).then((response) => {
-                if (response && response.status === 200) {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-                }
-                return response;
-            }).catch(() => caches.match(event.request))
-        );
-    }
+  const { request } = event;
+  
+  if (request.method !== 'GET') return;
+  if (!isCacheableRequest(request)) return;
+
+  if (new URL(request.url).pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(request)
+        .catch(() => new Response(JSON.stringify({ ok: false, erro: { codigo: 'OFFLINE', mensagem: 'Você está offline. Conecte-se para verificar.' } }), {
+          headers: { 'Content-Type': 'application/json' }
+        }))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request)
+      .then((cached) => {
+        if (cached) return cached;
+        return fetch(request)
+          .then((response) => {
+            if (!response.ok || !isCacheableRequest(request)) {
+              return response;
+            }
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME)
+              .then((cache) => cache.put(request, responseClone))
+              .catch((err) => console.warn('[SW] Cache put failed:', err));
+            return response;
+          })
+          .catch(() => caches.match('/index.html'));
+      })
+  );
 });

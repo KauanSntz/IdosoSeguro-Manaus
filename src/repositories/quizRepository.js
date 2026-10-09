@@ -1,9 +1,9 @@
-const { allAsync, getAsync, runAsync } = require('../database/db');
+import { allAsync, getAsync } from '../database/db.js';
 
-class QuizRepository {
+export class QuizRepository {
     async findByTopicSlug(slug) {
-        const sqlTopic = `SELECT id, slug, title FROM education_topics WHERE slug = ? OR (slug = 'cpf-documentos' AND ? = 'dados-pessoais')`;
-        const topic = await getAsync(sqlTopic, [slug, slug]);
+        const sqlTopic = `SELECT id, slug, title FROM education_topics WHERE slug = ?`;
+        const topic = await getAsync(sqlTopic, [slug]);
 
         if (!topic) return null;
 
@@ -20,11 +20,6 @@ class QuizRepository {
             questions: questions
         };
     }
-
-    async saveResult(sessionId, topicId, score) {
-        const sql = `INSERT INTO quiz_progress (session_id, topic_id, score) VALUES (?, ?, ?)`;
-        return await runAsync(sql, [sessionId || 'anonymous', topicId, score]);
-    }
 }
 
-module.exports = new QuizRepository();
+export default new QuizRepository();

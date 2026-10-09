@@ -1,96 +1,118 @@
-/**
- * Cliente HTTP API - Idoso Seguro+ Manaus
- */
-
 class ApiClient {
-    constructor() {
-        this.baseUrl = '/api';
+  constructor() {
+    console.log('[ApiClient] Constructor - baseUrl: /api');
+    this.baseUrl = '/api';
+    this.defaultTimeout = 10000; // 10 segundos
+  }
+
+  async request(path, options = {}) {
+    const url = `${this.baseUrl}${path}`;
+    const defaultOptions = {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    };
+
+    if (defaultOptions.body && typeof defaultOptions.body === 'object') {
+      defaultOptions.body = JSON.stringify(defaultOptions.body);
     }
 
-    async getTopics() {
-        const res = await fetch(`${this.baseUrl}/topics`);
-        return await res.json();
-    }
+    // Timeout usando AbortController
+    const timeout = options.timeout ?? this.defaultTimeout;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    defaultOptions.signal = controller.signal;
 
-    async getTopicDetail(slug) {
-        const res = await fetch(`${this.baseUrl}/topics/${slug}`);
-        return await res.json();
-    }
+    const startTime = performance.now();
+    console.log('[ApiClient] request -', options.method || 'GET', url, 'body:', defaultOptions.body?.substring?.(0, 200));
 
-    async getQuiz(slug) {
-        const res = await fetch(`${this.baseUrl}/topics/${slug}/quiz`);
-        return await res.json();
-    }
+    try {
+      const res = await fetch(url, defaultOptions);
+      clearTimeout(timeoutId);
+      const duration = Math.round(performance.now() - startTime);
 
-    async saveQuizResult(sessionId, topicId, score) {
-        const res = await fetch(`${this.baseUrl}/quiz/result`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId, topicId, score })
-        });
-        return await res.json();
-    }
+      // Tentar parsear resposta
+      let data = {};
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json().catch(() => ({}));
+      } else {
+        const text = await res.text().catch(() => '');
+        data = { raw: text };
+      }
 
-    async analyzeText(text) {
-        const res = await fetch(`${this.baseUrl}/analyze/text`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-        });
-        return await res.json();
-    }
+      console.log('[ApiClient] response -', res.status, res.ok ? 'OK' : 'ERROR', `${duration}ms`, 'data:', JSON.stringify(data).substring(0, 200));
 
-    async analyzeLink(link) {
-        const res = await fetch(`${this.baseUrl}/analyze/link`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ link })
-        });
-        return await res.json();
-    }
-
-    async analyzeImage(fileOrDesc) {
-        if (typeof fileOrDesc === 'string') {
-            const res = await fetch(`${this.baseUrl}/analyze/image`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ description: fileOrDesc })
-            });
-            return await res.json();
-        } else {
-            const formData = new FormData();
-            formData.append('image', fileOrDesc);
-            const res = await fetch(`${this.baseUrl}/analyze/image`, {
-                method: 'POST',
-                body: formData
-            });
-            return await res.json();
+      if (!res.ok) {
+        // Classificar por status HTTP
+        let codigo = 'ERRO_SERVIDOR';
+        let mensagem = 'Erro no servidor';
+        
+        if (res.status === 404) {
+          codigo = 'NAO_ENCONTRADO';
+          mensagem = 'Recurso não encontrado.';
+        } else if (res.status === 408 || res.status === 504) {
+          codigo = 'TIMEOUT';
+          mensagem = 'Tempo de resposta excedido. Tente novamente.';
+        } else if (res.status >= 500) {
+          codigo = 'ERRO_SERVIDOR';
+          mensagem = 'Erro interno do servidor.';
+        } else if (res.status >= 400) {
+          codigo = 'DADOS_INVALIDOS';
+          mensagem = data?.erro?.mensagem || 'Dados inválidos.';
         }
-    }
 
-    async analyzeAudio(transcriptionOrFile) {
-        if (typeof transcriptionOrFile === 'string') {
-            const res = await fetch(`${this.baseUrl}/analyze/audio`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ transcription: transcriptionOrFile })
-            });
-            return await res.json();
-        } else {
-            const formData = new FormData();
-            formData.append('audio', transcriptionOrFile);
-            const res = await fetch(`${this.baseUrl}/analyze/audio`, {
-                method: 'POST',
-                body: formData
-            });
-            return await res.json();
-        }
-    }
+        return { status: res.status, ok: false, data: { erro: { codigo, mensagem } } };
+      }
 
-    async getAnalysisById(id) {
-        const res = await fetch(`${this.baseUrl}/analysis/${id}`);
-        return await res.json();
+      return { status: res.status, ok: true, data };
+      
+    } catch (err) {
+      clearTimeout(timeoutId);
+      const duration = Math.round(performance.now() - startTime);
+      console.error('[ApiClient] request error -', options.method || 'GET', url, `${duration}ms`, err);
+      
+      // Erro de abort/timeout
+      if (err.name === 'AbortError' || err.name === 'TimeoutError') {
+        return { status: 0, ok: false, data: { erro: { codigo: 'TIMEOUT', mensagem: 'Tempo de resposta excedido. Tente novamente.' } } };
+      }
+      
+      // Erro de rede real (fetch rejected - offline, DNS, etc.)
+      if (err instanceof TypeError && (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('Failed to fetch'))) {
+        return { status: 0, ok: false, data: { erro: { codigo: 'ERRO_REDE', mensagem: 'Falha na conexão. Verifique sua internet.' } } };
+      }
+      
+      // Erro desconhecido
+      return { status: 0, ok: false, data: { erro: { codigo: 'ERRO_DESCONHECIDO', mensagem: 'Erro inesperado. Tente novamente.' } } };
     }
+  }
+
+  async getTopics() {
+    console.log('[ApiClient] getTopics - buscando...');
+    const { status, ok, data } = await this.request('/conteudos');
+    return ok ? data : { ok: false, erro: { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar tópicos' } };
+  }
+
+  async getTopicDetail(slug) {
+    console.log('[ApiClient] getTopicDetail - slug:', slug);
+    const { status, ok, data } = await this.request(`/conteudos/${slug}`);
+    return ok ? data : { ok: false, erro: { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar conteúdo' } };
+  }
+
+  async getQuiz(slug) {
+    console.log('[ApiClient] getQuiz - slug:', slug);
+    const { status, ok, data } = await this.request(`/conteudos/${slug}/quiz`);
+    return ok ? data : { ok: false, erro: { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar quiz' } };
+  }
+
+  async analyze(tipo, conteudo) {
+    console.log('[ApiClient] analyze - tipo:', tipo, 'conteudo preview:', conteudo?.substring?.(0, 100));
+    const { status, ok, data } = await this.request('/analises', {
+      method: 'POST',
+      body: { tipo, conteudo }
+    });
+    console.log('[ApiClient] analyze response - ok:', ok, 'data:', JSON.stringify(data).substring(0, 200));
+    return ok ? data : { ok: false, erro: data?.erro || { codigo: 'ERRO_ANALISE', mensagem: 'Falha na análise' } };
+  }
 }
 
 window.apiClient = new ApiClient();

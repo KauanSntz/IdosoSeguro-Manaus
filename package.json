@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "Sistema web acessível, educativo e preventivo para segurança digital de pessoas idosas.",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
-    "db:init": "node -e \"require('./src/database/db.js').initDb()\"",
-    "test": "node tests/backend.test.js"
+    "dev": "node --watch server.js",
+    "db:criar": "node src/database/db.js",
+    "test": "node tests/backend.test.js",
+    "lint": "echo \"lint not configured yet\"",
+    "check:contraste": "echo \"contraste check not configured yet\""
   },
   "keywords": [
     "idoso",
@@ -24,7 +27,7 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "helmet": "^7.1.0",
-    "multer": "^1.4.5-lts.1",
+    "express-rate-limit": "^7.1.5",
     "sqlite3": "^5.1.7"
   }
 }

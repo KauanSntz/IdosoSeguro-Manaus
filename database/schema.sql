@@ -1,4 +1,6 @@
--- Idoso Seguro+ Manaus - Database Schema
+-- Idoso Seguro+ Manaus - Database Schema (MVP)
+-- Apenas 4 tabelas: topicos, conteudos, perguntas, alternativas
+-- SEM tabelas de analises nem quiz_progress (privacidade)
 
 CREATE TABLE IF NOT EXISTS education_topics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -16,8 +18,8 @@ CREATE TABLE IF NOT EXISTS education_content (
     topic_id INTEGER NOT NULL,
     title TEXT NOT NULL,
     introduction TEXT NOT NULL,
-    warning_signs TEXT NOT NULL, -- JSON array string
-    safe_actions TEXT NOT NULL,   -- JSON array string
+    warning_signs TEXT NOT NULL,
+    safe_actions TEXT NOT NULL,
     example_text TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(topic_id) REFERENCES education_topics(id)
@@ -39,23 +41,4 @@ CREATE TABLE IF NOT EXISTS quiz_answers (
     is_correct INTEGER NOT NULL DEFAULT 0,
     feedback TEXT NOT NULL,
     FOREIGN KEY(question_id) REFERENCES quiz_questions(id)
-);
-
-CREATE TABLE IF NOT EXISTS analyses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    content_type TEXT NOT NULL,
-    risk_level TEXT NOT NULL,
-    risk_score INTEGER NOT NULL,
-    signals_json TEXT NOT NULL,
-    recommendations_json TEXT NOT NULL,
-    education_topic TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS quiz_progress (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id TEXT NOT NULL,
-    topic_id INTEGER NOT NULL,
-    score INTEGER NOT NULL,
-    completed_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
