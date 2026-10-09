@@ -3,8 +3,6 @@ export function createPageHeader(title, options = {}) {
     showBack = true, 
     backHref = '#home', 
     backLabel = 'VOLTAR', 
-    voiceText = '', 
-    voiceLabel = 'Ouvir esta tela',
     showScreenReaderToggle = false 
   } = options;
   
@@ -13,15 +11,8 @@ export function createPageHeader(title, options = {}) {
       <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
       <span>${backLabel}</span>
     </button>
-  ` : '<div class="header-spacer"></div>';
+  ` : '';
   
-  const voiceBtn = voiceText ? `
-    <button class="btn-voice" data-voice-btn aria-label="${voiceLabel}" data-voice-text="${voiceText.replace(/"/g, '"')}">
-      <svg class="voice-icon" aria-hidden="true"><use href="/assets/icons.svg#volume"></use></svg>
-      <span class="btn-label">OUVIR</span>
-    </button>
-  ` : '<div class="header-spacer"></div>';
-
   const screenReaderToggleBtn = showScreenReaderToggle ? `
     <button class="btn btn-primary btn-sm" data-action="toggle-screen-reader" 
             aria-label="Ativar modo leitor de tela" 
@@ -30,13 +21,12 @@ export function createPageHeader(title, options = {}) {
       <span class="btn-label">ATIVAR LEITOR DE TELA</span>
     </button>
   ` : '';
-
+  
   return `
     <div class="page-header">
       ${backBtn}
       <h2 class="page-header-title">${title}</h2>
       <div class="page-header-actions">
-        ${voiceBtn}
         ${screenReaderToggleBtn}
       </div>
     </div>
@@ -139,8 +129,6 @@ export function createFormField(type, id, label, options = {}) {
     inputHtml = `<input type="radio" id="${id}" class="form-radio" ${requiredAttr} ${ariaRequired} ${ariaDescribedByAttr}>`;
   } else if (type === 'select') {
     inputHtml = `<select id="${id}" class="form-select" ${requiredAttr} ${ariaRequired} ${ariaDescribedByAttr}></select>`;
-  } else if (type === 'url') {
-    inputHtml = `<input type="url" id="${id}" class="form-input" placeholder="${placeholder}" autocomplete="${autocomplete}" ${requiredAttr} ${ariaRequired} ${ariaDescribedByAttr}>`;
   } else {
     inputHtml = `<input type="${type}" id="${id}" class="form-input" placeholder="${placeholder}" autocomplete="${autocomplete}" ${requiredAttr} ${ariaRequired} ${ariaDescribedByAttr}>`;
   }
@@ -305,6 +293,80 @@ export function createEmptyState(icon, title, description, action = null) {
   `;
 }
 
+export function createBottomNav() {
+  return `
+    <nav class="bottom-nav" aria-label="Navegação principal" role="navigation">
+      <a href="#home" class="nav-item" data-nav="home" id="nav-home" role="menuitem">
+        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#home"></use></svg>
+        <span class="nav-label">Início</span>
+      </a>
+      <a href="#aprender" class="nav-item" data-nav="aprender" id="nav-aprender" role="menuitem">
+        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#school"></use></svg>
+        <span class="nav-label">Aprender</span>
+      </a>
+      <a href="#assistir" class="nav-item" data-nav="assistir" id="nav-assistir" role="menuitem">
+        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#shield"></use></svg>
+        <span class="nav-label">Assistir</span>
+      </a>
+      <a href="#acessibilidade" class="nav-item" data-nav="acessibilidade" id="nav-acessibilidade" role="menuitem">
+        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#settings"></use></svg>
+        <span class="nav-label">Acessibilidade</span>
+      </a>
+      <a href="#ajuda" class="nav-item" data-nav="ajuda" id="nav-ajuda" role="menuitem">
+        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#help"></use></svg>
+        <span class="nav-label">Ajuda</span>
+      </a>
+    </nav>
+  `;
+}
+
+export function initializeBottomNav() {
+  console.log('[BottomNav] Inicializando navegação inferior...');
+  
+  const bottomNav = document.querySelector('.bottom-nav');
+  if (!bottomNav) return;
+  
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+  
+  function onScroll() {
+    lastScrollY = window.scrollY;
+    
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const currentScrollY = lastScrollY;
+        const navHeight = bottomNav.offsetHeight;
+        
+        // Não esconder se o foco está no menu
+        const focusedElement = document.activeElement;
+        const isFocusInNav = bottomNav.contains(focusedElement);
+        
+        if (isFocusInNav) {
+          bottomNav.classList.remove('nav-hidden');
+        } else if (currentScrollY > lastScrollY && currentScrollY > navHeight) {
+          // Scroll down - esconder
+          bottomNav.classList.add('nav-hidden');
+        } else if (currentScrollY < lastScrollY) {
+          // Scroll up - mostrar
+          bottomNav.classList.remove('nav-hidden');
+        }
+        
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+  
+  // Não esconder quando o foco está no menu
+  bottomNav.addEventListener('focusin', () => {
+      bottomNav.classList.remove('nav-hidden');
+    });
+    
+    window.addEventListener('scroll', onScroll, { passive: true });
+    
+    console.log('[BottomNav] Navegação inferior inicializada');
+  }
+
 export function initializeComponents() {
   console.log('[Components] Inicializando sistema de componentes...');
   
@@ -317,6 +379,9 @@ export function initializeComponents() {
       }
     });
   });
+  
+  // Inicializar navegação inferior
+  initializeBottomNav();
   
   console.log('[Components] Componentes inicializados');
 }

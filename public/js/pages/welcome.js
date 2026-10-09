@@ -1,14 +1,11 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createAlert,
   createStack,
   createCard 
 } from '../components.js';
 
 export async function renderWelcomePage() {
-  const speech = 'Bem-vindo ao Idoso Seguro Mais Manaus. Um aplicativo para você aprender a se proteger de golpes e verificar mensagens suspeitas. Toque em Começar para iniciar.';
-
   return `
     <div class="welcome-page stack-xl text-center">
       <svg class="hero-illustration" aria-hidden="true"><use href="/assets/icons.svg#shield"></use></svg>
@@ -23,7 +20,6 @@ export async function renderWelcomePage() {
           <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
           <span>COMEÇAR</span>
         </button>
-        ${createVoiceButton(speech, { label: 'OUVIR ESTA TELA', size: 'xl', block: true })}
       </div>
 
       <p class="version">Desenvolvido para a Prefeitura de Manaus • Versão 1.0</p>

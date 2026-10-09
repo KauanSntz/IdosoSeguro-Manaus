@@ -1,6 +1,5 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createAlert,
   createIconListItem,
   createResultActions,
@@ -14,7 +13,7 @@ export async function renderResultadoPage(params) {
   } catch (e) {
     return `
       <div class="resultado-page stack-md text-center">
-        ${createPageHeader('Resultado inválido', { showBack: true, backHref: '#assistir', showScreenReaderToggle: true })}
+        ${createPageHeader('Resultado inválido', { showBack: true, backHref: '#assistir' })}
         <button class="btn btn-primary" data-action="navigate" data-href="#assistir">Voltar</button>
       </div>
     `;
@@ -31,8 +30,6 @@ export async function renderResultadoPage(params) {
     atencao: 'Atenção Necessária',
     baixo: 'Sinais Aparentemente Normais'
   };
-
-  const speechSummary = `${titulo}. ${descricao}. ${(orientacoes || []).join('. ')}`;
 
   const signalsHtml = (indicios || []).map(signal => 
     createIconListItem('warning', signal.label, signal.explicacao, { 
@@ -53,10 +50,7 @@ export async function renderResultadoPage(params) {
     <div class="resultado-page stack-lg">
       ${createPageHeader(titulo, { 
         backHref: '#assistir', 
-        backLabel: 'VERIFICAR OUTRO',
-        voiceText: speechSummary, 
-        voiceLabel: 'Ouvir esta tela',
-        showScreenReaderToggle: true 
+        backLabel: 'VERIFICAR OUTRO'
       })}
 
       <div class="card stack-lg">
@@ -89,8 +83,7 @@ export async function renderResultadoPage(params) {
 
         ${createResultActions([
           { action: 'navigate', href: `#conteudo/${conteudoRelacionado}`, variant: 'btn-primary', size: 'btn-xl', icon: 'school', label: 'APRENDER SOBRE ISSO' },
-          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', icon: 'search', label: 'VERIFICAR OUTRO CONTEÚDO' },
-          { action: 'navigate', href: '#home', variant: 'btn-ghost', label: 'VOLTAR AO INÍCIO' }
+          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', icon: 'search', label: 'VERIFICAR OUTRO CONTEÚDO' }
         ])}
       </div>
     </div>

@@ -53,6 +53,20 @@ class SpeechManager {
     if (this.screenReaderMode) {
       this.enableScreenReaderMode();
       this.speak('Modo leitor de tela ativado. Navegue com Tab ou setas. Enter ou Espaço para ouvir. Enter ou Espaço novamente para ativar.');
+      // Ao ativar, ler a página atual
+      if (window.pageReader) {
+        setTimeout(() => {
+          const container = document.getElementById('main-content');
+          if (container) {
+            window.pageReader.announcePage(container, { 
+              route: window.location.hash, 
+              section: window.router?.getSectionFromRoute?.(window.location.hash) || 'home', 
+              params: {} 
+            });
+            window.pageReader.startReadingContent();
+          }
+        }, 300);
+      }
     } else {
       this.disableScreenReaderMode();
       this.speak('Modo leitor de tela desativado.');
@@ -159,16 +173,6 @@ class SpeechManager {
   }
 
   // ==================== FIM MÁQUINA DE ESTADOS ====================
-
-  attachScreenReaderListener() {
-    // Este método agora é chamado pelo events.js via delegação centralizada
-    // Mantido para compatibilidade mas não usado
-    console.log('[Speech] attachScreenReaderListener - delegação agora em events.js');
-  }
-
-  detachScreenReaderListener() {
-    // Não usado - delegação centralizada em events.js
-  }
 
   getElementDescription(element) {
     // Prioridade: aria-label > aria-labelledby > texto visível > placeholder > alt > title
@@ -302,19 +306,25 @@ class SpeechManager {
       indicator.remove();
     }
     
-    // Atualizar botões de voz nas páginas
-    document.querySelectorAll('.btn-voice, [data-voice-btn]').forEach(btn => {
-      if (btn.dataset.action !== 'toggle-screen-reader') {
-        btn.style.display = this.screenReaderMode ? 'none' : '';
-      }
+    // O controle de interrupção (data-voice-btn) só aparece quando está falando
+    document.querySelectorAll('[data-voice-btn]').forEach(btn => {
+      if (btn.dataset.action === 'toggle-screen-reader') return;
+      // Só mostra quando está falando (é controle de interrupção)
+      btn.style.display = this.isSpeaking ? '' : 'none';
     });
   }
 
   speak(text) {
-    console.log('[Speech] speak - texto:', text?.substring(0, 100), 'isSpeaking:', this.isSpeaking);
+    console.log('[Speech] speak - texto:', text?.substring(0, 100), 'isSpeaking:', this.isSpeaking, 'screenReaderMode:', this.screenReaderMode);
     if (!this.synth) {
       console.warn('[Speech] speak - speechSynthesis não disponível');
       this.showUnsupportedAlert();
+      return Promise.resolve();
+    }
+
+    // Se o leitor personalizado está desativado, não falar
+    if (!this.screenReaderMode) {
+      console.log('[Speech] speak - leitor desativado, ignorando');
       return Promise.resolve();
     }
 

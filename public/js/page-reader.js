@@ -72,7 +72,9 @@ class PageReader {
           className.includes('explanation') ||
           className.includes('feedback') ||
           className.includes('instruction') ||
-          className.includes('example')) {
+          className.includes('example') ||
+          className.includes('question-text') ||
+          className.includes('subtitle-main')) {
         return true;
       }
       // Parágrafos dentro de containers de conteúdo
@@ -133,6 +135,12 @@ class PageReader {
 
     // CARD INTERATIVO
     if (className.includes('card-interactive') || className.includes('action-card')) return true;
+
+    // DETAILS/SUMMARY (FAQs)
+    if (tag === 'details' || tag === 'summary') return true;
+
+    // ALERT DESC
+    if (className.includes('alert') && (className.includes('desc') || el.closest('.alert .desc'))) return true;
 
     return false;
   }
@@ -661,6 +669,9 @@ class PageReader {
   onQuizQuestionRendered(container, currentIndex, total) {
     console.log('[PageReader] Nova pergunta de quiz renderizada', currentIndex + 1, 'de', total);
     
+    // Se leitor desligado, não processar quiz
+    if (!window.speechManager?.screenReaderMode) return;
+    
     this.container = container;
     this.routeInfo = { section: 'quiz', params: { question: currentIndex + 1, total } };
     
@@ -678,7 +689,9 @@ class PageReader {
   }
 
   onQuizAnswerSelected(isCorrect, feedback) {
-    // Anunciar resultado automaticamente
+    // Anunciar resultado automaticamente apenas se o leitor de tela estiver ativo
+    if (!window.speechManager?.screenReaderMode) return;
+    
     const message = isCorrect 
       ? `Resposta correta. ${feedback || ''}` 
       : `Resposta incorreta. ${feedback || ''}`;
@@ -690,6 +703,8 @@ class PageReader {
   }
 
   onQuizFinished(score, total) {
+    if (!window.speechManager?.screenReaderMode) return;
+    
     const percent = Math.round((score / total) * 100);
     window.speechManager?.speak(`Quiz finalizado. Você acertou ${score} de ${total}. ${percent} por cento.`);
   }

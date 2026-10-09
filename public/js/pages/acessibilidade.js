@@ -1,6 +1,5 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createAlert,
   createStack,
   createCard,
@@ -8,15 +7,11 @@ import {
 } from '../components.js';
 
 export async function renderAcessibilidadePage() {
-  const speech = 'Ajustes de acessibilidade. Aqui você pode alterar o tamanho do texto, ativar alto contraste, ajustar a velocidade da voz e ativar o modo leitor de tela.';
-
   return `
     <div class="acessibilidade-page stack-lg">
       ${createPageHeader('Ajustes de Acessibilidade', { 
         backHref: '#home', 
         backLabel: 'VOLTAR',
-        voiceText: speech, 
-        voiceLabel: 'Ouvir esta tela',
         showScreenReaderToggle: true
       })}
 
@@ -90,11 +85,6 @@ export async function renderAcessibilidadePage() {
           </button>
         </section>
       </div>
-
-      <button class="btn btn-outline btn-block back-button" data-action="navigate" data-href="#home" style="margin-top: var(--space-4);">
-        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#home"></use></svg>
-        <span>VOLTAR AO INÍCIO</span>
-      </button>
     </div>
   `;
 }

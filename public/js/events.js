@@ -10,7 +10,7 @@ export function initializeEventDelegation() {
 }
 
 function handleClick(event) {
-  // Primeiro verifica data-voice-btn (botão "Ouvir esta tela")
+  // Primeiro verifica data-voice-btn (controle de interrupção de leitura)
   const voiceBtn = event.target.closest('[data-voice-btn]');
   if (voiceBtn) {
     handleVoiceButton(voiceBtn, event);
@@ -23,6 +23,53 @@ function handleClick(event) {
   
   const action = target.dataset.action;
   
+  // Se modo leitor ativo e ação interativa, delegar para SpeechManager (regra 2-etapas)
+  const interactiveActions = ['navigate', 'quiz-answer', 'quiz-next', 'analyze-submit', 'toggle-contrast', 'font-scale', 'tts-speed', 'test-voice', 'back', 'voice-input'];
+  if (window.speechManager?.screenReaderMode && interactiveActions.includes(action)) {
+    event.preventDefault();
+    event.stopPropagation();
+    const result = window.speechManager.handleElementInteraction(target, event);
+    if (result === 'execute') {
+      // Executar a ação nativa
+      switch (action) {
+        case 'navigate':
+          handleNavigate(target, event);
+          break;
+        case 'quiz-answer':
+          handleQuizAnswer(target, event);
+          break;
+        case 'quiz-next':
+          if (window.quizNextQuestion) {
+            window.quizNextQuestion();
+          }
+          break;
+        case 'analyze-submit':
+          handleAnalyzeSubmit(target, event);
+          break;
+        case 'toggle-contrast':
+          handleToggleContrast(target, event);
+          break;
+        case 'font-scale':
+          handleFontScale(target, event);
+          break;
+        case 'tts-speed':
+          handleTtsSpeed(target, event);
+          break;
+        case 'test-voice':
+          handleTestVoice(target, event);
+          break;
+        case 'back':
+          handleBack(target, event);
+          break;
+        case 'voice-input':
+          handleVoiceInput(target, event);
+          break;
+      }
+    }
+    return;
+  }
+  
+  // Comportamento normal (modo leitor desativado)
   switch (action) {
     case 'navigate':
       handleNavigate(target, event);
@@ -35,6 +82,11 @@ function handleClick(event) {
       break;
     case 'quiz-answer':
       handleQuizAnswer(target, event);
+      break;
+    case 'quiz-next':
+      if (window.quizNextQuestion) {
+        window.quizNextQuestion();
+      }
       break;
     case 'toggle-contrast':
       handleToggleContrast(target, event);
@@ -132,7 +184,7 @@ function handleQuizAnswer(element, event) {
   
   const uiIndex = parseInt(element.dataset.uiIndex, 10);
   const originalIndex = parseInt(element.dataset.answerIndex, 10);
-  const isCorrect = element.dataset.correct === 'true';
+  const isCorrect = element.dataset.correct === '1';
   const feedback = element.dataset.feedback;
   
   console.log('[Events] Resposta do quiz:', { uiIndex, originalIndex, isCorrect });
@@ -162,32 +214,19 @@ function handleTestVoice(element, event) {
   event.preventDefault();
   if (window.speechManager) {
     console.log('[Events] Testando voz');
-    window.speechManager.speak('Este é um teste de voz. Se você ouviu esta mensagem, a leitura de tela está funcionando.');
+    if (window.speechManager.screenReaderMode) {
+      window.speechManager.speak('Este é um teste de voz. Se você ouviu esta mensagem, a leitura de tela está funcionando.');
+    }
   }
 }
 
 function handleVoiceButton(element, event) {
   event.preventDefault();
   if (window.speechManager) {
-    const voiceText = element.dataset.voiceText;
-    console.log('[Events] Botão "Ouvir esta tela" clicado');
-    if (voiceText) {
-      // Se tem texto específico, usa ele
-      window.speechManager.speak(voiceText);
-    } else if (window.pageReader && window.pageReader.chunks.length > 0) {
-      // Se pageReader tem chunks, lê os chunks de conteúdo (título, intro, parágrafos)
-      const contentChunks = window.pageReader.chunks.filter(c => 
-        ['title', 'section-title', 'heading', 'paragraph', 'intro', 'example', 'alert', 'list-item'].includes(c.type)
-      );
-      if (contentChunks.length > 0) {
-        const text = contentChunks.map(c => c.text).join(' ');
-        window.speechManager.speak(text);
-      } else {
-        window.speechManager.speakCurrentPage();
-      }
-    } else {
-      // Fallback: lê a página atual
-      window.speechManager.speakCurrentPage();
+    console.log('[Events] Botão de interrupção de leitura clicado');
+    // Se estiver falando, para a leitura; se não estiver falando, não faz nada
+    if (window.speechManager.isSpeaking) {
+      window.speechManager.toggleSpeak();
     }
   }
 }

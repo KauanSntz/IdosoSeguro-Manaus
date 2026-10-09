@@ -1,4 +1,4 @@
-const CACHE_NAME = 'idoso-seguro-v1';
+const CACHE_NAME = 'idoso-seguro-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -59,6 +59,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const isNavigation = request.mode === 'navigate' || request.destination === 'document';
+
   event.respondWith(
     caches.match(request)
       .then((cached) => {
@@ -74,7 +76,12 @@ self.addEventListener('fetch', (event) => {
               .catch((err) => console.warn('[SW] Cache put failed:', err));
             return response;
           })
-          .catch(() => caches.match('/index.html'));
+          .catch(() => {
+            if (isNavigation) {
+              return caches.match('/index.html');
+            }
+            return new Response('', { status: 503, statusText: 'Service Unavailable' });
+          });
       })
   );
 });

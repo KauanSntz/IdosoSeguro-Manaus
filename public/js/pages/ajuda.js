@@ -1,14 +1,11 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createAlert,
   createStack,
   createCard 
 } from '../components.js';
 
 export async function renderAjudaPage() {
-  const speech = 'Ajuda e dúvidas frequentes. Aqui você encontra respostas para as perguntas mais comuns sobre o aplicativo.';
-
   const faqs = [
     {
       q: 'Como meus dados são tratados?',
@@ -54,10 +51,7 @@ export async function renderAjudaPage() {
     <div class="ajuda-page stack-lg">
       ${createPageHeader('Ajuda e Dúvidas Frequentes', { 
         backHref: '#home', 
-        backLabel: 'VOLTAR',
-        voiceText: speech, 
-        voiceLabel: 'Ouvir esta tela',
-        showScreenReaderToggle: true
+        backLabel: 'VOLTAR'
       })}
 
       <div class="card stack-lg">
@@ -72,11 +66,6 @@ export async function renderAjudaPage() {
 
         ${createAlert('info', 'Não encontrou sua dúvida?', 'Entre em contato com a Prefeitura de Manaus pelos canais oficiais de atendimento.', 'info')}
       </div>
-
-      <button class="btn btn-outline btn-block back-button" data-action="navigate" data-href="#home" style="margin-top: var(--space-4);">
-        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#home"></use></svg>
-        <span>VOLTAR AO INÍCIO</span>
-      </button>
     </div>
   `;
 }

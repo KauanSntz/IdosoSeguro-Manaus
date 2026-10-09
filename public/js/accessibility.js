@@ -64,31 +64,9 @@ class AccessibilityManager {
   }
 
   bindEvents() {
-    console.log('[Accessibility] bindEvents - registrando listener de clique no document');
-    document.addEventListener('click', (e) => {
-      const fontScaleBtn = e.target.closest('[data-action="font-scale"]');
-      if (fontScaleBtn) {
-        const isVisible = this.isElementVisible(fontScaleBtn);
-        console.log('[Accessibility] click detectado em [data-action="font-scale"]:', fontScaleBtn.dataset.fontScale, 'visible:', isVisible);
-        if (isVisible) {
-          this.setFontScale(fontScaleBtn.dataset.fontScale);
-        } else {
-          console.log('[Accessibility] botão não visível, ignorando');
-        }
-      }
-
-      if (e.target.closest('#btn-contraste')) {
-        console.log('[Accessibility] click detectado em #btn-contraste');
-        this.toggleHighContrast();
-      }
-
-      const ttsSpeedBtn = e.target.closest('[data-action="tts-speed"]');
-      if (ttsSpeedBtn) {
-        const speed = parseFloat(ttsSpeedBtn.dataset.ttsSpeed);
-        console.log('[Accessibility] click detectado em [data-action="tts-speed"]:', speed);
-        this.setTtsSpeed(speed);
-      }
-    });
+    console.log('[Accessibility] bindEvents - listeners centralizados em events.js');
+    // Listeners de click para font-scale, contraste e tts-speed são gerenciados centralmente em events.js
+    // Este método mantido para compatibilidade mas não registra mais listeners duplicados
   }
 
   isElementVisible(element) {
@@ -115,7 +93,7 @@ class AccessibilityManager {
     this.prefs.fontScale = scale;
     this.savePrefs();
     this.applyPrefs();
-    if (window.speechManager) {
+    if (window.speechManager?.screenReaderMode) {
       window.speechManager.speak(`Tamanho da fonte alterado para ${scale}`);
     }
   }
@@ -125,7 +103,7 @@ class AccessibilityManager {
     this.prefs.highContrast = !this.prefs.highContrast;
     this.savePrefs();
     this.applyPrefs();
-    if (window.speechManager) {
+    if (window.speechManager?.screenReaderMode) {
       window.speechManager.speak(this.prefs.highContrast ? 'Alto contraste ativado' : 'Alto contraste desativado');
     }
   }
@@ -136,7 +114,7 @@ class AccessibilityManager {
     this.prefs.ttsSpeed = validSpeed;
     this.savePrefs();
     this.applyPrefs();
-    if (window.speechManager) {
+    if (window.speechManager?.screenReaderMode) {
       window.speechManager.speak(`Velocidade da voz alterada`);
     }
   }

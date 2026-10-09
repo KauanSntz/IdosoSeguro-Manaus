@@ -1,17 +1,14 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createActionCard, 
   createAlert,
   createStack 
 } from '../components.js';
 
 export async function renderHomePage() {
-  const speech = 'Tela inicial. Escolha Aprender para ver aulas sobre golpes, ou Assistir para verificar uma mensagem suspeita.';
-
   return `
     <div class="home-page stack-lg">
-      ${createPageHeader('O que você deseja fazer?', { voiceText: speech, voiceLabel: 'Ouvir esta tela', showScreenReaderToggle: true })}
+      ${createPageHeader('O que você deseja fazer?', { showScreenReaderToggle: false, showBack: false })}
 
       <div class="action-cards">
         ${createActionCard('#aprender', 'school', 'Aprender', 'Aulas curtas sobre golpes comuns: WhatsApp, Pix, links falsos, senhas e mais.')}

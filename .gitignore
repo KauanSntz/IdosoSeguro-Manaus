@@ -14,3 +14,11 @@ Thumbs.db
 *.swo
 coverage/
 .nyc_output/
+
+# Test/debug scripts (local only)
+check_*.js
+check_*.mjs
+test-*.cjs
+test-*.mjs
+verify.cjs
+null

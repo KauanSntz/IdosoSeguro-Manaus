@@ -78,8 +78,8 @@ class Router {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         console.log('[Router] Renderização concluída para:', cleanHash);
 
-        // NOVO: Anunciar página e iniciar leitura se modo leitor ativo
-        // Usar requestAnimationFrame duplo para garantir que DOM está pronto e painted
+        // Se modo leitor ativo, apenas preparar o PageReader (não ler automaticamente)
+        // A leitura acontece quando o usuário ativa o botão principal
         if (window.speechManager?.screenReaderMode && window.pageReader) {
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -90,8 +90,7 @@ class Router {
               };
               window.pageReader.announcePage(container, routeInfo);
               window.pageReader.observeContainer(container);
-              // Iniciar leitura do conteúdo (título + intro)
-              window.pageReader.startReadingContent();
+              // NÃO chamar startReadingContent() aqui - leitura só via botão principal
             });
           });
         }

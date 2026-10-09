@@ -1,11 +1,11 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createQuizOption,
   createProgressBar,
   createResultActions,
   createStack,
-  createCard 
+  createCard,
+  createAlert 
 } from '../components.js';
 
 export async function renderQuizPage(params) {
@@ -22,7 +22,7 @@ export async function renderQuizPage(params) {
   }
 
   const { topic, questions } = quiz;
-  const state = { current: 0, answers: [], score: 0 };
+  const state = { current: 0, answers: [], score: 0, showFeedback: false, lastFeedback: null };
 
   function shuffleArray(array) {
     const arr = [...array];
@@ -49,16 +49,6 @@ export async function renderQuizPage(params) {
     }
   }
 
-  function notifyPageReaderNextQuestion() {
-    if (window.pageReader) {
-      window.pageReader.onQuizNextQuestion(
-        document.getElementById('main-content'),
-        state.current,
-        questions.length
-      );
-    }
-  }
-
   function notifyPageReaderQuizFinished() {
     if (window.pageReader) {
       window.pageReader.onQuizFinished(state.score, questions.length);
@@ -70,8 +60,11 @@ export async function renderQuizPage(params) {
     if (!q) return renderResult();
 
     const shuffled = shuffleArray(q.answers.map((a, i) => ({ ...a, originalIndex: i })));
+    
+    // Identificar o originalIndex da resposta correta no array embaralhado
+    const correctShuffled = shuffled.find(a => a.is_correct);
+    const correctOriginalIndex = correctShuffled?.originalIndex;
 
-    const speech = `${q.scenario} ${q.question} ${shuffled.map((a, i) => `${String.fromCharCode(65 + i)}: ${a.answer_text}`).join('. ')}`;
     const progress = ((state.current) / questions.length) * 100;
 
     const optionsHtml = shuffled.map((answer, i) => 
@@ -84,12 +77,46 @@ export async function renderQuizPage(params) {
       )
     ).join('');
 
+    // Se estiver mostrando feedback, renderizar com botão "Próxima pergunta"
+    if (state.showFeedback && state.lastFeedback) {
+      const { isCorrect, feedback, originalIndex } = state.lastFeedback;
+      return `
+        <div class="quiz-page stack-lg">
+          ${createPageHeader(`Pergunta ${state.current + 1} de ${questions.length}`)}
+
+          ${createProgressBar(progress)}
+
+          <div class="quiz-scenario">
+            <svg class="nav-icon" style="font-size: var(--font-size-2xl); color: var(--color-secondary);" aria-hidden="true"><use href="/assets/icons.svg#chat"></use></svg>
+            <div class="text" style="font-size: var(--font-size-base); font-weight: var(--font-weight-normal);">${q.scenario}</div>
+          </div>
+
+          <p class="question-text">${q.question}</p>
+
+          <div class="options-list stack-md">
+            ${optionsHtml}
+          </div>
+
+          ${createAlert(
+            isCorrect ? 'success' : 'danger',
+            isCorrect ? 'Resposta correta!' : 'Resposta incorreta',
+            feedback,
+            isCorrect ? 'check' : 'warning'
+          )}
+
+          <div class="result-actions">
+            <button class="btn btn-primary btn-block btn-xl" data-action="quiz-next" data-href="#quiz-next">
+              <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
+              <span>PRÓXIMA PERGUNTA</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div class="quiz-page stack-lg">
-        ${createPageHeader(`Pergunta ${state.current + 1} de ${questions.length}`, { 
-          voiceText: speech, 
-          voiceLabel: 'Ouvir esta tela' 
-        })}
+        ${createPageHeader(`Pergunta ${state.current + 1} de ${questions.length}`)}
 
         ${createProgressBar(progress)}
 
@@ -109,15 +136,20 @@ export async function renderQuizPage(params) {
 
   function renderResult() {
     const percent = Math.round((state.score / questions.length) * 100);
-    const speech = `Quiz finalizado. Você acertou ${state.score} de ${questions.length}. ${percent} por cento.`;
 
     const resultsHtml = questions.map((q, i) => {
       const userAns = state.answers[i];
       const correctAns = q.answers.find(a => a.is_correct);
-      const isCorrect = userAns === correctAns?.originalIndex;
+      
+      // Durante o shuffle, identificamos o originalIndex da resposta correta
+      const shuffledForCheck = shuffleArray(q.answers.map((a, idx) => ({ ...a, originalIndex: idx })));
+      const correctShuffled = shuffledForCheck.find(a => a.is_correct);
+      const correctOriginalIndex = correctShuffled?.originalIndex;
+      
+      const isCorrect = userAns === correctOriginalIndex;
       
       return `
-        <div class="icon-list-item" style="background: ${isCorrect ? 'var(--color-success-bg)' : 'var(--color-danger-light)'}; border-color: ${isCorrect ? 'var(--color-success-border)' : 'var(--color-danger-border)'};">
+        <div class="icon-list-item" style="background: ${isCorrect ? 'var(--color-success-bg)' : 'var(--color-danger_light)'}; border-color: ${isCorrect ? 'var(--color-success-border)' : 'var(--color-danger_border)'};">
           <svg class="icon" style="color: ${isCorrect ? 'var(--color-primary)' : 'var(--color-danger)'};" aria-hidden="true"><use href="/assets/icons.svg#${isCorrect ? 'check' : 'warning'}"></use></svg>
           <div class="content">
             <div class="title">${q.question}</div>
@@ -129,7 +161,7 @@ export async function renderQuizPage(params) {
 
     return `
       <div class="quiz-page stack-lg text-center">
-        ${createPageHeader('Quiz Finalizado', { voiceText: speech, voiceLabel: 'Ouvir esta tela' })}
+        ${createPageHeader('Quiz Finalizado')}
 
         <div class="result-banner ${state.score === questions.length ? 'success' : state.score >= questions.length / 2 ? 'attention' : 'danger'}">
           <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#${state.score === questions.length ? 'check' : state.score >= questions.length / 2 ? 'check' : 'help'}"></use></svg>
@@ -144,8 +176,7 @@ export async function renderQuizPage(params) {
 
         ${createResultActions([
           { action: 'navigate', href: `#conteudo/${topic.slug}`, variant: 'btn-primary', size: 'btn-xl', icon: 'article', label: 'REVER A AULA' },
-          { action: 'navigate', href: '#ensinar', variant: 'btn-outline', size: 'btn-lg', icon: 'school', label: 'OUTRO TÓPICO' },
-          { action: 'navigate', href: '#home', variant: 'btn-ghost', icon: 'home', label: 'VOLTAR AO INÍCIO' }
+          { action: 'navigate', href: '#ensinar', variant: 'btn-outline', size: 'btn-lg', icon: 'school', label: 'OUTRO TÓPICO' }
         ])}
       </div>
     `;
@@ -161,6 +192,11 @@ export async function renderQuizPage(params) {
   }
 
   window.quizSelectAnswer = function(uiIndex, originalIndex, isCorrect, feedback) {
+    // Impedir pontuação duplicada: só processa se a pergunta ainda não foi respondida
+    if (state.answers[state.current] !== undefined) {
+      return;
+    }
+
     state.answers[state.current] = originalIndex;
     if (isCorrect) state.score++;
 
@@ -179,17 +215,27 @@ export async function renderQuizPage(params) {
     // Notificar PageReader sobre a resposta selecionada
     notifyPageReaderAnswerSelected(isCorrect, feedback);
 
-    setTimeout(() => {
-      state.current++;
-      if (state.current < questions.length) {
-        container.innerHTML = renderQuestion();
-        notifyPageReaderQuestionRendered();
-      } else {
-        // Quiz finalizado
-        notifyPageReaderQuizFinished();
-        container.innerHTML = renderResult();
-      }
-    }, 1500);
+    // Mostrar feedback com botão "Próxima pergunta"
+    state.showFeedback = true;
+    state.lastFeedback = { isCorrect, feedback, originalIndex };
+    container.innerHTML = renderQuestion();
+  };
+
+  // Handler para botão "Próxima pergunta"
+  window.quizNextQuestion = function() {
+    state.showFeedback = false;
+    state.lastFeedback = null;
+    state.current++;
+    if (state.current < questions.length) {
+      const container = document.getElementById('main-content');
+      container.innerHTML = renderQuestion();
+      notifyPageReaderQuestionRendered();
+    } else {
+      // Quiz finalizado
+      notifyPageReaderQuizFinished();
+      const container = document.getElementById('main-content');
+      container.innerHTML = renderResult();
+    }
   };
 
   // Renderizar primeira pergunta e notificar PageReader

@@ -1,21 +1,15 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createResultActions,
   createStack,
   createCard 
 } from '../components.js';
 
 export async function renderFechamentoPage() {
-    const fechamentoSpeech = "Parabéns por aprender e se proteger! Cada cuidado faz diferença na sua segurança. Na dúvida, pare, pense e confirme antes de agir. Você não precisa decidir com pressa. Conhecimento que protege. Tecnologia que aproxima.";
-
     return `
         <div class="fechamento-page stack-lg">
             ${createPageHeader('Conclusão', { 
-                showBack: false,
-                voiceText: fechamentoSpeech, 
-                voiceLabel: 'Ouvir esta tela',
-                showScreenReaderToggle: true
+                showBack: false
             })}
 
             <div style="display: flex; justify-content: center; margin: var(--space-2) 0;">
@@ -40,8 +34,7 @@ export async function renderFechamentoPage() {
                 <p class="closing-quote" style="font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-secondary); margin: var(--space-4) 0; font-style: italic;">"Conhecimento que protege. Tecnologia que aproxima."</p>
 
                 ${createResultActions([
-                  { action: 'navigate', href: '#aprender', variant: 'btn-primary', size: 'btn-xl', icon: 'arrow', label: 'CONTINUAR APRENDENDO' },
-                  { action: 'navigate', href: '#home', variant: 'btn-outline', size: 'btn-lg', icon: 'home', label: 'VOLTAR AO INÍCIO' }
+                  { action: 'navigate', href: '#aprender', variant: 'btn-primary', size: 'btn-xl', icon: 'arrow', label: 'CONTINUAR APRENDENDO' }
                 ])}
             </div>
         </div>

@@ -1,6 +1,5 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createAlert,
   createIconListItem,
   createResultActions,
@@ -13,14 +12,13 @@ export async function renderConteudoPage(params) {
   if (!ok) {
     return `
       <div class="conteudo-page stack-md text-center">
-        ${createPageHeader('Tópico não encontrado', { showBack: true, backHref: '#ensinar', showScreenReaderToggle: true })}
+        ${createPageHeader('Tópico não encontrado', { showBack: true, backHref: '#ensinar' })}
         <button class="btn btn-primary" data-action="navigate" data-href="#ensinar">Voltar aos tópicos</button>
       </div>
     `;
   }
 
   const { content, title, slug } = topic;
-  const speech = `${title}. ${content?.introduction || ''} Toque em quiz para testar seus conhecimentos.`;
 
   const warningSigns = content?.warning_signs || [];
   const safeActions = content?.safe_actions || [];
@@ -45,9 +43,6 @@ export async function renderConteudoPage(params) {
       ${createPageHeader(title, { 
         backHref: '#ensinar', 
         backLabel: 'VOLTAR',
-        voiceText: speech, 
-        voiceLabel: 'Ouvir esta tela',
-        showScreenReaderToggle: true 
       })}
 
       <div class="card stack-lg">

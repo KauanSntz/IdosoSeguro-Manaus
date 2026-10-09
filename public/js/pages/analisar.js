@@ -1,6 +1,5 @@
 import { 
   createPageHeader, 
-  createVoiceButton, 
   createFormField, 
   createAlert,
   createResultActions,
@@ -21,16 +20,11 @@ export async function renderAnalisarPage(params) {
 }
 
 function renderTextForm() {
-  const speech = 'Verificar Mensagem. Cole, digite ou fale a mensagem recebida para verificar a segurança.';
-  
   return `
     <div class="analisar-page analisar-texto stack-lg" data-analyze-type="texto">
       ${createPageHeader('Verificar Mensagem', { 
         backHref: '#assistir', 
         backLabel: 'ESCOLHER OUTRO TIPO',
-        voiceText: speech, 
-        voiceLabel: 'Ouvir esta tela',
-        showScreenReaderToggle: true
       })}
 
       <div class="card stack-lg">
@@ -53,16 +47,11 @@ function renderTextForm() {
 }
 
 function renderLinkForm() {
-  const speech = 'Verificar Link. Cole o link aqui para verificar se ele é seguro antes de clicar.';
-  
   return `
     <div class="analisar-page analisar-link stack-lg" data-analyze-type="link">
       ${createPageHeader('Verificar Link', { 
         backHref: '#assistir', 
         backLabel: 'ESCOLHER OUTRO TIPO',
-        voiceText: speech, 
-        voiceLabel: 'Ouvir esta tela',
-        showScreenReaderToggle: true
       })}
 
       <div class="card stack-lg">
@@ -82,16 +71,11 @@ function renderLinkForm() {
 }
 
 function renderImageForm() {
-  const speech = 'Verificar Imagem ou Comprovante. Escolha uma foto ou conte o que aparece na imagem.';
-  
   return `
     <div class="analisar-page analisar-imagem stack-lg" data-analyze-type="imagem">
       ${createPageHeader('Imagem ou Comprovante', { 
         backHref: '#assistir', 
         backLabel: 'ESCOLHER OUTRO TIPO',
-        voiceText: speech, 
-        voiceLabel: 'Ouvir esta tela',
-        showScreenReaderToggle: true
       })}
 
       <div class="card stack-lg">
@@ -113,16 +97,11 @@ function renderImageForm() {
 }
 
 function renderAudioForm() {
-  const speech = 'Verificar Áudio de Voz. Fale ou escreva o que você ouviu no áudio.';
-  
   return `
     <div class="analisar-page analisar-audio stack-lg" data-analyze-type="audio">
       ${createPageHeader('Verificar Áudio de Voz', { 
         backHref: '#assistir', 
         backLabel: 'ESCOLHER OUTRO TIPO',
-        voiceText: speech, 
-        voiceLabel: 'Ouvir esta tela',
-        showScreenReaderToggle: true
       })}
 
       <div class="card stack-lg">
