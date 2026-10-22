@@ -1,5 +1,3 @@
-import './page-reader.js';
-
 class Router {
   constructor() {
     this.routes = {};
@@ -44,8 +42,8 @@ class Router {
 
     console.log('[Router] handleRoute - hash:', hash, 'cleanHash:', cleanHash);
 
-    if (window.speechManager) {
-      window.speechManager.stop();
+    if (window.screenReader) {
+      window.screenReader.stop();
     }
 
     this.updateNavHighlight(cleanHash);
@@ -80,7 +78,7 @@ class Router {
 
         // Se modo leitor ativo, apenas preparar o PageReader (não ler automaticamente)
         // A leitura acontece quando o usuário ativa o botão principal
-        if (window.speechManager?.screenReaderMode && window.pageReader) {
+        if (window.screenReader?.enabled) {
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               const routeInfo = {
@@ -88,9 +86,7 @@ class Router {
                 section: this.getSectionFromRoute(cleanHash),
                 params: params
               };
-              window.pageReader.announcePage(container, routeInfo);
-              window.pageReader.observeContainer(container);
-              // NÃO chamar startReadingContent() aqui - leitura só via botão principal
+              window.screenReader.onNavigate(container, routeInfo);
             });
           });
         }

@@ -1,7 +1,7 @@
-const { initDb, getAsync } = require('../src/database/db');
-const pythonAdapter = require('../src/services/pythonAdapter');
-const analysisService = require('../src/services/analysisService');
-const educationService = require('../src/services/educationService');
+import { initDb, getAsync } from '../src/database/db.js';
+import { runAnalysis } from '../src/adapters/pythonAdapter.js';
+import analysisService from '../src/services/analysisService.js';
+import educationService from '../src/services/educationService.js';
 
 async function runTests() {
     console.log('=================================================');
@@ -13,6 +13,9 @@ async function runTests() {
         console.log('Test 1: Inicialização e Carga do Banco SQLite...');
         await initDb();
         const topicCount = await getAsync('SELECT COUNT(*) as count FROM education_topics');
+        if (topicCount.count < 7) {
+            throw new Error(`Esperava ao menos 7 tópicos, encontrou ${topicCount.count}.`);
+        }
         console.log(`  -> Sucesso: ${topicCount.count} tópicos cadastrados.\n`);
 
         // Test 2: Education Topics Retrieval
@@ -27,25 +30,33 @@ async function runTests() {
         // Test 3: Python Risk Analyzer Execution (Modo Assistir)
         console.log('Test 3: Invocação do Motor Heurístico Python...');
         const testText = 'Urgente! Seu benefício foi bloqueado. Digite sua senha no link http://atualiza-banco.site';
-        const pythonResult = await pythonAdapter.runAnalyzer('text', testText);
+        const pythonResult = await runAnalysis('texto', testText);
 
         console.log('  -> Resultado do Analisador Python:');
-        console.log(`     Nível de Risco: ${pythonResult.riskLevel}`);
-        console.log(`     Score de Risco: ${pythonResult.riskScore}`);
-        console.log(`     Badge Exibida:  ${pythonResult.riskBadge}`);
-        console.log(`     Sinais Identificados: ${pythonResult.signals.length}`);
-        console.log(`     Recomendações Geradas: ${pythonResult.recommendations.length}\n`);
+        console.log(`     Nível de Risco: ${pythonResult.dados.nivel}`);
+        console.log(`     Indícios Identificados: ${pythonResult.dados.indicios.length}`);
+        console.log(`     Orientações Geradas: ${pythonResult.dados.orientacoes.length}`);
+        console.log(`     Conteúdo Relacionado: ${pythonResult.dados.conteudoRelacionado}\n`);
 
-        if (pythonResult.riskScore > 40) {
-            console.log('  -> Sucesso: O motor Python identificou os indícios de urgência, senha e link suspeito!\n');
-        } else {
-            throw new Error('O motor Python não pontuou os sinais de risco esperados.');
+        if (!pythonResult.ok) {
+            throw new Error('O motor Python retornou erro.');
         }
+        if (pythonResult.dados.nivel === 'baixo') {
+            throw new Error('O motor Python não classificou a mensagem suspeita como risco.');
+        }
+        if (pythonResult.dados.indicios.length < 2) {
+            throw new Error('Esperava ao menos 2 indícios de risco (urgência, senha, link).');
+        }
+        console.log('  -> Sucesso: O motor Python identificou urgência, senha e link suspeito!\n');
 
-        // Test 4: End-to-End Analysis Persistence (Ciclo Assistivo-Educativo)
-        console.log('Test 4: Salvamento da Análise no SQLite e Vínculo ao Modo Ensinar...');
-        const persistedAnalysis = await analysisService.analyze('text', testText);
-        console.log(`  -> Análise salva no SQLite com ID #${persistedAnalysis.id}. Tópico vinculado: '${persistedAnalysis.educationTopic}'.\n`);
+        // Test 4: End-to-End Analysis (Ciclo Assistivo-Educativo)
+        console.log('Test 4: Análise completa com vínculo ao Modo Ensinar...');
+        const persistedAnalysis = await analysisService.analyze('texto', testText);
+        console.log(`  -> Análise retornada com nível '${persistedAnalysis.nivel}'. Tópico vinculado: '${persistedAnalysis.conteudoRelacionado}'.\n`);
+
+        if (!persistedAnalysis.conteudoRelacionado) {
+            throw new Error('Análise não retornou conteúdo educativo vinculado.');
+        }
 
         console.log('=================================================');
         console.log('✅ TODOS OS TESTES PASSARAM COM SUCESSO!');

@@ -93,8 +93,8 @@ class AccessibilityManager {
     this.prefs.fontScale = scale;
     this.savePrefs();
     this.applyPrefs();
-    if (window.speechManager?.screenReaderMode) {
-      window.speechManager.speak(`Tamanho da fonte alterado para ${scale}`);
+    if (window.screenReader?.enabled) {
+      window.screenReader.speak(`Tamanho da fonte alterado para ${scale}`);
     }
   }
 
@@ -103,8 +103,8 @@ class AccessibilityManager {
     this.prefs.highContrast = !this.prefs.highContrast;
     this.savePrefs();
     this.applyPrefs();
-    if (window.speechManager?.screenReaderMode) {
-      window.speechManager.speak(this.prefs.highContrast ? 'Alto contraste ativado' : 'Alto contraste desativado');
+    if (window.screenReader?.enabled) {
+      window.screenReader.speak(this.prefs.highContrast ? 'Alto contraste ativado' : 'Alto contraste desativado');
     }
   }
 
@@ -114,8 +114,8 @@ class AccessibilityManager {
     this.prefs.ttsSpeed = validSpeed;
     this.savePrefs();
     this.applyPrefs();
-    if (window.speechManager?.screenReaderMode) {
-      window.speechManager.speak(`Velocidade da voz alterada`);
+    if (window.screenReader?.enabled) {
+      window.screenReader.speak(`Velocidade da voz alterada`);
     }
   }
 

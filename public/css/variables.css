@@ -9,7 +9,7 @@
 
   --color-text: #14202B;
   --color-text-secondary: #4A5D6B;
-  --color-text-muted: #6B8A9B;
+  --color-text-muted: #56707E;
   --color-text-on-primary: #FFFFFF;
   --color-text-on-secondary: #FFFFFF;
 
@@ -168,14 +168,21 @@ html[data-high-contrast="true"] {
   --color-text: #FFFFFF;
   --color-text-secondary: #E0E0E0;
   --color-text-muted: #B0B0B0;
+  /* No alto contraste o primário/secundário viram cores CLARAS (verde/azul
+     neon), então o texto em cima deles precisa ser PRETO para ter contraste. */
+  --color-text-on-primary: #000000;
+  --color-text-on-secondary: #000000;
 
   --color-primary: #00FF66;
-  --color-primary-dark: #003311;
+  /* No alto contraste a página é PRETA, então as variantes "-dark" (usadas
+     como TEXTO em títulos/alertas e como HOVER de botão com texto preto)
+     precisam ser CLARAS para terem contraste. */
+  --color-primary-dark: #00B34D;
   --color-primary-light: #003311;
   --color-primary-lighter: #001A0A;
 
   --color-secondary: #66B2FF;
-  --color-secondary-dark: #003366;
+  --color-secondary-dark: #3399FF;
   --color-secondary-light: #001A33;
   --color-secondary-lighter: #000D1A;
 

@@ -9,7 +9,7 @@ import {
 export async function renderResultadoPage(params) {
   let analysis;
   try {
-    analysis = JSON.parse(params.id);
+    analysis = JSON.parse(decodeURIComponent(params.id));
   } catch (e) {
     return `
       <div class="resultado-page stack-md text-center">

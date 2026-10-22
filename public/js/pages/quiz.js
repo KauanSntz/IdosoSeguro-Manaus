@@ -34,24 +34,24 @@ export async function renderQuizPage(params) {
   }
 
   function notifyPageReaderQuestionRendered() {
-    if (window.pageReader) {
-      window.pageReader.onQuizQuestionRendered(
-        document.getElementById('main-content'), 
-        state.current, 
+    if (window.screenReader) {
+      window.screenReader.announceQuizQuestion(
+        document.getElementById('main-content'),
+        state.current,
         questions.length
       );
     }
   }
 
   function notifyPageReaderAnswerSelected(isCorrect, feedback) {
-    if (window.pageReader) {
-      window.pageReader.onQuizAnswerSelected(isCorrect, feedback);
+    if (window.screenReader) {
+      window.screenReader.announceQuizAnswer(isCorrect, feedback);
     }
   }
 
   function notifyPageReaderQuizFinished() {
-    if (window.pageReader) {
-      window.pageReader.onQuizFinished(state.score, questions.length);
+    if (window.screenReader) {
+      window.screenReader.announceQuizFinished(state.score, questions.length);
     }
   }
 

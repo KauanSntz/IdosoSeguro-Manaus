@@ -148,7 +148,7 @@ export function createFormField(type, id, label, options = {}) {
     <div class="form-field">
       ${labelHtml}
       ${inputHtml}
-      ${helpHtml}
+      ${helpText}
       ${errorHtml}
       ${buttonHtml}
     </div>

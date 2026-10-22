@@ -276,6 +276,21 @@ html[data-screen-reader="true"] {
   flex-shrink: 0;
 }
 
+/* O indicador tem fundo COLORIDO (secondary), então o btn-ghost (que herda
+   texto escuro) fica ilegível. Forçamos texto claro + leve fundo translúcido
+   para o botão sobressair e ter contraste suficiente nos dois modos. */
+.screen-reader-indicator .btn-ghost {
+  color: var(--color-text-on-secondary);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.screen-reader-indicator .btn-ghost:hover,
+.screen-reader-indicator .btn-ghost:focus-visible {
+  background-color: rgba(255, 255, 255, 0.28);
+  color: var(--color-text-on-secondary);
+}
+
 .sr-focused {
   outline: 4px solid var(--color-secondary) !important;
   outline-offset: 3px !important;
@@ -315,6 +330,28 @@ html[data-screen-reader="true"] [data-voice-btn]:not([data-action="toggle-screen
   .sr-indicator-content .btn {
     width: 100%;
   }
+}
+
+/* Botão de comando de voz (mobile) */
+.sr-mic-btn {
+  background: var(--color-primary);
+  color: var(--color-text-on-primary, #fff);
+  border: none;
+  border-radius: var(--radius-pill);
+  width: 40px;
+  height: 40px;
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.sr-mic-btn:active {
+  transform: scale(0.92);
+  background: var(--color-primary-dark);
 }
 
 /* Chunk atual sendo lido */
