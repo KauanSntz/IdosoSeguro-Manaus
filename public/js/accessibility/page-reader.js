@@ -56,6 +56,39 @@ const INTERACTIVE_SELECTORS = [
 
 const HEADING_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
 
+/**
+ * Papel ARIA explícito → tipo de chunk.
+ *
+ * Só papéis de CONTEÚDO/Widget. Landmarks (banner, main, navigation,
+ * contentinfo, complementary, region) e group ficam DE FORA de propósito:
+ * são contentores e precisam descer até os filhos em vez de virar um chunk.
+ */
+const ROLE_TYPES = {
+  // Ações / navegação
+  button: 'button',
+  link: 'link',
+  menuitem: 'menuitem',
+  menuitemcheckbox: 'menuitem',
+  menuitemradio: 'menuitem',
+  tab: 'tab',
+  option: 'option',
+  // Formulários
+  checkbox: 'checkbox',
+  radio: 'radio',
+  switch: 'checkbox',
+  textbox: 'input',
+  searchbox: 'input',
+  combobox: 'select',
+  // Conteúdo
+  heading: 'heading',
+  list: 'list',
+  listitem: 'list-item',
+  img: 'image',
+  alert: 'alert',
+  status: 'alert',
+  progressbar: 'progress'
+};
+
 export class PageReader {
   constructor() {
     this.chunks = [];
@@ -93,7 +126,7 @@ export class PageReader {
     // Rótulo associado a um campo de formulário é falado pelo próprio campo.
     if (this._isAssociatedLabel(element)) return;
 
-    const type = this._classify(element);
+    const type = this.classify(element);
 
     // Listas: anunciar "Lista com N itens" e ainda descer para os itens.
     if (type === 'list') {
@@ -133,10 +166,31 @@ export class PageReader {
     return !!(forId && document.getElementById(forId));
   }
 
-  _classify(element) {
+  /**
+   * Classifica um elemento no tipo de chunk. É a FONTE ÚNICA de papéis —
+   * o orquestrador também a usa (via injeção) para o foco do Tab.
+   *
+   * A ordem importa: o papel ARIA EXPLÍCITO sobrepõe o implícito da tag
+   * (spec ARIA / árvore de acessibilidade). Sem essa prioridade, tudo que
+   * era <a> saía como "Link" — inclusive <a role="button"> (botão) e
+   * <a role="menuitem"> (item de menu), que era o bug do "link" no início
+   * de cada leitura.
+   *
+   * @param {Element} element
+   * @returns {string|null} tipo do chunk, ou null para container comum
+   */
+  classify(element) {
     const tag = element.tagName;
     const role = element.getAttribute('role');
 
+    // 1) Papel ARIA explícito tem prioridade sobre a tag.
+    if (role) {
+      if (role === 'presentation' || role === 'none') return null;
+      if (ROLE_TYPES[role]) return ROLE_TYPES[role];
+      // Landmarks/group não estão no mapa → caem na regra da tag (contentores).
+    }
+
+    // 2) Papel implícito da tag.
     if (HEADING_TAGS.has(tag)) return 'heading';
     if (tag === 'UL' || tag === 'OL') return 'list';
     if (tag === 'LI') return 'list-item';
@@ -146,18 +200,20 @@ export class PageReader {
     if (tag === 'SELECT') return 'select';
     if (tag === 'LABEL') return 'label';
     if (tag === 'PROGRESS') return 'progress';
-
     if (tag === 'INPUT') return this._classifyInput(element);
-
-    // Elementos acionáveis por contrato do app (data-action, classes).
-    if (element.matches(INTERACTIVE_SELECTORS) || role === 'button') {
-      return tag === 'A' || role === 'link' ? 'link' : 'button';
-    }
-    if (tag === 'A' || role === 'link') return 'link';
     if (tag === 'BUTTON') return 'button';
 
-    // Alertas e banners de resultado.
-    if (role === 'alert' || role === 'status') return 'alert';
+    if (tag === 'A') {
+      // <a href> navega de verdade → link. <a> sem href usado como ação
+      // (data-action / classe) comporta-se como botão, não como link.
+      if (element.hasAttribute('href')) return 'link';
+      return element.matches(INTERACTIVE_SELECTORS) ? 'button' : 'link';
+    }
+
+    // 3) Contrato do app: <div>/<span> acionáveis (data-action, classes).
+    if (element.matches(INTERACTIVE_SELECTORS)) return 'button';
+
+    // 4) Alertas e banners de resultado.
     if (element.classList.contains('alert')) return 'alert';
     if (element.classList.contains('result-banner')) return 'alert';
 

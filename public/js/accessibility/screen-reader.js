@@ -199,6 +199,32 @@ export class ScreenReader {
     this._present(element, `${describeChunk(chunk)} Toque de novo para ativar.`);
   }
 
+  /**
+   * O foco do Tab chegou num elemento (chamado por inputs/focus.js).
+   *
+   * Anuncia PAPEL + NOME no momento em que o foco chega — é assim que NVDA,
+   * VoiceOver e TalkBack comportam-se — e SINCRONIZA o cursor do leitor com
+   * esse elemento, para que Enter/ativação aja sobre o que está focado.
+   * @param {HTMLElement} element
+   */
+  handleFocus(element) {
+    if (!this.enabled || !element) return;
+
+    this._stopReadingAll();
+    this._cancelPending(); // mudar de foco descarta ativação pendente
+
+    // Sincroniza cursor: Tab e setas passam a compartilhar a mesma posição.
+    const index = this.reader.chunks.findIndex((c) => c.element === element);
+    const chunk = index >= 0
+      ? this.reader.goTo(index)
+      : this._chunkFor(element); // fora da extração (ex.: botões do indicador)
+
+    if (!chunk) return;
+
+    this._highlight(element);
+    this.speech.speak(describeChunk(chunk));
+  }
+
   // ── Navegação interna ──────────────────────────────────────────────────────
 
   _move(direction) {
@@ -393,17 +419,13 @@ export class ScreenReader {
   _chunkFor(element) {
     const found = this.reader.chunks.find((c) => c.element === element);
     if (found) return found;
-    // Fallback para elementos dinâmicos fora da extração.
-    const type = this._guessType(element);
-    return { type, text: element.textContent?.trim() || '', interactive: true };
-  }
 
-  _guessType(element) {
-    const tag = element.tagName;
-    if (tag === 'A') return 'link';
-    if (tag === 'BUTTON') return 'button';
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return 'input';
-    return 'button';
+    // Fallback para elementos FORA da extração (ex.: botões do indicador).
+    // Reusa o classificador do PageReader INJETADO — fonte única de papéis,
+    // sem duplicar a lógica de role/tag aqui (mantém a injeção de dependência).
+    const type = this.reader.classify?.(element) || 'text';
+    const text = element.getAttribute('aria-label') || element.textContent?.trim() || '';
+    return { type, text, interactive: true };
   }
 
   _highlight(element) {

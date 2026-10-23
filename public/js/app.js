@@ -32,6 +32,7 @@ import { PageReader } from './accessibility/page-reader.js';
 import { ScreenReader } from './accessibility/screen-reader.js';
 import { initKeyboardInput } from './accessibility/inputs/keyboard.js';
 import { initGestureInput } from './accessibility/inputs/gestures.js';
+import { initFocusInput } from './accessibility/inputs/focus.js';
 import { initVoiceCommands } from './accessibility/inputs/voice-commands.js';
 
 console.log('[app.js] Módulos carregados, registrando rotas...');
@@ -99,6 +100,8 @@ const voiceCommands = initVoiceCommands({ speech: speechEngine });
 screenReader.setVoiceInput(voiceCommands);
 initKeyboardInput({ reader: screenReader });
 initGestureInput({ reader: screenReader });
+// Tab: anuncia o elemento que recebeu o foco (modo foco dos leitores reais).
+initFocusInput({ reader: screenReader });
 
 // Expõe as fachadas para o resto do app (router, quiz, events, accessibility).
 window.speechEngine = speechEngine;
