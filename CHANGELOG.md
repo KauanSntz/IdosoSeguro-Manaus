@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this format.
 The format is based on [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.3.0] - 2026-10-28 — Leitor de tela: ativação, quiz, resultado e testes (Etapa E)
+
+### Added
+- **Descoberta do leitor**: botão "Ativar leitor de tela" é o **primeiro elemento focável**
+  da Welcome e da Home, com atalho global **Alt+L** (funciona com o leitor desligado).
+  Ao ativar: "Leitor de tela ativado. Use Tab ou deslize para a direita para ouvir.
+  Toque duas vezes para ativar. Aperte S para o resumo." Ao desativar:
+  "Leitor de tela desativado."
+- **Testes do leitor (jsdom)**: `tests/leitor.test.js` monta o HTML real das telas e
+  compara o que o leitor fala com snapshots versionados em `tests/snapshots/*.json`
+  (`#aprender`, aula, quiz, FAQ e resultado).
+  Comandos: `npm run test:leitor` e `npm run test:leitor:atualizar`.
+
+### Changed
+- **Enter ativa direto** quando o item já foi descrito por Tab/setas/atalhos. A regra
+  dos 2 toques fica só para toque e gesto. Nenhuma fala de teclado diz mais
+  "Pressione de novo" — no toque, a instrução é "Toque duas vezes para ativar."
+- **Chegada do resultado começa pelo nível**: "Resultado: Alto nível de atenção.
+  <descrição>", "Resultado: Atenção necessária. …", "Resultado: Sinais aparentemente
+  normais. …".
+- **Repetir (R)** relê a **última fala inteira** — logo após entrar numa aula, relê
+  "Aula: X. Introdução. <texto>".
+- **Quiz**: ao errar, o feedback diz qual era a correta ("A resposta correta era a
+  letra B: …"); alternativas respondidas falam "Sua resposta, incorreta",
+  "Sua resposta, correta", "Resposta correta" ou "não escolhida".
+- **Analisar**: campo vazio mostra erro colado no campo (`role="alert"`, `aria-invalid`,
+  foco no campo) em vez de `alert()`; carregamento anuncia "Analisando…" em região
+  `role="status"`; falha da API abre tela de aviso com foco no título; "Falar em vez de
+  digitar" avisa quando o navegador não permite ditado e informa o texto ditado.
+- **Acessibilidade**: "Ouvir exemplo" fala mesmo com o leitor desligado; ajuda do leitor
+  separa as instruções de celular e de computador.
+- **Imagem**: a verificação analisa só a descrição escrita (o nome do arquivo gerava
+  resultado falso de "tudo normal").
+- **Service worker**: cache `idoso-seguro-v35`.
+
+### Removed
+- `handleVoiceInput` morto em `events.js` (duplicava o action-router e usava `alert()`).
+
+---
+
 ## [1.2.0] - 2026-10-28 — Leitor de tela: navegação por conteúdo (Etapa D)
 
 ### Added

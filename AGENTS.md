@@ -5,10 +5,31 @@
 ---
 
 ## Última Atualização
-**v1.2.0 (2026-10-28)** — Etapa D: leitor de tela por CONTEÚDO (destinos, chegada pelo
-título, listas sem duplicação, `<details>`, "ler tudo" com pausa, sem contagens).
+**v1.3.0 (2026-10-28)** — Etapa E: Enter direto no teclado, descoberta do leitor
+(Welcome/Home + Alt+L), quiz com a resposta certa, resultado pelo nível, análise
+com erros acessíveis e testes jsdom com snapshots do que é falado.
 
-### Etapa D — leitor de tela (v1.2.0)
+### Etapa E — ativação, quiz, resultado e testes (v1.3.0)
+
+| Regra | Onde |
+|-------|------|
+| Enter ativa direto após Tab/setas/atalhos; 2 toques só em toque/gesto | `screen-reader.js` `_arm`/`_activate` |
+| "Toque duas vezes para ativar." (toque) e nunca "Pressione de novo" | `screen-reader.js`, `pages/acessibilidade.js` |
+| "Ativar leitor de tela" é o 1º focável da Welcome e da Home | `pages/welcome.js`, `pages/home.js` |
+| Atalho global **Alt+L** liga/desliga (funciona desligado) | `inputs/keyboard.js` |
+| Ativação fala as instruções e só depois a chegada da tela | `screen-reader.js` `enable()` (token) |
+| Erro no quiz diz a letra/texto da correta | `pages/quiz.js` `renderFeedback` |
+| Alternativas: "Sua resposta, incorreta" / "Resposta correta" / "não escolhida" | `data-sr-estado` + `page-reader.js` `_stateOf` |
+| Chegada do resultado: "Resultado: <nível>. <descrição>" | `screen-reader.js` `_arrival` |
+| Campo vazio: erro `role="alert"` + foco no campo + fala | `action-router.js` `showFieldError` |
+| Carregamento "Analisando…" em `role="status"` | `action-router.js` `createLoader` |
+| Falha da API: tela de aviso com foco no `h1` (sem `alert()`) | `action-router.js` `showAnalysisError` |
+| R repete a última fala inteira (relê a introdução da aula) | `screen-reader.js` `_repeat` |
+| Snapshots do que é falado em #aprender, aula, quiz, FAQ, resultado | `tests/leitor.test.js` + `tests/snapshots/` |
+
+---
+
+## Etapa D — leitor de tela (v1.2.0)
 
 | Regra | Onde |
 |-------|------|
@@ -92,7 +113,12 @@ idoso-seguro-manaus/
 │   └── assets/
 │       ├── icons.svg            ✅ Sprite SVG (24 ícones: shield, home, school, settings, help, volume, arrow, check, warning, info, eye, mic, image, link, chat, security, article, description, quiz, menu, search, refresh, accessibility, logo)
 │       └── logo.svg             ✅ Logo (escudo + nome)
-├── tests/                       (vazio - Etapa 7)
+├── tests/
+│   ├── backend.test.js          ✅ Integração (DB + motor Python + services)
+│   ├── contraste-audit.js       ✅ Script de contraste
+│   ├── leitor.test.js           ✅ NOVO - jsdom: o que o leitor fala em cada tela
+│   ├── atualizar-snapshots.js   ✅ NOVO - regrava tests/snapshots/*.json
+│   └── snapshots/               ✅ NOVO - aprender, aula, quiz, faq, resultado
 └── docs/                        (vazio - Etapa 8)
 ```
 
@@ -105,7 +131,9 @@ npm install          # Instala dependências Node
 npm run db:criar     # Cria/atualiza banco SQLite (idempotente)
 npm start            # Sobe servidor em localhost:3000
 npm run dev          # Sobe com --watch
-npm test             # Stub (testes virão na Etapa 7)
+npm test             # Backend + testes do leitor (jsdom)
+npm run test:leitor  # Só os testes do leitor de tela
+npm run test:leitor:atualizar  # Regrava os snapshots do que é falado
 npm run lint         # Stub
 npm run check:contraste  # Stub
 ```
@@ -166,11 +194,13 @@ npm run check:contraste  # Stub
 
 | Item | Status | Próxima Etapa |
 |------|--------|---------------|
-| Testes automatizados | ❌ Stub | Etapa 7 |
-| `lint`, `check:contraste` | ❌ Stub | Etapa 7-8 |
+| Testes do leitor (jsdom + snapshots) | ✅ `npm run test:leitor` | — |
+| Testes de integração do backend | ✅ `node tests/backend.test.js` | — |
+| `lint`, `check:contraste` | ❌ Stub | Etapa 8 |
 | `docs/IMPLANTACAO.md` | ❌ Não | Etapa 8 |
 | Atkinson Hyperlegible local | ⚠️ Via CDN | Produção |
-| Playwright/axe tests | ❌ Não | Etapa 7-8 |
+| Playwright/axe tests | ❌ Não | Etapa 8 |
+| Ícones do seed (`icon` = emoji) | ⚠️ Não casam com `icons.svg` | Ajustar seed |
 
 ---
 
