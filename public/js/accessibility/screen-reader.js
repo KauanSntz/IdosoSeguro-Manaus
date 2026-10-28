@@ -494,6 +494,7 @@ export class ScreenReader {
    *  - #aprender  → "Aprender. <parágrafo de introdução>."
    *  - aula       → "Aula: <título>. Introdução. <texto da introdução>."
    *  - quiz       → "<Pergunta N de M>. <situação> <enunciado>."
+   *  - resultado  → "Resultado: <nível>. <descrição>."
    *
    * @returns {{text: string, endIndex: number|null}}
    */
@@ -528,6 +529,23 @@ export class ScreenReader {
       const parts = [join(title, firstParagraph?.text)];
       if (firstHeading?.text) parts.push(`Pergunta: ${firstHeading.text.replace(/[.!?]+$/, '')}.`);
       return { text: parts.join(' '), endIndex: firstHeading?.index ?? firstParagraph?.index ?? start.index };
+    }
+
+    // Resultado: o que importa é o NÍVEL, não o título genérico
+    // "Resultado da verificação". Ex.:
+    // "Resultado: Alto nível de atenção. <descrição do que foi encontrado>."
+    // O nível vive na faixa colorida (.result-banner), que a extração entrega
+    // como um bloco "alert" — não como título.
+    if (base === 'resultado') {
+      const levelChunk = rest.find((c) => c.element?.classList?.contains('result-banner'))
+        || rest.find((c) => c.type === 'alert' && (c.text || '').trim());
+      const level = levelChunk ? levelChunk.text.replace(/[.!?]+$/, '') : title.replace(/[.!?]+$/, '');
+      const parts = [`Resultado: ${level}.`];
+      if (firstParagraph?.text) parts.push(firstParagraph.text);
+      return {
+        text: parts.join(' '),
+        endIndex: firstParagraph?.index ?? levelChunk?.index ?? start.index
+      };
     }
 
     // Demais telas: título + primeiro parágrafo (quando existe).
