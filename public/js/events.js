@@ -94,27 +94,6 @@ function handleTtsSpeed(element) {
   }
 }
 
-/** Preenche um campo de texto por voz ("FALAR EM VEZ DE DIGITAR"). */
-function handleVoiceInput(element) {
-  const targetId = element.dataset.target;
-  if (!targetId || !window.speechEngine) return;
-
-  window.speechEngine.startRecognition({
-    onResult(transcript) {
-      const input = document.getElementById(targetId);
-      if (input) {
-        input.value = transcript;
-        input.focus();
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    },
-    onError(error) {
-      console.error('[Events] Erro no reconhecimento de voz:', error);
-      alert('Não consegui ouvir. Verifique a permissão de microfone e tente de novo.');
-    }
-  });
-}
-
 export function rebindEvents() {
   console.log('[Events] Re-vinculando estados visuais pós-navegação...');
 
