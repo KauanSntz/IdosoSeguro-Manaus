@@ -1,4 +1,4 @@
-const CACHE_NAME = 'idoso-seguro-v38';
+const CACHE_NAME = 'idoso-seguro-v39';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -16,7 +16,10 @@ const STATIC_ASSETS = [
   '/js/components.js',
   '/js/events.js',
   '/assets/icons.svg',
-  '/assets/logo.svg'
+  '/assets/logo.svg',
+  '/fonts/atkinson-hyperlegible-400.woff2',
+  '/fonts/atkinson-hyperlegible-700.woff2',
+  '/fonts/atkinson-hyperlegible-400-italic.woff2'
 ];
 
 function isCacheableRequest(request) {
