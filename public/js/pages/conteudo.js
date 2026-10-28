@@ -1,9 +1,7 @@
-import { 
-  createPageHeader, 
-  createAlert,
+import {
+  createPageHeader,
   createIconListItem,
-  createResultActions,
-  createStack 
+  createResultActions
 } from '../components.js';
 
 export async function renderConteudoPage(params) {
@@ -12,8 +10,9 @@ export async function renderConteudoPage(params) {
   if (!ok) {
     return `
       <div class="conteudo-page stack-md text-center">
-        ${createPageHeader('Tópico não encontrado', { showBack: true, backHref: '#ensinar' })}
-        <button class="btn btn-primary" data-action="navigate" data-href="#ensinar">Voltar aos tópicos</button>
+        ${createPageHeader('Aula não encontrada', { backHref: '#aprender' })}
+        <p style="margin-bottom: var(--space-4);">${erro?.mensagem || 'Não foi possível abrir esta aula.'}</p>
+        <button type="button" class="btn btn-primary" data-action="navigate" data-href="#aprender">Voltar aos tópicos</button>
       </div>
     `;
   }
@@ -24,15 +23,15 @@ export async function renderConteudoPage(params) {
   const safeActions = content?.safe_actions || [];
   const exampleText = content?.example_text || '';
 
-  const warningHtml = warningSigns.map(s => 
-    createIconListItem('warning', '', s, { 
+  const warningHtml = warningSigns.map(s =>
+    createIconListItem('warning', '', s, {
       iconColor: 'var(--color-danger)',
       borderColor: 'var(--color-border)'
     })
   ).join('');
 
-  const safeHtml = safeActions.map(a => 
-    createIconListItem('check', '', a, { 
+  const safeHtml = safeActions.map(a =>
+    createIconListItem('check', '', a, {
       iconColor: 'var(--color-primary)',
       borderColor: 'var(--color-border)'
     })
@@ -40,27 +39,32 @@ export async function renderConteudoPage(params) {
 
   return `
     <div class="conteudo-page stack-lg">
-      ${createPageHeader(title, { 
-        backHref: '#ensinar', 
-        backLabel: 'VOLTAR',
-      })}
+      ${createPageHeader(title, { backHref: '#aprender', backLabel: 'Voltar' })}
 
-      <div class="card stack-lg">
-        <header>
-          <h1 class="title-primary">${title}</h1>
+      <article class="card stack-lg">
+        <section aria-labelledby="aula-introducao">
+          <h2 id="aula-introducao" class="title-secondary">Introdução</h2>
           <p class="subtitle-main">${content?.introduction || ''}</p>
-        </header>
+        </section>
 
         ${exampleText ? `
-        <div class="quiz-scenario">
-          <svg class="nav-icon" style="font-size: var(--font-size-2xl); color: var(--color-secondary);" aria-hidden="true"><use href="/assets/icons.svg#chat"></use></svg>
-          <div class="text" style="font-size: var(--font-size-base); font-weight: var(--font-weight-normal);">${exampleText}</div>
-        </div>
+        <section aria-labelledby="aula-exemplo">
+          <h2 id="aula-exemplo" class="title-secondary">
+            <svg class="nav-icon" style="color: var(--color-secondary);" aria-hidden="true"><use href="/assets/icons.svg#chat"></use></svg>
+            Exemplo de golpe
+          </h2>
+          <blockquote class="quiz-scenario">
+            <p class="text">${exampleText}</p>
+          </blockquote>
+        </section>
         ` : ''}
 
         ${warningSigns.length > 0 ? `
-        <section>
-          <h2 class="title-secondary" style="display: flex; align-items: center; gap: var(--space-2);"><svg class="nav-icon" style="color: var(--color-danger);" aria-hidden="true"><use href="/assets/icons.svg#warning"></use></svg> Sinais de Alerta</h2>
+        <section aria-labelledby="aula-sinais">
+          <h2 id="aula-sinais" class="title-secondary">
+            <svg class="nav-icon" style="color: var(--color-danger);" aria-hidden="true"><use href="/assets/icons.svg#warning"></use></svg>
+            Sinais de alerta
+          </h2>
           <ul class="icon-list">
             ${warningHtml}
           </ul>
@@ -68,8 +72,11 @@ export async function renderConteudoPage(params) {
         ` : ''}
 
         ${safeActions.length > 0 ? `
-        <section>
-          <h2 class="title-secondary" style="display: flex; align-items: center; gap: var(--space-2);"><svg class="nav-icon" style="color: var(--color-primary);" aria-hidden="true"><use href="/assets/icons.svg#shield"></use></svg> Como se Proteger</h2>
+        <section aria-labelledby="aula-protecao">
+          <h2 id="aula-protecao" class="title-secondary">
+            <svg class="nav-icon" style="color: var(--color-primary);" aria-hidden="true"><use href="/assets/icons.svg#shield"></use></svg>
+            Como se proteger
+          </h2>
           <ul class="icon-list">
             ${safeHtml}
           </ul>
@@ -77,10 +84,10 @@ export async function renderConteudoPage(params) {
         ` : ''}
 
         ${createResultActions([
-          { action: 'navigate', href: `#quiz/${slug}`, variant: 'btn-primary', size: 'btn-xl', icon: 'quiz', label: 'FAZER O QUIZ' },
-          { action: 'navigate', href: '#ensinar', variant: 'btn-outline', size: 'btn-lg', icon: 'arrow', label: 'VOLTAR AOS TÓPICOS' }
+          { action: 'navigate', href: `#quiz/${slug}`, variant: 'btn-primary', size: 'btn-xl', icon: 'quiz', label: 'Fazer o quiz' },
+          { action: 'navigate', href: '#aprender', variant: 'btn-outline', size: 'btn-lg', icon: 'arrow', label: 'Voltar aos tópicos' }
         ])}
-      </div>
+      </article>
     </div>
   `;
 }

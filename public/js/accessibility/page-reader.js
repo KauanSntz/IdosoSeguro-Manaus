@@ -117,6 +117,15 @@ export class PageReader {
       chunk.total = this.chunks.length;
     });
 
+    // [DIAGNÓSTICO TEMPORÁRIO — ETAPA A] remover depois da auditoria.
+    if (typeof console !== 'undefined' && console.table) {
+      console.table(this.chunks.map((c) => ({
+        papel: c.type,
+        regiao: c.region,
+        texto: (c.text || '').slice(0, 40)
+      })));
+    }
+
     return this.chunks;
   }
 
@@ -233,12 +242,28 @@ export class PageReader {
       type,
       element,
       text: this._extractText(element, type),
+      state: this._stateOf(element),
       itemCount: type === 'list' ? element.children.length : 0,
       interactive: this._isInteractive(element),
       region: this._regionOf(element),
       index: 0,
       total: 0
     };
+  }
+
+  /**
+   * Estado visível do elemento (ex.: botão de alternância).
+   * Assim o leitor fala "Tamanho grande, ativado" — a pessoa cega descobre
+   * QUAL opção está selecionada, algo que só olhando a tela daria hoje.
+   */
+  _stateOf(element) {
+    const pressed = element.getAttribute('aria-pressed');
+    if (pressed === 'true') return 'ativado';
+    if (pressed === 'false') return 'desativado';
+    if (element.getAttribute('aria-checked') === 'true' ||
+        element.getAttribute('aria-selected') === 'true') return 'selecionado';
+    if (element.disabled) return 'indisponível';
+    return null;
   }
 
   /** Região do elemento: menu de navegação, cabeçalho ou conteúdo principal. */
@@ -268,7 +293,10 @@ export class PageReader {
     const labelledBy = element.getAttribute('aria-labelledby');
     if (labelledBy) {
       const ref = document.getElementById(labelledBy);
-      if (ref && ref.textContent.trim()) return this._clean(ref.textContent);
+      if (ref) {
+        const t = this._textOf(ref);
+        if (t) return t;
+      }
     }
 
     // 3. Rótulo associado (label[for=id] ou label pai)
@@ -278,15 +306,19 @@ export class PageReader {
       if (label) return label;
     }
 
-    // 4. Texto visível direto (evita duplicar texto de filhos)
+    // 4. Conteúdo estruturado (cards: título + descrição, sem texto colado)
+    const structured = this._structuredText(element);
+    if (structured) return structured;
+
+    // 5. Texto visível direto (evita duplicar texto de filhos)
     const direct = this._directText(element);
     if (direct) return direct;
 
-    // 5. Texto completo (para containers como <li> que agrupam título + descrição)
-    const full = element.textContent?.trim();
-    if (full) return this._clean(full);
+    // 6. Texto completo, ignorando descendentes aria-hidden
+    const full = this._textOf(element);
+    if (full) return full;
 
-    // 6. placeholder / alt / title
+    // 7. placeholder / alt / title
     const placeholder = element.getAttribute('placeholder');
     if (placeholder) return this._clean(placeholder);
     const alt = element.getAttribute('alt');
@@ -297,13 +329,56 @@ export class PageReader {
     return '';
   }
 
+  /**
+   * Cards e blocos com título + descrição: "Título. Descrição."
+   * Sem isso o textContent cola as palavras (h2 + p não têm espaço entre si).
+   */
+  _structuredText(element) {
+    const heading = element.querySelector('h1, h2, h3, h4, h5, h6');
+    if (!heading) return '';
+
+    const parts = [this._textOf(heading)];
+    element.querySelectorAll('p').forEach((p) => {
+      const t = this._textOf(p);
+      if (t) parts.push(t);
+    });
+
+    const texto = parts.filter(Boolean).join('. ');
+    return texto ? this._clean(texto) : '';
+  }
+
+  /**
+   * Texto de um nó ignorando o que é decorativo (aria-hidden) — resolve, por
+   * exemplo, o asterisco de "obrigatório" que aparecia na fala do campo.
+   */
+  _textOf(node) {
+    let out = '';
+    for (const child of node.childNodes) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        out += child.textContent;
+        continue;
+      }
+      if (child.nodeType !== Node.ELEMENT_NODE) continue;
+      if (child.getAttribute('aria-hidden') === 'true') continue;
+      if (BLACKLIST_TAGS.has(child.tagName)) continue;
+      out += ` ${this._textOf(child)} `;
+    }
+    return this._clean(out);
+  }
+
   _labelFor(element) {
     if (element.id) {
       const label = document.querySelector(`label[for="${CSS.escape(element.id)}"]`);
-      if (label && label.textContent.trim()) return this._clean(label.textContent);
+      if (label) {
+        const t = this._textOf(label);
+        if (t) return t;
+      }
     }
     const parentLabel = element.closest('label');
-    if (parentLabel && parentLabel.textContent.trim()) return this._clean(parentLabel.textContent);
+    if (parentLabel) {
+      const t = this._textOf(parentLabel);
+      if (t) return t;
+    }
     return '';
   }
 

@@ -1,8 +1,7 @@
-import { 
-  createPageHeader, 
-  createActionCard, 
-  createAlert,
-  createStack 
+import {
+  createPageHeader,
+  createActionCard,
+  createAlert
 } from '../components.js';
 
 export async function renderHomePage() {

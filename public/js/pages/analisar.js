@@ -1,45 +1,44 @@
-import { 
-  createPageHeader, 
-  createFormField, 
+import {
+  createPageHeader,
+  createFormField,
   createAlert,
-  createResultActions,
-  createStack 
+  createResultActions
 } from '../components.js';
 
 export async function renderAnalisarPage(params) {
   const type = params.type || 'texto';
-  
+
   const pages = {
     texto: () => renderTextForm(),
     link: () => renderLinkForm(),
     imagem: () => renderImageForm(),
     audio: () => renderAudioForm()
   };
-  
+
   return (pages[type] || pages.texto)();
 }
 
 function renderTextForm() {
   return `
     <div class="analisar-page analisar-texto stack-lg" data-analyze-type="texto">
-      ${createPageHeader('Verificar Mensagem', { 
-        backHref: '#assistir', 
-        backLabel: 'ESCOLHER OUTRO TIPO',
+      ${createPageHeader('Verificar mensagem', {
+        backHref: '#assistir',
+        backLabel: 'Escolher outro tipo'
       })}
 
       <div class="card stack-lg">
-        ${createFormField('textarea', 'input-analysis-text', 'Mensagem suspeita:', {
+        ${createFormField('textarea', 'input-analysis-text', 'Mensagem suspeita', {
           placeholder: 'Exemplo: Urgente! Seu benefício foi bloqueado. Clique no link para recadastrar...',
           required: true,
           rows: 5,
-          button: 'FALAR EM VEZ DE DIGITAR'
+          button: 'Falar em vez de digitar'
         })}
 
-        ${createAlert('info', 'Sua privacidade importa', 'Evite enviar senhas ou dados bancários pessoais.', 'privacy')}
+        ${createAlert('info', 'Sua privacidade importa', 'Evite enviar senhas ou dados bancários pessoais.', 'privacy', { role: 'none' })}
 
         ${createResultActions([
-          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'VERIFICAR MENSAGEM' },
-          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'VOLTAR ÀS OPÇÕES' }
+          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'Verificar mensagem' },
+          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'Voltar às opções' }
         ])}
       </div>
     </div>
@@ -49,21 +48,21 @@ function renderTextForm() {
 function renderLinkForm() {
   return `
     <div class="analisar-page analisar-link stack-lg" data-analyze-type="link">
-      ${createPageHeader('Verificar Link', { 
-        backHref: '#assistir', 
-        backLabel: 'ESCOLHER OUTRO TIPO',
+      ${createPageHeader('Verificar link', {
+        backHref: '#assistir',
+        backLabel: 'Escolher outro tipo'
       })}
 
       <div class="card stack-lg">
-        ${createFormField('url', 'input-analysis-link', 'Cole o link aqui:', {
+        ${createFormField('url', 'input-analysis-link', 'Cole o link aqui', {
           placeholder: 'Exemplo: http://banc0-atualiza-conta.site',
           required: true,
           autocomplete: 'url'
         })}
 
         ${createResultActions([
-          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'VERIFICAR LINK' },
-          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'VOLTAR ÀS OPÇÕES' }
+          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'Verificar link' },
+          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'Voltar às opções' }
         ])}
       </div>
     </div>
@@ -73,23 +72,23 @@ function renderLinkForm() {
 function renderImageForm() {
   return `
     <div class="analisar-page analisar-imagem stack-lg" data-analyze-type="imagem">
-      ${createPageHeader('Imagem ou Comprovante', { 
-        backHref: '#assistir', 
-        backLabel: 'ESCOLHER OUTRO TIPO',
+      ${createPageHeader('Imagem ou comprovante', {
+        backHref: '#assistir',
+        backLabel: 'Escolher outro tipo'
       })}
 
       <div class="card stack-lg">
-        ${createFormField('file', 'input-analysis-image', 'Escolher imagem do celular:', {
+        ${createFormField('file', 'input-analysis-image', 'Escolher imagem do celular', {
           accept: 'image/*'
         })}
 
-        ${createFormField('text', 'input-image-desc', 'Se preferir, conte o que aparece na imagem:', {
+        ${createFormField('text', 'input-image-desc', 'Se preferir, conte o que aparece na imagem', {
           placeholder: 'Exemplo: Comprovante de transferência Pix no valor de 500 reais'
         })}
 
         ${createResultActions([
-          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'VERIFICAR IMAGEM' },
-          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'VOLTAR ÀS OPÇÕES' }
+          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'Verificar imagem' },
+          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'Voltar às opções' }
         ])}
       </div>
     </div>
@@ -99,9 +98,9 @@ function renderImageForm() {
 function renderAudioForm() {
   return `
     <div class="analisar-page analisar-audio stack-lg" data-analyze-type="audio">
-      ${createPageHeader('Verificar Áudio de Voz', { 
-        backHref: '#assistir', 
-        backLabel: 'ESCOLHER OUTRO TIPO',
+      ${createPageHeader('Verificar áudio de voz', {
+        backHref: '#assistir',
+        backLabel: 'Escolher outro tipo'
       })}
 
       <div class="card stack-lg">
@@ -109,12 +108,12 @@ function renderAudioForm() {
           placeholder: 'Exemplo: A pessoa disse que era do banco e precisava que eu fizesse um Pix...',
           required: true,
           rows: 5,
-          button: 'FALAR A MENSAGEM AGORA'
+          button: 'Falar a mensagem agora'
         })}
 
         ${createResultActions([
-          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'VERIFICAR ÁUDIO' },
-          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'VOLTAR ÀS OPÇÕES' }
+          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'Verificar áudio' },
+          { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'Voltar às opções' }
         ])}
       </div>
     </div>

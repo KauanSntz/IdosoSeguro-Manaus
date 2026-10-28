@@ -1,8 +1,6 @@
-import { 
-  createPageHeader, 
-  createAlert,
-  createStack,
-  createCard 
+import {
+  createPageHeader,
+  createAlert
 } from '../components.js';
 
 export async function renderAjudaPage() {
@@ -25,47 +23,40 @@ export async function renderAjudaPage() {
     },
     {
       q: 'Como faço para aumentar o tamanho da letra?',
-      a: 'Vá em "Acessibilidade" no menu inferior e use os botões de tamanho de texto (A pequeno, normal, grande, muito grande). A preferência fica salva no seu navegador.'
+      a: 'Vá em "Acessibilidade" no menu inferior e use os botões de tamanho de texto (Pequeno, Normal, Grande, Muito grande). A preferência fica salva no seu navegador.'
     },
     {
-      q: 'O que é o modo "Aprender"?',
+      q: 'O que é a área "Aprender"?',
       a: 'São 7 aulas curtas sobre golpes comuns: Links Suspeitos, Golpes no WhatsApp, Senhas e Dados, Pix e Transferências, Falsa Central Bancária, Promoções Falsas e CPF e Documentos. Cada aula tem sinais de alerta, como se proteger, um exemplo e um quiz no final.'
     },
     {
-      q: 'O que é o modo "Assistir"?',
+      q: 'O que é a área "Assistir"?',
       a: 'Você envia voluntariamente uma mensagem, link, descrição de imagem ou texto de áudio suspeito. O sistema analisa e mostra o nível de risco (baixo, atenção, alto), os indícios encontrados e orientações do que fazer.'
     }
   ];
 
-  const faqsHtml = faqs.map((faq, i) => `
-    <details class="card" style="padding: var(--space-4);">
-      <summary style="font-weight: var(--font-weight-bold); font-size: var(--font-size-lg); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;">
-        ${faq.q}
-        <svg class="nav-icon" style="color: var(--color-text-muted); transition: transform var(--transition-fast);" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
+  const faqsHtml = faqs.map((faq) => `
+    <details class="card faq-item">
+      <summary class="faq-question">
+        <span>${faq.q}</span>
+        <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
       </summary>
-      <p style="margin-top: var(--space-3); color: var(--color-text-secondary); line-height: var(--line-height-body);">${faq.a}</p>
+      <p class="faq-answer">${faq.a}</p>
     </details>
   `).join('');
 
   return `
     <div class="ajuda-page stack-lg">
-      ${createPageHeader('Ajuda e Dúvidas Frequentes', { 
-        backHref: '#home', 
-        backLabel: 'VOLTAR'
-      })}
+      ${createPageHeader('Ajuda e dúvidas frequentes', { backHref: '#home' })}
 
-      <div class="card stack-lg">
-        <header>
-          <h2 class="title-secondary">Ajuda e Dúvidas Frequentes</h2>
-          <p class="subtitle-main">Encontre respostas rápidas para as perguntas mais comuns.</p>
-        </header>
+      <p class="subtitle-main">Respostas rápidas para as perguntas mais comuns.</p>
 
-        <div class="faqs-list stack-md">
-          ${faqsHtml}
-        </div>
+      <section class="faqs-list stack-md" aria-labelledby="faq-titulo">
+        <h2 id="faq-titulo" class="title-secondary">Perguntas frequentes</h2>
+        ${faqsHtml}
+      </section>
 
-        ${createAlert('info', 'Não encontrou sua dúvida?', 'Entre em contato com a Prefeitura de Manaus pelos canais oficiais de atendimento.', 'info')}
-      </div>
+      ${createAlert('info', 'Não encontrou sua dúvida?', 'Entre em contato com a Prefeitura de Manaus pelos canais oficiais de atendimento.', 'info')}
     </div>
   `;
 }

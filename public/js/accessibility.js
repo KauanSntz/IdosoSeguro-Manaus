@@ -46,8 +46,15 @@ class AccessibilityManager {
 
     const btnContraste = document.getElementById('btn-contraste');
     if (btnContraste) {
-      btnContraste.classList.toggle('active', this.prefs.highContrast);
-      btnContraste.setAttribute('aria-pressed', this.prefs.highContrast);
+      const ativo = this.prefs.highContrast;
+      btnContraste.classList.toggle('active', ativo);
+      btnContraste.classList.toggle('btn-primary', ativo);
+      btnContraste.classList.toggle('btn-outline', !ativo);
+      btnContraste.setAttribute('aria-pressed', String(ativo));
+      const label = btnContraste.querySelector('.btn-label');
+      if (label) {
+        label.textContent = ativo ? 'Desativar alto contraste' : 'Ativar alto contraste';
+      }
     }
 
     document.querySelectorAll('[data-action="font-scale"]').forEach(btn => {
@@ -94,7 +101,8 @@ class AccessibilityManager {
     this.savePrefs();
     this.applyPrefs();
     if (window.screenReader?.enabled) {
-      window.screenReader.speak(`Tamanho da fonte alterado para ${scale}`);
+      const nomes = { small: 'pequeno', normal: 'normal', large: 'grande', xlarge: 'muito grande' };
+      window.screenReader.speak(`Tamanho do texto: ${nomes[scale] || scale}.`);
     }
   }
 
@@ -114,9 +122,20 @@ class AccessibilityManager {
     this.prefs.ttsSpeed = validSpeed;
     this.savePrefs();
     this.applyPrefs();
+    // Aplica o ritmo AGORA (senão só valia depois de recarregar a página).
+    window.speechEngine?.setRate?.(validSpeed);
     if (window.screenReader?.enabled) {
-      window.screenReader.speak(`Velocidade da voz alterada`);
+      // Confirmação falada já na nova velocidade: a pessoa ouve a diferença.
+      window.screenReader.speak(`Velocidade da voz: ${this.speedLabel(validSpeed)}.`);
     }
+  }
+
+  /** Nome amigável da velocidade (mesmos rótulos dos botões: Lenta/Normal/Rápida). */
+  speedLabel(speed) {
+    if (speed <= 0.9) return 'lenta';
+    if (speed <= 1.1) return 'normal';
+    if (speed <= 1.4) return 'rápida';
+    return 'muito rápida';
   }
 
   setTtsEnabled(enabled) {

@@ -31,9 +31,12 @@ function handleClick(event) {
     return;
   }
 
-  // Botões do app (data-action) e itens do menu (nav-item) entram no modo leitor.
-  const target = event.target.closest('[data-action], .nav-item');
+  // Botões do app (data-action), links e itens do menu entram no modo leitor.
+  const target = event.target.closest('[data-action], .nav-item, a[href], button');
   if (!target) return;
+
+  // O indicador do leitor tem controles próprios (Desativar / microfone).
+  if (target.closest('.screen-reader-indicator')) return;
 
   const reader = window.screenReader;
 

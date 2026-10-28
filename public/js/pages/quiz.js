@@ -35,10 +35,13 @@ export async function renderQuizPage(params) {
 
   function notifyPageReaderQuestionRendered() {
     if (window.screenReader) {
+      const q = questions[state.current];
       window.screenReader.announceQuizQuestion(
         document.getElementById('main-content'),
         state.current,
-        questions.length
+        questions.length,
+        q?.question,
+        q?.scenario
       );
     }
   }

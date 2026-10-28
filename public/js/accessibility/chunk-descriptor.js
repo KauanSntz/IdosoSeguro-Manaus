@@ -53,10 +53,10 @@ export function describeChunk(chunk) {
     return `${label}: ${text || 'indeterminada'}.`;
   }
 
-  if (!text) return `${label}.`;
+  if (!text) return chunk.state ? `${label}, ${chunk.state}.` : `${label}.`;
   // Evita ponto duplo quando o texto já termina com pontuação.
   const clean = text.replace(/[.!?]+$/, '');
-  return `${label}: ${clean}.`;
+  return chunk.state ? `${label}: ${clean}, ${chunk.state}.` : `${label}: ${clean}.`;
 }
 
 /** Monta a frase que resume a página (mapa rápido ao chegar). */

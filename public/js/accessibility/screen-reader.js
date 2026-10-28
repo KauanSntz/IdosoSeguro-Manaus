@@ -59,7 +59,7 @@ export class ScreenReader {
     this._saveState();
     this._applyDomFlag(true);
     this._renderIndicator();
-    this.speak('Modo leitor de tela ativado. Navegue com as setas, arrastando o dedo ou por voz.');
+    this.speak('Modo leitor de tela ativado. Use Tab ou as setas para ler a página. Enter ativa o item selecionado.');
     this._extractCurrentPage();
     return true;
   }
@@ -116,6 +116,7 @@ export class ScreenReader {
     this.routeInfo = routeInfo;
     this._cancelPending();
     this._stopReadingAll();
+    this._syncToggles();
 
     if (!this.enabled) return;
 
@@ -124,13 +125,23 @@ export class ScreenReader {
     this._connectObserver(container);
   }
 
-  /** Chamado pelo quiz quando uma nova pergunta é renderizada. */
-  announceQuizQuestion(container, currentIndex, total) {
+  /**
+   * Chamado pelo quiz quando uma nova pergunta é renderizada.
+   * Fala a SITUAÇÃO e a PERGUNTA — sem isso a pessoa cega só ouvia o resumo
+   * da tela e ficava sem saber o que estava sendo perguntado.
+   */
+  announceQuizQuestion(container, currentIndex, total, question, scenario) {
     if (!this.enabled) return;
     this.container = container;
     this.reader.extract(this._contentContainers());
-    const section = `Quiz, pergunta ${currentIndex + 1} de ${total}`;
-    this.speech.speak(`${describeContext(section)} ${describeSummary(this.reader.summary())}`);
+    this._cancelPending();
+
+    const parts = [`Pergunta ${currentIndex + 1} de ${total}.`];
+    if (scenario) parts.push(`Situação: ${scenario}`);
+    if (question) parts.push(`Pergunta: ${question}`);
+    parts.push('Use Tab ou as setas para ouvir as respostas.');
+
+    this.speech.speak(parts.join(' '));
     this._connectObserver(container);
   }
 
@@ -223,6 +234,48 @@ export class ScreenReader {
 
     this._highlight(element);
     this.speech.speak(describeChunk(chunk));
+  }
+
+  /**
+   * Tab/Shift+Tab percorrendo o CONTEÚDAO (chamado por inputs/focus.js).
+   *
+   * Diferente do foco nativo, aqui o cursor avança por TUDO que a tela
+   * contém — títulos, parágrafos, botões e menu — como o deslizar do
+   * TalkBack. Num item acionável leva o foco real do browser junto (para o
+   * Enter funcionar); em textos fica só no cursor virtual.
+   * @param {number} direction +1 próximo, -1 anterior
+   */
+  handleTab(direction) {
+    if (!this.enabled) return;
+
+    this._stopReadingAll();
+    this._cancelPending();
+
+    const chunk = direction > 0 ? this.reader.next() : this.reader.previous();
+    if (!chunk) return;
+
+    this._applyRealFocus(chunk);
+    this._highlight(chunk.element);
+    this.speech.speak(describeChunk(chunk));
+  }
+
+  /** Leva o foco real do browser junto quando o item é acionável. */
+  _applyRealFocus(chunk) {
+    const element = chunk.element;
+
+    if (chunk.interactive && typeof element?.focus === 'function') {
+      try {
+        element.focus({ preventScroll: true }); // o scroll é papel do _highlight
+      } catch { /* elemento não focável */ }
+      return;
+    }
+
+    // Texto: cursor virtual. Solta o foco real para o Enter não reativar
+    // por engano um botão visitado antes.
+    const active = document.activeElement;
+    if (active && active !== document.body && typeof active.blur === 'function') {
+      try { active.blur(); } catch { /* ignorado */ }
+    }
   }
 
   // ── Navegação interna ──────────────────────────────────────────────────────
@@ -326,7 +379,7 @@ export class ScreenReader {
     const firstIndex = this.reader.firstContentIndex();
     const firstChunk = this.reader.goTo(firstIndex);
 
-    const parts = [describeContext(section), summary];
+    const parts = [section ? describeContext(section) : 'Você está nesta página.', summary];
     if (firstChunk) {
       this._highlight(firstChunk.element);
       parts.push(describeChunk(firstChunk));
@@ -345,15 +398,17 @@ export class ScreenReader {
     const section = this._sectionName();
     const chunk = this.reader.current();
     const position = chunk ? describePosition(chunk.index, chunk.total) : '';
-    this.speech.speak(`${describeContext(section)} ${position}`.trim());
+    const context = section ? describeContext(section) : 'Você está nesta página.';
+    this.speech.speak(`${context} ${position}`.trim());
   }
 
   _announceSummary() {
     this.speech.speak(describeSummary(this.reader.summary()));
   }
 
+  /** Nome da seção atual, ou null quando a rota é desconhecida. */
   _sectionName() {
-    if (!this.routeInfo) return 'esta página';
+    if (!this.routeInfo) return null;
     const map = {
       welcome: 'Início', home: 'Início',
       aprender: 'Aprender', ensinar: 'Aprender',
@@ -364,7 +419,7 @@ export class ScreenReader {
       ajuda: 'Ajuda', duvidas: 'Ajuda',
       fechamento: 'Conclusão'
     };
-    const base = map[this.routeInfo.section] || this.routeInfo.section || 'esta página';
+    const base = map[this.routeInfo.section] || this.routeInfo.section || null;
     const slug = this.routeInfo.params?.slug;
     return slug ? `${base}: ${this._topicName(slug)}` : base;
   }
@@ -492,6 +547,18 @@ export class ScreenReader {
 
   _applyDomFlag(active) {
     document.documentElement.setAttribute('data-screen-reader', active ? 'true' : 'false');
+    this._syncToggles();
+  }
+
+  /** Mantém TODO botão de ligar/desligar coerente com o estado real. */
+  _syncToggles() {
+    document.querySelectorAll('[data-action="toggle-screen-reader"]').forEach((btn) => {
+      btn.setAttribute('aria-pressed', String(this.enabled));
+      const label = btn.querySelector('.btn-label');
+      if (label) {
+        label.textContent = this.enabled ? 'Desativar leitor de tela' : 'Ativar leitor de tela';
+      }
+    });
   }
 
   _renderIndicator() {

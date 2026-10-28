@@ -354,13 +354,16 @@ html[data-screen-reader="true"] [data-voice-btn]:not([data-action="toggle-screen
   background: var(--color-primary-dark);
 }
 
-/* Chunk atual sendo lido */
+/* Chunk atual sendo lido.
+   ATENÇÃO: NÃO trocar o background aqui. Botões primários têm texto branco;
+   pintar o fundo de claro deixava o texto branco sobre claro (ilegível).
+   O destaque é só o contorno + halo, que funcionam sobre qualquer fundo. */
 .sr-current-chunk {
   outline: 3px solid var(--color-primary) !important;
   outline-offset: 2px !important;
-  background: var(--color-primary-lighter) !important;
   border-radius: var(--radius-md);
-  transition: outline 0.1s, background 0.1s;
+  box-shadow: 0 0 0 6px rgba(29, 78, 122, 0.22) !important;
+  transition: outline 0.1s, box-shadow 0.1s;
 }
 
 /* Indicador de posição (ex: "3 de 12") */
@@ -398,8 +401,7 @@ html[data-screen-reader="true"] .sr-current-chunk:focus {
 html[data-screen-reader="true"] .sr-current-chunk.sr-focused {
   outline: 4px solid var(--color-primary) !important;
   outline-offset: 3px !important;
-  box-shadow: 0 0 0 6px rgba(29, 78, 122, 0.4) !important;
-  background: var(--color-primary-light) !important;
+  box-shadow: 0 0 0 8px rgba(29, 78, 122, 0.28) !important;
 }
 
 /* Indicador de loading no modo leitor */
