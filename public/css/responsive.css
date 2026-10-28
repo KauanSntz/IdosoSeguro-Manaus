@@ -355,8 +355,5 @@ html[data-font-scale="xlarge"] {
   --touch-target-min: 48px;
   --touch-target-comfortable: 56px;
   --touch-target-large: 64px;
-}
-
-html[data-font-scale="xlarge"] .bottom-nav {
-  height: 80px;
+  --nav-height: 80px;
 }

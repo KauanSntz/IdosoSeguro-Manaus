@@ -39,10 +39,6 @@ html[data-font-scale="small"] .hero-illustration { max-height: 180px; }
 html[data-font-scale="large"] .hero-illustration { max-height: 260px; }
 html[data-font-scale="xlarge"] .hero-illustration { max-height: 300px; }
 
-html[data-font-scale="small"] .nav-label { font-size: 10px; }
-html[data-font-scale="large"] .nav-label { font-size: 13px; }
-html[data-font-scale="xlarge"] .nav-label { font-size: 14px; }
-
 /* ========================================
    REDUCED MOTION
    ======================================== */
@@ -175,23 +171,6 @@ article {
   :focus-visible {
     outline-width: 4px;
     outline-offset: 3px;
-  }
-}
-
-/* ========================================
-   ZOOM SUPPORT
-   ======================================== */
-@media screen and (max-width: 320px) {
-  html {
-    font-size: calc(var(--font-base-size) * 0.9);
-  }
-
-  .app-header {
-    height: 56px;
-  }
-
-  .bottom-nav {
-    height: 68px;
   }
 }
 
