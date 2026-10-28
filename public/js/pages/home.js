@@ -7,7 +7,7 @@ import {
 export async function renderHomePage() {
   return `
     <div class="home-page stack-lg">
-      ${createPageHeader('O que você deseja fazer?', { showScreenReaderToggle: false, showBack: false })}
+      ${createPageHeader('O que você deseja fazer?', { showScreenReaderToggle: true, showBack: false })}
 
       <div class="action-cards">
         ${createActionCard('#aprender', 'school', 'Aprender', 'Aulas curtas sobre golpes comuns: WhatsApp, Pix, links falsos, senhas e mais.')}

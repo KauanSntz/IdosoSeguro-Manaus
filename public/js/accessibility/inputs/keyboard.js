@@ -13,6 +13,7 @@
  *   M          → ir direto ao menu de abas
  *   P          → ler tudo · S resumo · C onde estou · R repete
  *   Esc        → cancelar ativação pendente / desligar
+ *   Alt+L      → liga/desliga o leitor (funciona com ele DESLIGADO)
  */
 
 const KEY_MAP = {
@@ -48,6 +49,15 @@ const KEY_MAP = {
  */
 export function initKeyboardInput({ reader }) {
   function onKeyDown(event) {
+    // Atalho global de descoberta: Alt+L liga/desliga o leitor.
+    // Vale inclusive com o leitor DESLIGADO — é assim que a pessoa o encontra.
+    if (event.altKey && (event.key === 'l' || event.key === 'L')) {
+      event.preventDefault();
+      event.stopPropagation();
+      reader.toggle();
+      return;
+    }
+
     if (!reader.enabled) return;
 
     // Nunca sequestrar teclas dentro de campos de texto editáveis.

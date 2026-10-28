@@ -45,6 +45,9 @@ export class ScreenReader {
     // Se o Enter vier agora, executa direto (sem pedir 2º toque).
     this._armedElement = null;
 
+    // Ativação do leitor: chegada adiada até a mensagem de boas-vindas acabar.
+    this._enableToken = null;
+
     // Leitura sequencial automática ("ler tudo").
     this._readingAll = false;
     this._readAllPos = null;
@@ -70,8 +73,17 @@ export class ScreenReader {
     this._saveState();
     this._applyDomFlag(true);
     this._renderIndicator();
-    this.speak('Modo leitor de tela ativado. Use Tab ou as setas para ler a página. Enter ativa o item selecionado.');
-    this._extractCurrentPage();
+
+    // A chegada só é falada DEPOIS da mensagem de ativação (o motor de voz
+    // interrompe a fala anterior ao falar a próxima).
+    const token = {};
+    this._enableToken = token;
+    this.speak('Leitor de tela ativado. Use Tab ou deslize para a direita para ouvir. Toque duas vezes para ativar. Aperte S para o resumo.')
+      .then(() => {
+        if (!this.enabled || this._enableToken !== token) return;
+        this._enableToken = null;
+        this._extractCurrentPage();
+      });
     return true;
   }
 
@@ -83,10 +95,14 @@ export class ScreenReader {
     this._removeIndicator();
     this._cancelPending();
     this._armedElement = null;
+    this._enableToken = null;
     this._stopReadingAll();
     this.reader.reset();
     this._disconnectObserver();
     this.speech.stop();
+    // Fala depois de desligar: `speak()` só funciona com o leitor ativo,
+    // então vai direto no motor de voz.
+    this.speech.speak('Leitor de tela desativado.');
     return false;
   }
 
@@ -149,6 +165,7 @@ export class ScreenReader {
     };
     this._cancelPending();
     this._armedElement = null;
+    this._enableToken = null; // uma navegação cancela a chegada adiada da ativação
     this._stopReadingAll();
     this._syncToggles();
 

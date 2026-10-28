@@ -40,7 +40,7 @@ export function createPageHeader(title, options = {}) {
   ` : '';
 
   const screenReaderToggleBtn = showScreenReaderToggle ? `
-    <button type="button" class="btn btn-primary btn-sm" data-action="toggle-screen-reader" aria-pressed="false">
+    <button type="button" class="btn btn-primary btn-sm" data-action="toggle-screen-reader" aria-pressed="false" aria-keyshortcuts="Alt+L">
       <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#accessibility"></use></svg>
       <span class="btn-label">Ativar leitor de tela</span>
     </button>
@@ -124,7 +124,7 @@ export function createFontScaleControl(currentScale = 'normal') {
 /** Botão que liga/desliga o modo leitor de tela (texto reflete o estado). */
 export function createScreenReaderToggle(enabled = false) {
   return `
-    <button type="button" class="btn btn-primary btn-block btn-lg" data-action="toggle-screen-reader" aria-pressed="${enabled}">
+    <button type="button" class="btn btn-primary btn-block btn-lg" data-action="toggle-screen-reader" aria-pressed="${enabled}" aria-keyshortcuts="Alt+L">
       <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#accessibility"></use></svg>
       <span class="btn-label">${enabled ? 'Desativar leitor de tela' : 'Ativar leitor de tela'}</span>
     </button>
