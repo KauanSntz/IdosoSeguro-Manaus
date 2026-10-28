@@ -8,7 +8,7 @@
  *
  * Teclas:
  *   Setas      → próximo / anterior
- *   Enter/Espaço → ativar (2 toques)
+ *   Enter/Espaço → ativar (age direto se o item já foi descrito)
  *   H / B / L / T → pular por tipo (título/botão/lista/texto)
  *   M          → ir direto ao menu de abas
  *   P          → ler tudo · S resumo · C onde estou · R repete

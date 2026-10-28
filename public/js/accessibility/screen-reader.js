@@ -38,8 +38,12 @@ export class ScreenReader {
     this.routeInfo = null;
     this.container = null;
 
-    // Máquina de estados da regra de 2 toques.
+    // Máquina de estados da regra de 2 toques (SÓ toque/gesto).
     this._pending = null; // { element, timer }
+
+    // Teclado: o item que está sob o cursor e JÁ foi descrito.
+    // Se o Enter vier agora, executa direto (sem pedir 2º toque).
+    this._armedElement = null;
 
     // Leitura sequencial automática ("ler tudo").
     this._readingAll = false;
@@ -78,6 +82,7 @@ export class ScreenReader {
     this._applyDomFlag(false);
     this._removeIndicator();
     this._cancelPending();
+    this._armedElement = null;
     this._stopReadingAll();
     this.reader.reset();
     this._disconnectObserver();
@@ -143,6 +148,7 @@ export class ScreenReader {
       route: String(routeInfo?.route || '').replace(/^#/, '')
     };
     this._cancelPending();
+    this._armedElement = null;
     this._stopReadingAll();
     this._syncToggles();
 
@@ -179,6 +185,7 @@ export class ScreenReader {
     }
 
     this._highlight(element);
+    this._arm(chunk);
     return this.speak(this._describe(chunk), { force: true });
   }
 
@@ -225,9 +232,11 @@ export class ScreenReader {
       return;
     }
 
+    // Toque/deslize NÃO "arma" o Enter: a ativação por toque é sempre 2 toques.
+    this._armedElement = null;
     const chunk = this._chunkFor(element);
     this._cancelPending();
-    this._present(element, `${this._describe(chunk)} Toque de novo para ativar.`);
+    this._present(element, `${this._describe(chunk)} Toque duas vezes para ativar.`);
   }
 
   /**
@@ -252,6 +261,7 @@ export class ScreenReader {
 
     if (!chunk) return;
 
+    this._arm(chunk);
     this._highlight(element);
     this.speak(this._describe(chunk));
   }
@@ -281,6 +291,7 @@ export class ScreenReader {
     }
 
     this._applyRealFocus(chunk);
+    this._arm(chunk);
     this._highlight(chunk.element);
     this.speak(this._describe(chunk));
   }
@@ -314,6 +325,7 @@ export class ScreenReader {
     const chunk = direction > 0 ? this.reader.next() : this.reader.previous();
     if (!chunk) return;
 
+    this._arm(chunk);
     this._highlight(chunk.element);
     this.speak(this._describe(chunk));
   }
@@ -342,6 +354,7 @@ export class ScreenReader {
       return;
     }
 
+    this._arm(chunk);
     this._highlight(chunk.element);
     this.speak(this._describe(chunk));
   }
@@ -359,27 +372,47 @@ export class ScreenReader {
 
     const first = navChunks[0];
     this.reader.goTo(first.index);
+    this._arm(first);
     this._highlight(first.element);
     this.speak(`Menu de abas. ${this._describe(first)}`);
   }
 
+  /**
+   * Enter/ativação.
+   *
+   * Se o item JÁ foi descrito pelo teclado (Tab, setas, atalhos), o Enter age
+   * na hora — como num leitor de tela real. A regra dos 2 toques continua
+   * valendo apenas para toque e gesto (`handleTap`).
+   */
   _activate() {
     const chunk = this.reader.current();
     if (!chunk) return;
 
     if (!chunk.interactive) {
+      this._armedElement = null;
       this.speak(this._describe(chunk));
       return;
     }
 
-    if (this._pending && this._pending.element === chunk.element) {
+    const pending = this._pending && this._pending.element === chunk.element;
+    if (pending || this._armedElement === chunk.element) {
       this._cancelPending();
+      this._armedElement = null;
       this.onExecute(chunk.element);
       this._afterExecute(chunk.element);
       return;
     }
 
-    this._present(chunk.element, `${this._describe(chunk)} Pressione de novo para ativar.`);
+    // Item ainda não descrito (ex.: chegou por voz): lê e pede confirmação.
+    this._present(chunk.element, `${this._describe(chunk)} Toque duas vezes para ativar.`);
+  }
+
+  /**
+   * Marca o item sob o cursor como "já descrito pelo teclado".
+   * Só itens acionáveis armam o Enter — em texto, Enter apenas relê.
+   */
+  _arm(chunk) {
+    this._armedElement = chunk && chunk.interactive ? chunk.element : null;
   }
 
   /**
@@ -489,6 +522,7 @@ export class ScreenReader {
 
   _announceArrival() {
     const start = this._titleChunk();
+    this._armedElement = null; // o título não é acionável
 
     if (start) {
       this.reader.goTo(start.index);

@@ -32,7 +32,7 @@ export async function renderAcessibilidadePage() {
 
       <section class="card stack-md" aria-labelledby="ajuste-leitor">
         <h2 id="ajuste-leitor" class="title-secondary">Leitor de tela</h2>
-        <p>Com o leitor ativado: toque uma vez para ouvir o item, toque duas vezes no mesmo item para ativar.</p>
+        <p>No celular: toque uma vez no item para ouvir e toque duas vezes no mesmo item para ativar. No computador: use as setas ou Tab para andar e aperte Enter para ativar.</p>
         ${createScreenReaderToggle(readerEnabled)}
       </section>
 
