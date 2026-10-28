@@ -111,7 +111,7 @@
 }
 
 .btn-block { width: 100%; }
-.btn-sm { min-height: var(--btn-height-sm); font-size: var(--font-size-sm); padding: 0 var(--space-3); }
+.btn-sm { min-height: calc(var(--btn-height-sm) + 2px); font-size: var(--font-size-sm); padding: 0 var(--space-3); }
 .btn-md { min-height: var(--btn-height-md); }
 .btn-lg { min-height: var(--btn-height-lg); font-size: var(--font-size-lg); }
 .btn-xl { min-height: var(--btn-height-xl); font-size: var(--font-size-xl); padding: 0 var(--space-6); }
