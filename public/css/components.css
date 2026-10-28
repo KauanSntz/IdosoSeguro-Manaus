@@ -467,7 +467,6 @@
 }
 
 .result-banner .title {
-  font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -928,7 +927,6 @@
 .page-header-title {
   flex: 1;
   min-width: 0;
-  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-primary-dark);
   margin: 0;
@@ -1251,7 +1249,6 @@
 }
 
 .welcome-page .title-primary {
-  font-size: var(--font-size-2xl);
   margin-bottom: var(--space-2);
 }
 
@@ -1378,7 +1375,6 @@
 }
 
 .quiz-page .question-text {
-  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin: 0 0 var(--space-3);
@@ -1634,7 +1630,6 @@
 }
 
 .fechamento-page .title-main {
-  font-size: var(--font-size-3xl);
   font-weight: var(--font-weight-black);
   color: var(--color-primary);
   line-height: var(--line-height-tight);
@@ -1642,7 +1637,6 @@
 }
 
 .fechamento-page .subtitle-main {
-  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-primary-dark);
   margin: 0 0 var(--space-3);
@@ -1692,10 +1686,6 @@
 @media (min-width: 900px) {
   .page-header {
     padding-bottom: var(--space-4);
-  }
-
-  .page-header-title {
-    font-size: var(--font-size-2xl);
   }
 }
 

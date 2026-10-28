@@ -437,22 +437,52 @@ body {
 }
 
 /* ========================================
-   TÍTULOS
+   TÍTULOS — dono único da escala (B-R6 / B-R11)
+   h1 = 2rem (2x o corpo), h2 = 1.5rem, h3 = 1.25rem.
+   Tudo em rem: como o <html> já carrega a escala de fonte, os títulos
+   acompanham sozinhos. Nenhuma página nem breakpoint mexe em tamanho
+   de título — o que existe aqui vale para o app inteiro.
    ======================================== */
-.title-primary {
-  font-size: var(--font-size-2xl);
+h1,
+.title-primary,
+.page-header-title {
+  font-size: 2rem;
   font-weight: var(--font-weight-bold);
   color: var(--color-primary-dark);
   line-height: var(--line-height-heading);
   margin: 0 0 var(--space-2);
+  text-wrap: balance;
 }
 
+h2,
 .title-secondary {
-  font-size: var(--font-size-xl);
+  font-size: 1.5rem;
   font-weight: var(--font-weight-bold);
   color: var(--color-secondary);
   line-height: var(--line-height-heading);
   margin: 0 0 var(--space-2);
+  text-wrap: balance;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  line-height: var(--line-height-heading);
+  margin: 0 0 var(--space-2);
+  text-wrap: balance;
+}
+
+h4 {
+  font-size: 1.125rem;
+}
+
+h5 {
+  font-size: 1rem;
+}
+
+h6 {
+  font-size: 0.875rem;
 }
 
 .subtitle-main {

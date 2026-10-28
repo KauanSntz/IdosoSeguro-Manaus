@@ -28,18 +28,6 @@
     padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-6));
   }
 
-  .title-primary {
-    font-size: var(--font-size-3xl);
-  }
-
-  .title-secondary {
-    font-size: var(--font-size-2xl);
-  }
-
-  .subtitle-main {
-    font-size: var(--font-size-xl);
-  }
-
   .hero-illustration {
     max-height: 280px;
   }
@@ -166,10 +154,6 @@
 /* ========================================
    LARGE TEXT SCALES RESPONSIVE
    ======================================== */
-@media (min-width: 900px) {
-  html[data-font-scale="large"] .title-primary { font-size: var(--font-size-4xl); }
-  html[data-font-scale="xlarge"] .title-primary { font-size: calc(var(--font-size-4xl) * 1.2); }
-}
 
 /* ========================================
    ORIENTATION: LANDSCAPE MOBILE
