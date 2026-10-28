@@ -347,7 +347,18 @@ export class ScreenReader {
     this.speak(this._describe(chunk));
   }
 
+  /**
+   * R: repete a ÚLTIMA fala inteira (como num leitor de tela real).
+   *
+   * Logo depois de chegar numa aula, isso relê "Aula: X. Introdução. <texto
+   * da introdução>" — não só o parágrafo onde o cursor parou.
+   */
   _repeat() {
+    if (this._lastSpokenText) {
+      this.speak(this._lastSpokenText, { force: true });
+      return;
+    }
+
     const chunk = this.reader.current();
     if (chunk) this.speak(this._describe(chunk), { force: true });
   }
