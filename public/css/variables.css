@@ -39,6 +39,12 @@
   --color-success-bg: #E8F4ED;
   --color-success-border: #A8D8BF;
 
+  /* Cores de TEXTO sobre fundos suaves (alertas, feedback, links).
+     No alto contraste recebem versões mais claras para manter 7:1. */
+  --color-success-text: #1F5C45;
+  --color-info-text: #1D4E7A;
+  --color-danger-text: #9B2C2C;
+
   --color-warning: #8A5A00;
   --color-warning-bg: #FFF8E6;
   --color-warning-border: #F0D9A0;
@@ -213,6 +219,11 @@ html[data-high-contrast="true"] {
   --color-success: #00FF66;
   --color-success-bg: #003311;
   --color-success-border: #00FF66;
+
+  /* Texto sobre fundos suaves: claros o bastante para 7:1. */
+  --color-success-text: #00FF66;
+  --color-info-text: #99CCFF;
+  --color-danger-text: #FF8A8A;
 
   --color-warning: #FFCC00;
   --color-warning-bg: #332600;
