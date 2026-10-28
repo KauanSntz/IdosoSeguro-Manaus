@@ -1088,7 +1088,7 @@
   line-height: 1.1;
   font-size: clamp(16px, var(--font-size-xs), 18px);
   overflow-wrap: break-word;
-  hyphens: auto;
+  hyphens: none;
   /* ocupa a largura do item para poder quebrar em vez de invadir o vizinho */
   width: 100%;
 }
