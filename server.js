@@ -61,7 +61,13 @@ app.use('/api', apiRoutes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('*', (req, res) => {
+// Fallback do SPA: só vale para rota sem extensão de arquivo e fora de /api.
+// Caminho com extensão que não existe (.js, .css, .woff2, .png, .svg, .json...)
+// segue para o 404 real, em vez de receber index.html com status 200.
+app.get('*', (req, res, next) => {
+  if (req.path === '/api' || req.path.startsWith('/api/') || /\.[a-z0-9]+$/i.test(req.path)) {
+    return next();
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
