@@ -1,0 +1,775 @@
+================================================================================
+RELATÓRIO DE RESPONSIVIDADE — IDOSOSEGURO+ MANAUS
+Documento de transferência: tudo o que está errado no layout/CSS hoje,
+com arquivo, linha, número medido e correção sugerida.
+Gerado em: 28/10/2026  |  Commit de referência: 0a80557  |  Versão do app: 1.3.0
+================================================================================
+
+COMO USAR ESTE ARQUIVO
+  - Seções 1 a 5 = contexto (como o CSS está montado hoje).
+  - Seção 6 = A LISTA DE BUGS (B-R1 ... B-R25). É o que precisa ser corrigido.
+  - Seção 7 = medições reais feitas no navegador (evidência, não opinião).
+  - Seção 8 = plano de correção em fases (ordem recomendada).
+  - Seção 9 = critérios de aceite (como provar que ficou pronto).
+  - Seção 10 = checklist de regressão (telas x larguras x escalas de fonte).
+  - Seção 11 = scripts para medir de novo.
+  - Seção 12 = prompt pronto para colar na outra IA.
+
+
+--------------------------------------------------------------------------------
+0. RESUMO EXECUTIVO (os 10 problemas que mais quebram a tela hoje)
+--------------------------------------------------------------------------------
+
+ 1. A escala de fonte do usuário é aplicada DUAS VEZES (rem já escala e os
+    tokens multiplicam de novo). Em "extra grande" o texto fica 2,25x em vez
+    de 1,5x. Título de tela chega a 109 px. [B-R1]
+ 2. `--space-16` não existe, mas é usado em responsive.css:343. Resultado:
+    a partir de 1400px de largura o `.main-content` fica com padding ZERO
+    (medido: 0px). O conteúdo encosta na borda da tela. [B-R2]
+ 3. No desktop o menu NÃO fica no topo: o `.bottom-nav` é o 3º filho do
+    `.app-container` e vira `position: static` em ≥900px, então ele aparece
+    DEPOIS de todo o conteúdo (no fim da página). [B-R3]
+ 4. No mobile o `.bottom-nav` é `position: fixed` e nada compensa: os últimos
+    72–80 px de conteúdo ficam escondidos atrás do menu. [B-R4]
+ 5. `reset.css` NÃO é carregado (e `style.css`, que faria o @import, também
+    não). Não existe camada base: h1..h6, p, ul, img, a, button ficam com o
+    padrão do navegador. [B-R5]
+ 6. Títulos sem escala única: o mesmo "título da tela" (h1) mede 109 px na
+    Welcome e 61 px nas outras telas (1440px, fonte extra grande). [B-R6]
+ 7. Padding somado em 3 camadas (main + página + card) = 52 px por lado em
+    um celular de 360px → sobram ~256 px de coluna de texto. [B-R7]
+ 8. Botões: `text-transform: uppercase` + `overflow-wrap: anywhere` +
+    `padding: 0 20px` (sem padding vertical). Rótulos longos viram 3–4
+    linhas quebradas no meio de palavras e coladas nas bordas. [B-R8]
+ 9. `.btn-back { flex: 0 0 auto }` e `white-space: nowrap` em nav-label /
+    btn-voice .btn-label → estouro horizontal em tela estreita + fonte
+    grande (medido: 566 px de largura dentro de 328 px). [B-R9, B-R10]
+10. Alturas fixas (header 60/64, nav 72/80, botões 44–72 px) enquanto o texto
+    pode crescer 2,25x. [B-R11]
+
+
+--------------------------------------------------------------------------------
+1. STACK E ARQUIVOS (o que existe hoje)
+--------------------------------------------------------------------------------
+
+Aplicação: SPA sem framework. HTML + CSS puro + JS ES Modules.
+Não há build, não há Sass, não há Tailwind, não há `@layer`, não há postcss.
+
+Arquivos CSS (public/css):
+  variables.css      532 linhas  (tokens + base + header/nav/main + loader + títulos)
+  components.css    1769 linhas  (todos os componentes e 8 media queries próprias)
+  accessibility.css  410 linhas  (alto contraste, leitor de tela, print, 320px)
+  responsive.css     362 linhas  (breakpoints 360/600/900/1200/1400 + print + motion)
+  reset.css          135 linhas  *** NÃO É CARREGADO ***
+  style.css           78 linhas  *** NÃO É CARREGADO *** (faz @import de todos)
+
+O que o index.html carrega (public/index.html:14-17), nesta ordem:
+  1. /css/variables.css
+  2. /css/components.css
+  3. /css/accessibility.css
+  4. /css/responsive.css
+
+O que o service worker cacheia (public/service-worker.js:5-8):
+  exatamente os 4 arquivos acima. Se a lista de arquivos mudar, o SW precisa
+  de bump de versão (hoje: idoso-seguro-v35).
+
+CONSEQUÊNCIA IMEDIATA: reset.css é código morto e, por não ser carregado,
+  - `img, svg, video, canvas { max-width:100%; height:auto; display:block }`
+    não existe;
+  - `ul, ol { list-style:none }` não existe;
+  - `a { text-decoration: underline }` não existe (medido: text-decoration
+    "none" no primeiro link do conteúdo);
+  - `h1 { font-size: var(--font-size-4xl) } ... h6` NÃO existem. Medido por
+    grep: NENHUM arquivo carregado define tamanho de h1..h6 sem classe.
+    Qualquer <h2> sem classe herda o padrão do navegador (1.5em,
+    line-height normal, sem a cor do tema).
+  - `p { margin: 0 }` não existe (cada página estiliza o seu);
+  - `scroll-behavior: smooth` não existe (medido: "auto").
+
+E style.css é um arquivo morto que duplica `.loader`, `.spinner`,
+`.title-primary`, `.title-secondary`, `.subtitle-main`, `.hero-illustration`
+(style.css:20-77) — ou seja, hoje existem DOIS lugares que dizem qual é o
+tamanho de um título, e o segundo ninguém carrega.
+
+
+--------------------------------------------------------------------------------
+2. TOKENS (o "design system" hoje)
+--------------------------------------------------------------------------------
+
+Tudo em :root no variables.css:2-150. Não existe tema claro/escuro; existe
+um conjunto fixo de cores + um override de alto contraste.
+
+2.1 CORES
+  Fundo            --color-bg              #F7F5F0
+  Superfície       --color-surface         #FFFFFF
+  Superfície hover --color-surface-hover   #F0FAF5
+  Texto            --color-text            #14202B
+  Texto secundário --color-text-secondary  #4A5D6B
+  Texto apagado    --color-text-muted      #56707E
+  Texto sobre cor  --color-text-on-primary / on-secondary   #FFFFFF
+
+  Primária         #1F5C45   dark #164333   light #E8F4ED   lighter #F0FAF5
+  Secundária       #1D4E7A   dark #153A5C   light #E6F0F8   lighter #F0F7FC
+  Âmbar/aviso      #8A5A00   light #FFF8E6  border #F0D9A0   text #5C3A00
+  Perigo           #9B2C2C   light #FDF1F1  border #F0C0C0
+  Sucesso          #1F5C45   bg #E8F4ED     border #A8D8BF
+  Info             #1D4E7A   bg #E6F0F8     border #B8D0F0
+  Borda            #DCE4EC   forte #B8CBD8  foco #1F5C45
+
+  Observação: "sucesso" e "primária" são a MESMA cor (#1F5C45) e "aviso" e
+  "âmbar" também (#8A5A00). Isso apaga a diferença semântica de estados.
+
+2.2 TIPOGRAFIA
+  Fonte: 'Atkinson Hyperlegible' via Google Fonts (index.html:12) — CDN.
+  --font-family-mono existe e nunca é usada.
+
+  --font-scale            1            (trocado por [data-font-scale])
+  --font-base-size        calc(18px * var(--font-scale))
+  --font-size-xs          calc(0.75rem  * var(--font-scale))
+  --font-size-sm          calc(0.875rem * var(--font-scale))
+  --font-size-base        calc(1rem     * var(--font-scale))
+  --font-size-lg          calc(1.125rem * var(--font-scale))
+  --font-size-xl          calc(1.25rem  * var(--font-scale))
+  --font-size-2xl         calc(1.5rem   * var(--font-scale))
+  --font-size-3xl         calc(1.875rem * var(--font-scale))
+  --font-size-4xl         calc(2.25rem  * var(--font-scale))
+  line-height: body 1.6 / heading 1.3 / tight 1.2
+  pesos: 400, 500, 600, 700 (não existe 900, mas é usado — ver B-R2)
+
+  html { font-size: var(--font-base-size) }   (variables.css:252-255)
+  body { font-size: var(--font-size-base) }   (variables.css:257-266)
+
+  Isso é o núcleo do B-R1: `rem` é relativo ao html, que JÁ está escalado;
+  e cada token multiplica por `--font-scale` OUTRA VEZ.
+
+  Escalas disponíveis (variables.css:155-158):
+    small 0.875 | normal 1 | large 1.25 | xlarge 1.5
+
+2.3 ESPAÇAMENTO (escala 4px, toda em px FIXO)
+  --space-1 4 | -2 8 | -3 12 | -4 16 | -5 20 | -6 24 | -7 28 | -8 32
+  --space-10 40 | --space-12 48
+  Não existem 56, 64, 96 (e --space-16 é usado mesmo assim — B-R2).
+  Por serem px, NÃO acompanham a escala de fonte: em "extra grande" o texto
+  dobra e o respiro continua igual.
+
+2.4 RAIOS / BORDAS / SOMBRAS
+  radius-sm 8 | md 12 | lg 16 | xl 20 | pill 999
+  border-width 1 | strong 2
+  shadow-sm / md / lg (rgba fixos)
+
+2.5 ALTURAS DE CONTROLE
+  --btn-height-sm 44 | md 52 | lg 56 | xl 60
+  --btn-padding-x 20px
+  --touch-target-min 44 | comfortable 48 | large 56
+  Em xlarge sobem para 48/56/64/72 (responsive.css:350-357) — ou seja, a
+  altura cresce 1,14x enquanto a fonte cresce 2,25x.
+
+2.6 LAYOUT / Z-INDEX
+  --container-max 1120px | --header-height 60px (64px em ≥600)
+  --nav-height 72px (72 / 80 em xlarge)
+  z: dropdown 100 | sticky 200 | modal 300 | toast 400 | tooltip 500
+  Nunca usados: --z-dropdown, --z-modal, --radius-sm, --space-7, --section-gap,
+  --section-gap-lg, --color-primary-lighter, --color-secondary-light,
+  --color-secondary-lighter, --color-border-strong, --font-family-mono,
+  --screen-reader-overlay.
+
+2.7 TOKENS USADOS E NÃO DEFINIDOS  (varredura automática dos 4 arquivos)
+  --color-info-light     components.css:149   (.btn-voice:hover)
+  --font-weight-black    components.css:1676  (.fechamento-page .title-main)
+  --space-16             responsive.css:343   (.main-content ≥1400px)
+  Os três invalidam a declaração inteira (não "caem no default"): o padding
+  do main vira 0, o hover fica sem fundo e o título perde o negrito.
+
+
+--------------------------------------------------------------------------------
+3. TEMAS E MODOS (o que já existe e como é ativado)
+--------------------------------------------------------------------------------
+
+A) Escala de fonte — html[data-font-scale="small|normal|large|xlarge"]
+   Atributo em <html>, gravado em localStorage ('idoso_seguro_...') por
+   public/js/accessibility.js:43. Vide B-R1.
+
+B) Alto contraste — html[data-high-contrast="true"] (variables.css:163-217)
+   Troca TODOS os tokens: fundo preto, texto branco, primária #00FF66,
+   secundária #66B2FF, texto sobre cor = PRETO.
+   Existe um SEGUNDO sistema em @media (prefers-contrast: high)
+   (responsive.css:290-317) que só mexe em bordas. Dois sistemas
+   independentes para a mesma função.
+
+C) Redução de movimento — TRÊS blocos:
+   variables.css:222, components.css:174/640/838, responsive.css:322,
+   accessibility.css:49. Regras duplicadas com !important.
+
+D) Print — DOIS blocos: responsive.css:238 e accessibility.css:201.
+   O de responsive.css esconde `.btn` inteiro; o de accessibility.css não.
+
+E) Modo leitor de tela — html[data-screen-reader="true"] (accessibility.css).
+   Barra fixa no topo (.screen-reader-indicator, accessibility.css:236-247)
+   que COBRE o header sticky (z 400 x 200) — não há spacer compensando.
+   `.sr-position-indicator` (accessibility.css:370-384) é fixed bottom/right
+   e fica EM CIMA do menu inferior no celular.
+
+F) Não existe `prefers-color-scheme` (modo escuro automático). O
+   <meta name="theme-color"> é fixo #1F5C45 (index.html:7).
+
+G) Viewport: `width=device-width, initial-scale=1.0, maximum-scale=5.0`
+   (index.html:5). Não bloqueia zoom (bom). Não usa viewport-fit=cover,
+   então safe-area do iPhone não é tratada.
+
+
+--------------------------------------------------------------------------------
+4. BREAKPOINTS (mapa completo e onde cada um vive)
+--------------------------------------------------------------------------------
+
+responsive.css
+   360px ................................................ :10
+   600px  (header 64, nav 72, títulos sobem) .............. :19
+   900px  (breakpoint "principal" desktop, 2 blocos) ..... :59 e :116
+   900px  (títulos explodem: large→4xl, xlarge→4xl*1.2) .. :175
+   1200px (paddings 40/48, max-width) ................... :99 e :165
+   1400px (padding 48/var(--space-16) -> BUG) ........... :341
+   max-height:500px + landscape ......................... :183
+   hover:none + pointer:coarse .......................... :204
+   print ................................................ :238
+   prefers-contrast:high ................................ :290
+   prefers-reduced-motion ............................... :322
+
+components.css
+   480px  (btn-group-4 em 2 colunas) .................... :891
+   768px  (btn-group-4 em 4 colunas) .................... :898
+   600px  (font-scale-control, action-card) ............. :1713
+   900px  (.page-header-title 2xl, .welcome-page 32px) .. :1730
+   480px  (max-width: ajustes de ícone) ................. :1748
+   prefers-reduced-motion (3 blocos) .................... :174, :640, :838
+
+accessibility.css
+   prefers-reduced-motion ............................... :49
+   pointer:coarse ....................................... :80
+   max-width: 100%   *** INVÁLIDO, ignorado *** ......... :128
+   prefers-contrast:high ................................ :174
+   max-width: 320px  (reduz a fonte base em 10%) ........ :184
+   print ................................................ :201
+   max-width: 480px  (barra do leitor) .................. :324
+
+PROBLEMA (B-R15): a tipografia é definida em components.css (600/900) e
+sobrescrita em responsive.css (900/175). Quem for corrigir precisa saber que
+mexer em UM arquivo não resolve: são dois lugares competindo.
+Também convivem 7 breakpoints diferentes (360, 480, 600, 768, 900, 1200,
+1400) sem justificativa. Para este público, 4 já bastam:
+360 (celular pequeno), 600 (celular grande/tablet), 900 (tablet paisagem/
+desktop), 1200 (desktop amplo).
+
+
+--------------------------------------------------------------------------------
+5. LAYOUT MACRO (HTML + CSS como estão)
+--------------------------------------------------------------------------------
+
+Estrutura do DOM (public/index.html:22-...):
+
+  <div class="app-container">        (flex column, min-height:100vh)
+     <header class="app-header">     (position:sticky; height:60/64px)
+     <main id="main-content" class="main-content">   (max-width:1120px)
+     <nav class="bottom-nav">        (3º filho!)
+  </div>
+
+Regras:
+  variables.css:334-338  .app-container  flex column, min-height 100vh
+  variables.css:340-350  .app-header     sticky top 0, z 200, altura fixa
+  variables.css:372-378  .main-content   flex 1, padding 16px, max-width 1120
+  variables.css:387-401  .bottom-nav     fixed bottom, altura 72px, z 200
+  responsive.css:116-160 ≥900px: .bottom-nav { position: static } e vira
+                         uma "barra de navegação" horizontal — mas ela
+                         continua sendo o 3º filho, ou seja, aparece DEPOIS
+                         do conteúdo.
+
+MEDIDO em 1440 x 984 (escala normal):
+  header  top 0   altura 72
+  main    top 72  largura 1120  padding 0px  <-- por causa do B-R2
+  nav     top 924 (!!)  altura 77  position static
+  altura total da página: 1001px
+
+MEDIDO em 1440 x 984 (escala xlarge):
+  header 72 (fixo) | main 1120 / 2804 de altura | nav top 2876 | total 2955
+  -> o menu fica 2.876 px abaixo do topo. Só se chega nele rolando a página
+     inteira.
+
+MEDIDO no desktop (normal): o texto do conteúdo começa em x=152 enquanto o
+logo do header começa em x=16 — os dois blocos não compartilham a mesma
+margem (main centralizado 1120, header full width com padding 16).
+
+MOBILE (por leitura do CSS, já que a nav é fixed):
+  .bottom-nav fixed, altura 72 (80 em xlarge), z 200.
+  Nenhum padding-bottom compensando: medido `body { padding-bottom: 0 }` e
+  `.main-content { padding-bottom: 16px }` (só no mobile).
+  -> o fim de cada tela fica atrás do menu.
+  Não há env(safe-area-inset-bottom) em nenhum lugar do CSS.
+
+
+--------------------------------------------------------------------------------
+6. A LISTA DE BUGS (por gravidade)
+--------------------------------------------------------------------------------
+
+B-R1  *** CRÍTICO ***  Escala de fonte aplicada duas vezes
+  Onde:   variables.css:57-70, 118, 252-255
+  Como:   html { font-size: calc(18px * --font-scale) }  -> 1rem já escala
+          e os tokens fazem calc(1rem * --font-scale)   -> escala de novo
+  Efeito: fator real = escala²  (xlarge 1.5 -> 2.25x)
+  Medido (1440px):
+          escala   1rem    body     botão    parágrafo  fator
+          small    15,75   13,78    15,50    17,23      0,77x
+          normal   18,00   18,00    20,25    22,50      1,00x
+          large    22,50   28,13    31,64    35,16      1,56x
+          xlarge   27,00   40,50    45,56    50,63      2,25x
+  Corrigir: escolher UMA base. Recomendado: html { font-size: 18px } FIXO
+          (ou 100% + 18px no body) e deixar só os tokens multiplicarem por
+          --font-scale. Assim a escala é linear (1 / 1.25 / 1.5) e o layout
+          não explode. Se preferir escalar o rem, então os tokens NÃO podem
+          multiplicar de novo.
+
+B-R2  *** CRÍTICO ***  Tokens inexistentes invalidam declarações
+  Onde:   responsive.css:343  padding: var(--space-12) var(--space-16)
+          components.css:149  background: var(--color-info-light)
+          components.css:1676 font-weight: var(--font-weight-black)
+  Efeito: a declaração inteira é descartada. No main (>=1400px) o padding
+          vira 0 (medido 0px). No hover do botão de voz, o fundo desaparece.
+          No título da tela final, o negrito some.
+  Corrigir: criar --space-16 (64px), --color-info-light (#F0F7FC) e
+          --font-weight-black (800) OU trocar por tokens existentes.
+          Depois rodar a varredura da seção 11 para garantir zero órfãos.
+
+B-R3  *** CRÍTICO ***  Menu do desktop renderizado no fim do conteúdo
+  Onde:   public/index.html (ordem: header, main, nav) + responsive.css:116
+  Efeito: em >=900px a nav vira `position: static` e, por ser o 3º filho,
+          aparece abaixo de todo o conteúdo (medido: top 2876 em xlarge).
+          O AGENTS.md afirma que existe "top nav no desktop" — não existe.
+  Corrigir: mover o <nav> para DENTRO do header no DOM (ou usar
+          `order:-1` no .app-container + `position: sticky`), e tratar a
+          nav como parte do header acima de 900px. Nunca deixar a navegação
+          principal depender de rolagem.
+
+B-R4  *** CRÍTICO ***  Conteúdo escondido atrás do menu fixo
+  Onde:   variables.css:387-401 (fixed) e ausência de compensação
+  Efeito: no mobile os últimos 72–80px de cada tela ficam cobertos.
+  Corrigir: `body { padding-bottom: calc(var(--nav-height) + env(safe-area-
+          inset-bottom) + var(--space-2)) }` somente abaixo de 900px
+          (media query), e usar `100dvh` em vez de `100vh`.
+
+B-R5  *** CRÍTICO ***  Não existe camada base (reset não carregado)
+  Onde:   public/index.html:14-17 (só 4 arquivos) + public/css/reset.css
+          (135 linhas) + public/css/style.css (78 linhas, @import)
+  Efeito: sem regras para h1..h6, p, ul, img, a, button; cada página
+          reinventa. Medido: `a` sem sublinhado; nenhum h1..h6 genérico.
+  Corrigir: decidir UMA camada base (reset.css) e carregá-la ANTES dos
+          tokens; apagar style.css (ou transformá-lo no único ponto de
+          entrada e atualizar index.html + service-worker).
+          Se a opção for "um arquivo só", atualizar o SW (bump de versão)
+          senão o usuário fica com CSS antigo em cache.
+
+B-R6  *** ALTO ***  Sem escala tipográfica única (títulos imprevisíveis)
+  Onde:   variables.css:491-512 (.title-primary/.title-secondary/.subtitle-main)
+          components.css:1258 (.welcome-page .title-primary -> 2xl)
+          components.css:928-937 (.page-header-title -> xl)
+          components.css:1730 (>=900px: .page-header-title -> 2xl)
+          responsive.css:176-177 (>=900px: .title-primary -> 4xl e 4xl*1.2)
+  Efeito: mesmo papel (título da tela) com tamanhos diferentes:
+          medido em 1440 xlarge -> Welcome 109,35px | outras telas 60,75px
+          medido em 1440 normal -> Welcome 27px    | outras telas 27px
+          h2: 27px em #aprender/#acessibilidade/#ajuda e 20,25px em #quiz.
+  Corrigir: uma única escala (h1 = 2rem, h2 = 1.5rem, h3 = 1.25rem, com
+          clamp() para telas grandes), remover TODOS os overrides de título
+          por página e o bloco responsive.css:175-178.
+
+B-R7  *** ALTO ***  Padding em três camadas
+  Onde:   variables.css:374 (.main-content padding 16/24/40/48)
+          components.css:1247+ (11 classes de página, cada uma com
+          `padding: var(--space-4)`) + components.css:181 (.card 20px)
+  Efeito: no celular 360px: 16 (main) + 16 (página) + 20 (card) = 52px por
+          lado -> coluna útil de ~256px para texto de 18px (~26 caracteres
+          por linha). É o principal motivo do texto "espremido".
+  Corrigir: padding horizontal só no `.main-content` (ou só num wrapper);
+          página e card sem padding horizontal extra.
+
+B-R8  *** ALTO ***  Anatomia do botão
+  Onde:   components.css:6-28 (.btn)
+  Problemas:
+    - `text-transform: uppercase` + `letter-spacing`: rótulos longos
+      ("Ativar leitor de tela", "Escolher outro tipo") ocupam ~15% mais
+      largura, viram 3–4 linhas e destroem a leitura de quem tem baixa visão
+      (não há ganho de acessibilidade — o leitor de tela lê o texto original).
+    - `padding: 0 var(--btn-padding-x)` (ZERO vertical): quando o texto
+      quebra, ele encosta na borda superior/inferior.
+    - `overflow-wrap: anywhere`: quebra no meio da palavra
+      ("Acessibilida / de"), muito ruim para leitores com pouca fluência.
+    - `min-height` em px não acompanha 3–4 linhas.
+  Medido (simulação de coluna de 360px + xlarge): botão da Welcome com
+          221px de altura / 4 linhas; botão da Home 130px / 3 linhas.
+  Corrigir: remover uppercase; `padding: var(--space-3) var(--space-5)`;
+          `overflow-wrap: break-word`; `min-height` + `align-content:center`;
+          breakpoint para empilhar botões.
+
+B-R9  *** ALTO ***  `.btn-back` não encolhe
+  Onde:   components.css:938  `flex: 0 0 auto`
+  Efeito: dentro de `.page-header` (flex, 917) o botão "Voltar/Escolher
+          outro tipo" mantém a largura do texto. Medido na simulação de
+          360px + xlarge: `.page-header` com 399px (quiz) e 566px
+          (analisar) dentro de uma coluna de 328px -> estouro horizontal.
+  Corrigir: `flex: 0 1 auto; min-width: 0;` e permitir quebra do rótulo.
+
+B-R10 *** ALTO ***  `white-space: nowrap` em textos que precisam quebrar
+  Onde:   components.css:1083 (.nav-label), 1096 (.btn-voice .btn-label),
+          278 (.badge), 1089-1093 (.btn-voice .voice-icon)
+  Efeito: "Falar em vez de digitar" e labels do menu nunca quebram ->
+          overflow em telas estreitas com fonte grande.
+  Corrigir: remover nowrap de .btn-voice/.badge; no menu, permitir 2 linhas
+          com `line-height:1.1` ou reduzir o número de itens no mobile.
+
+B-R11 *** ALTO ***  Alturas fixas vs texto fluido
+  Onde:   variables.css:139-140, 113-116; responsive.css:20-23, 350-362
+  Efeito: header 60/64px com `.brand-name` medindo 40,5px em xlarge (medido
+          altura 41px dentro de header de 72px — no limite); nav 72/80px
+          com item de 56px; botões 44–72px com texto de 3 linhas.
+  Corrigir: `min-height` em vez de `height`, alturas em `em`/`rem`, e
+          deixar o conteúdo definir a altura.
+
+B-R12 *** ALTO ***  Rótulo do menu com fonte em px fixo
+  Onde:   accessibility.css:42-44 (10px / 13px / 14px por escala)
+  Efeito: medido em xlarge: o resto do app fica em 40px e o rótulo do menu
+          em 14px. Contradiz a própria preferência de acessibilidade.
+  Corrigir: usar `--font-size-xs` e resolver o nowrap (B-R10).
+
+B-R13 *** MÉDIO ***  Media query inválida
+  Onde:   accessibility.css:128  `@media (max-width: 100%)`
+  Efeito: bloco inteiro ignorado silenciosamente (código morto).
+  Corrigir: remover ou trocar por `(max-width: 360px)`.
+
+B-R14 *** MÉDIO ***  Em 320px a fonte DIMINUI
+  Onde:   accessibility.css:184-196
+          html { font-size: calc(var(--font-base-size) * 0.9) }
+  Efeito: no aparelho menor, o texto fica 10% menor — o oposto do que o
+          público precisa, e cria um terceiro cálculo de fonte.
+  Corrigir: remover; se quiser caber em 320px, reduza paddings e gaps,
+          nunca a fonte.
+
+B-R15 *** MÉDIO ***  Breakpoints espalhados / dois donos da tipografia
+  Onde:   ver seção 4.
+  Corrigir: um único arquivo de responsividade; 4 breakpoints; tipografia
+          num só lugar.
+
+B-R16 *** MÉDIO ***  Duplicação de regras globais
+  Onde:   2 sistemas de alto contraste (variables.css:163 e
+          responsive.css:290), 2 blocos print (responsive.css:238 e
+          accessibility.css:201), 5 blocos de reduced-motion
+          (variables.css:222/475, components.css:174/640/838,
+          responsive.css:322, accessibility.css:49), e 32 `!important`
+          (23 em accessibility.css, 5 em responsive.css, 4 em variables.css).
+  Corrigir: 1 bloco por tema; trocar !important por especificidade correta.
+
+B-R17 *** MÉDIO ***  Sem modo escuro automático
+  Onde:   variables.css (só [data-high-contrast]); index.html:7
+  Corrigir (opcional para o MVP, mas recomendado): `@media
+          (prefers-color-scheme: dark)` mapeando os mesmos tokens, e
+          `theme-color` com media query.
+
+B-R18 *** MÉDIO ***  Gutters desalinhados no desktop
+  Onde:   variables.css:340-350 (header full width, padding 16) x 372-378
+          (main max-width 1120 centralizado)
+  Corrigir: header com conteúdo interno centralizado no mesmo `--container-max`.
+
+B-R19 *** MÉDIO ***  Sobreposições (fixed + z-index)
+  Onde:   accessibility.css:236 (.screen-reader-indicator fixed top 0, z400)
+          accessibility.css:370 (.sr-position-indicator fixed bottom, z500)
+          variables.css:387 + :340 (nav z200, header z200)
+  Efeito: com o leitor ligado, a barra cobre o header e o indicador "3 de 12"
+          cobre o menu inferior.
+  Corrigir: barra do leitor dentro do fluxo (ou spacer);
+          indicador de posição acima do menu com bottom:
+          calc(var(--nav-height) + 16px).
+
+B-R20 *** BAIXO ***  Alvos de toque abaixo de 44px
+  Onde:   accessibility.css:336-342 (.sr-mic-btn 40x40)
+          components.css:779-793 (.toolbar-btn min 40)
+  Corrigir: >=44px (WCAG 2.2 AA / e-MAG).
+
+B-R21 *** BAIXO ***  Letra do quiz em px fixo
+  Onde:   components.css:516+ (.quiz-option) e a "bolinha" com 44px fixos
+  Efeito: em xlarge a letra (--font-size-xl) pode estourar o círculo.
+  Corrigir: `min-width`/`aspect-ratio` e fonte relativa.
+
+B-R22 *** BAIXO ***  `100vh`, sem dvh, sem safe-area
+  Onde:   variables.css:335, reset.css:21
+  Corrigir: `min-height: 100dvh` + `viewport-fit=cover` + safe-area.
+
+B-R23 *** BAIXO ***  Cores fora do sistema
+  Onde:   components.css (.btn-danger:hover -> #7A2323),
+          accessibility.css:297/365/401 (rgba(29,78,122,...) fixo),
+          responsive.css print (#000/#fff/#999)
+  Efeito: no alto contraste esses valores não se adaptam.
+  Corrigir: sempre token (ex.: --color-danger-dark, --color-focus-ring).
+
+B-R24 *** BAIXO ***  CSS morto / duplicado
+  Onde:   style.css inteiro; reset.css não referenciado; `.loader`,
+          `.spinner`, `.title-*`, `.subtitle-main` definidos 2x
+          (variables.css:452-532 e style.css:20-77).
+  Corrigir: apagar style.css; manter reset.css carregado.
+
+B-R25 *** BAIXO ***  Tokens definidos e nunca usados (sistema incompleto)
+  Ver 2.6. Indica refatoração interrompida; decidir entre usar ou remover.
+
+
+--------------------------------------------------------------------------------
+7. MEDIÇÕES FEITAS NO NAVEGADOR (evidência)
+--------------------------------------------------------------------------------
+
+Ambiente: Chrome desktop, janela 1440 x 984 (DPR ~0.9), app em localhost:3000.
+"MEDIDO" = valor real de getComputedStyle/getBoundingClientRect.
+"SIMULADO" = coluna de 360px imposta em `#main-content` no desktop (as media
+queries continuam as de desktop; serve para achar estouro intrínseco, não
+substitui um teste em aparelho real).
+
+7.1  Escala de fonte (MEDIDO, ver B-R1)
+     escala    1rem     body     título welcome   título outras telas
+     normal    18,00    18,00    27,00            27,00
+     large     22,50    28,13    63,28            42,19
+     xlarge    27,00    40,50   109,35            60,75
+
+7.2  Layout em 1440 (MEDIDO)
+     normal:  header 72 | main 1120 (padding 0) | nav top 924 | total 1001
+     xlarge:  header 72 | main 1120 (altura 2804) | nav top 2876 | total 2955
+
+7.3  Estouro horizontal por rota (SIMULADO 360px + escala xlarge)
+     #welcome            h1 109px pedindo 428px numa coluna de 296px
+                         botão 221px de altura (4 linhas)
+     #home               botão principal 130px (3 linhas)
+     #aprender           .action-card com 403px dentro de 328px
+     #conteudo/...       374px (leve)
+     #quiz/...           .page-header 399px; botão "Voltar à aula" 399px
+     #analisar/texto     .page-header 566px; botão "Escolher outro tipo"
+                         566px dentro de 328px  <-- pior caso
+     #resultado          ok
+     #acessibilidade     ok
+     #ajuda              ok
+
+7.4  Sem reset (MEDIDO)
+     #main-content a  -> text-decoration: none
+     html             -> scroll-behavior: auto
+     h1..h6           -> nenhuma regra base no bundle carregado
+
+7.5  Alturas com xlarge (MEDIDO)
+     .app-header 72px | .brand-name 40,5px (altura de linha 41px)
+     .bottom-nav 80px | .nav-item 56px | .nav-label 14px  <-- B-R12
+     body padding-bottom 0px | #main-content padding-bottom 0px  <-- B-R4
+
+
+--------------------------------------------------------------------------------
+8. PLANO DE CORREÇÃO (ordem recomendada)
+--------------------------------------------------------------------------------
+
+FASE 0 — Base (1 hora)
+  0.1 Decidir: reset.css carregado (recomendado) ou regras base migradas
+      para variables.css. Apagar style.css. Ajustar index.html + SW (v36).
+  0.2 Criar os tokens que faltam (--space-16, --color-info-light,
+      --font-weight-black) e remover os que nunca serão usados.
+  0.3 Adicionar `h1..h6 { font-size: ...; line-height: var(--line-height-heading) }`
+      e `img,svg{max-width:100%;height:auto}` na camada base.
+
+FASE 1 — Escala de fonte (o mais importante)
+  1.1 `html { font-size: 18px }` fixo (sem var).
+  1.2 Tokens de fonte mantêm `calc(Nrem * var(--font-scale))`.
+  1.3 Recalibrar a escala: 1 | 1,125 | 1,25 | 1,375 (ou 1/1,2/1,4/1,6),
+      lembrando que agora o fator é LINEAR.
+  1.4 Substituir alturas fixas de header/nav/botão por min-height em
+      `em`/`rem`.
+  1.5 Testar: body deve medir 18 / 20,25 / 22,5 / 24,75 (ou equivalente).
+
+FASE 2 — Estrutura de layout
+  2.1 Levar o `<nav>` para dentro do `<header>` (DOM) OU usar
+      `.app-container { display:grid }` com áreas e `order`.
+  2.2 Header e main compartilhando o mesmo container (--container-max).
+  2.3 `body { padding-bottom: calc(var(--nav-height) + env(safe-area-inset-
+      bottom)) }` abaixo de 900px; `100dvh`; viewport-fit=cover.
+  2.4 Remover `padding` das classes de página (manter só no main).
+
+FASE 3 — Tipografia
+  3.1 Uma escala: h1 2rem, h2 1.5rem, h3 1.25rem, body 1rem, small 0.875rem
+      (com clamp() entre 360px e 1200px).
+  3.2 Apagar responsive.css:175-178 e os overrides por página.
+  3.3 `text-wrap: balance` nos títulos, `hyphens: auto` para o conteúdo.
+
+FASE 4 — Botões e controles
+  4.1 Remover uppercase, letter-spacing exagerado, overflow-wrap:anywhere.
+  4.2 padding vertical real; min-height em em; line-height 1.25.
+  4.3 `.btn-back { flex: 0 1 auto; min-width: 0 }`; rótulos podem quebrar.
+  4.4 Empilhar botões (<480px: `.btn-group { flex-direction: column }`).
+  4.5 Garantir 44x44 em TODOS os alvos (sr-mic-btn, toolbar-btn).
+
+FASE 5 — Breakpoints e limpeza
+  5.1 Quatro breakpoints: 360 / 600 / 900 / 1200 (max: 480 e 320 só para
+      ajustes finos e sem mexer em fonte).
+  5.2 Uma media query por tema (contraste, print, motion).
+  5.3 Zero `!important` novo; remover os 32 existentes com especificidade
+      correta (usar `@layer base, components, theme, utilities` se possível).
+  5.4 Remover o `@media (max-width: 100%)`.
+
+FASE 6 — Temas
+  6.1 Unificar alto contraste em um só bloco de tokens.
+  6.2 (Opcional) `prefers-color-scheme: dark` reusando os mesmos tokens.
+  6.3 theme-color com media query.
+
+FASE 7 — Prova
+  7.1 Rodar a matriz da seção 10.
+  7.2 Rodar o script da seção 11.1 (zero tokens órfãos) e 11.2 (zero
+      estouro horizontal).
+  7.3 Lighthouse/axe nas 9 rotas, 360px e 1440px.
+
+
+--------------------------------------------------------------------------------
+9. CRITÉRIOS DE ACEITE (mensuráveis)
+--------------------------------------------------------------------------------
+
+  [ ] 1. Zero rolagem horizontal em 320, 360, 390, 414, 768, 1024, 1280 e
+         1440 px, nas 4 escalas de fonte e nas 9 rotas.
+  [ ] 2. Escala de fonte LINEAR: body = 18 x escala (small 15,75 /
+         normal 18 / large 22,5 / xlarge 27) — nunca 1,5².
+  [ ] 3. h1 de rota SEMPRE 2x o body, h2 1,5x, h3 1,25x em qualquer largura.
+         Nenhum título acima de 60px em 1440px.
+  [ ] 4. Menu principal visível SEM rolar em qualquer largura; no desktop no
+         topo, no mobile no rodapé; nunca cobrindo conteúdo.
+  [ ] 5. Nenhum token `var(--x)` indefinido (script 11.1).
+  [ ] 6. Nenhum texto abaixo de 16px (ideal 18px) e nenhum alvo abaixo de
+         44x44px.
+  [ ] 7. Contraste >= 4.5:1 no tema normal e >= 7:1 no alto contraste.
+  [ ] 8. Um único sistema de alto contraste, um bloco print, um bloco
+         reduced-motion.
+  [ ] 9. Nenhuma quebra de palavra no meio (sem overflow-wrap:anywhere em
+         texto corrido/botões).
+  [ ] 10. Coluna de texto com >= 30 caracteres por linha em 360px.
+  [ ] 11. Nada quebra ao usar o leitor de tela (as classes .sr-current-chunk,
+         .sr-focused e o foco no h1 devem continuar funcionando).
+
+
+--------------------------------------------------------------------------------
+10. CHECKLIST DE REGRESSÃO
+--------------------------------------------------------------------------------
+
+Rotas (9): #welcome #home #aprender #conteudo/links-suspeitos
+           #quiz/links-suspeitos #analisar/texto #resultado
+           #acessibilidade #ajuda
+
+Larguras:  320 · 360 · 390 · 414 · 768 · 1024 · 1280 · 1440
+Escalas:   small · normal · large · xlarge
+Temas:     normal · alto contraste
+Modos:     leitor de tela ligado · desligado
+
+Para cada célula verificar:
+  [ ] sem scroll horizontal
+  [ ] menu visível e clicável
+  [ ] título não estoura / não sobrepõe
+  [ ] botões com rótulo legível (sem hífen no meio)
+  [ ] último elemento da tela acessível (não atrás do menu)
+  [ ] foco visível (outline 3px) em todos os controles
+  [ ] zoom do navegador a 200% continua usável
+
+
+--------------------------------------------------------------------------------
+11. SCRIPTS PARA MEDIR DE NOVO
+--------------------------------------------------------------------------------
+
+11.1 Varrer tokens órfãos (Node, salvar como tmp-scan.cjs na raiz):
+
+    const fs = require("fs");
+    const files = ["variables","components","accessibility","responsive"]
+      .map(f => `public/css/${f}.css`);
+    const def = new Set(), used = new Map();
+    for (const f of files) {
+      const src = fs.readFileSync(f, "utf8");
+      for (const m of src.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gim)) def.add(m[1]);
+      src.split(/\r?\n/).forEach((l, i) => {
+        for (const m of l.matchAll(/var\(\s*(--[a-z0-9-]+)/g)) {
+          if (!used.has(m[1])) used.set(m[1], []);
+          used.get(m[1]).push(`${f}:${i+1}`);
+        }
+      });
+    }
+    for (const [k, w] of used) if (!def.has(k)) console.log("ORFAO", k, w);
+
+  Rodar: node tmp-scan.cjs   (o package.json é ESM, por isso .cjs)
+
+11.2 Medir escala + estouro no console do navegador:
+
+    (async () => {
+      const html = document.documentElement;
+      const frame = () => new Promise(r =>
+        requestAnimationFrame(() => requestAnimationFrame(r)));
+      for (const e of ["small","normal","large","xlarge"]) {
+        html.setAttribute("data-font-scale", e);
+        await frame();
+        const d = document.createElement("div");
+        d.style.cssText = "position:absolute;visibility:hidden;font-size:1rem";
+        document.body.appendChild(d);
+        console.log(e, {
+          rem: getComputedStyle(d).fontSize,
+          body: getComputedStyle(document.body).fontSize,
+          h1: getComputedStyle(document.querySelector("h1")).fontSize,
+          estouro: html.scrollWidth > html.clientWidth
+        });
+        d.remove();
+      }
+      html.setAttribute("data-font-scale", "normal");
+    })();
+
+11.3 Detectar quem estoura a largura (rodar em cada rota):
+
+    [...document.querySelectorAll("#main-content *")]
+      .filter(el => el.getBoundingClientRect().right > innerWidth + 1)
+      .forEach(el => console.log(el, el.getBoundingClientRect().right));
+
+
+--------------------------------------------------------------------------------
+12. PROMPT PRONTO (cole isto junto com este arquivo para a outra IA)
+--------------------------------------------------------------------------------
+
+"Este é o front-end de um app de segurança digital para idosos (público
+60+, muitos com baixa visão). É SPA em HTML/CSS/JS puro, sem build, sem
+framework. O CSS está em public/css/{variables,components,accessibility,
+responsive}.css carregados por public/index.html (reset.css e style.css
+NÃO são carregados).
+
+O layout está errado em vários pontos e eu preciso que você corrija a
+responsividade de forma sistêmica, sem quebrar a acessibilidade (o app tem
+leitor de tela próprio em public/js/accessibility/screen-reader.js que
+depende das classes .sr-current-chunk, .sr-focused e do foco no h1; não
+mude nomes de classe nem o HTML das páginas sem necessidade).
+
+Prioridades, nesta ordem:
+1. A escala de fonte é aplicada duas vezes (rem escala + token multiplica):
+   em 'extra grande' o texto cresce 2,25x e os títulos chegam a 109px.
+   Quero escala linear (1 / 1,25 / 1,5).
+2. O token --space-16 não existe e zera o padding do main em >=1400px;
+   também faltam --color-info-light e --font-weight-black.
+3. No desktop o menu fica DEPOIS do conteúdo (nav é o 3º filho e vira
+   position static em >=900px). No mobile o menu é fixed e cobre o fim da
+   página (sem padding-bottom compensando).
+4. Não existe camada base (reset não carregado): h1..h6, p, ul, img, a
+   ficam no padrão do navegador.
+5. Títulos sem escala única, botões em CAIXA ALTA com overflow-wrap:
+   anywhere e padding vertical zero, .btn-back com flex:0 0 auto e vários
+   white-space:nowrap causam estouro horizontal em 360px com fonte grande
+   (medido: 566px de largura dentro de 328px).
+6. Padding somado em 3 camadas (main + página + card) = 52px por lado no
+   celular.
+
+Restrições: manter WCAG 2.2 AA / e-MAG 3.1 (alvos >=44px, contraste 4.5:1,
+texto base >=18px, foco visível), manter a paleta (#F7F5F0 fundo, #14202B
+texto, #1F5C45 primária, #1D4E7A secundária, #8A5A00 âmbar, #9B2C2C
+perigo) e o alto contraste existente. Entregar o CSS reorganizado
+(tokens -> base -> layout -> componentes -> responsivo -> temas), com no
+máximo 4 breakpoints (360/600/900/1200), zero tokens órfãos, zero
+!important novo, e um resumo do que mudou com os valores antes/depois."
+
+
+================================================================================
+FIM DO RELATÓRIO
+Arquivos citados: public/css/{variables,components,accessibility,responsive,
+reset,style}.css · public/index.html · public/service-worker.js
+Medições: Chrome 1440x984 · 28/10/2026
+================================================================================
