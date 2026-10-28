@@ -20,10 +20,12 @@
   :root {
     --header-height: 64px;
     --nav-height: 72px;
+    --gutter: var(--space-6);
   }
 
   .main-content {
-    padding: var(--space-6);
+    padding-block: var(--space-6);
+    padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-6));
   }
 
   .title-primary {
@@ -59,14 +61,7 @@
 @media (min-width: 900px) {
   :root {
     --header-height: 72px;
-  }
-
-  .app-header {
-    padding: 0 var(--space-6);
-  }
-
-  .brand-name {
-    font-size: var(--font-size-2xl);
+    --gutter: var(--space-8);
   }
 
   .brand-logo-img {
@@ -74,8 +69,11 @@
     height: 44px;
   }
 
+  /* A partir daqui a nav entra no fluxo (abaixo do header), então o main não
+     precisa mais reservar a altura dela. */
   .main-content {
-    padding: var(--space-8);
+    padding-block: var(--space-8);
+    padding-bottom: var(--space-8);
   }
 
   .hero-illustration {
@@ -97,12 +95,9 @@
    BREAKPOINT: 1200px - Desktop
    ======================================== */
 @media (min-width: 1200px) {
-  .app-container {
-    max-width: 100%;
-  }
-
   .main-content {
-    padding: var(--space-10) var(--space-12);
+    padding-block: var(--space-10);
+    padding-bottom: var(--space-10);
   }
 
   .hero-illustration {
@@ -111,25 +106,34 @@
 }
 
 /* ========================================
-   DESKTOP NAVIGATION (replaces bottom nav)
+   NAVEGAÇÃO NO DESKTOP (topo, abaixo do header)
    ======================================== */
 @media (min-width: 900px) {
   .bottom-nav {
-    position: static;
+    position: sticky;
+    top: var(--header-height);
+    z-index: calc(var(--z-sticky) - 1);
     flex-direction: row;
     height: auto;
-    padding: var(--space-3) var(--space-6);
+    padding: var(--space-2) var(--gutter);
     border-top: none;
     border-bottom: var(--border-width) solid var(--color-border);
     box-shadow: none;
-    background: transparent;
+    background: var(--color-surface);
     justify-content: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
+  }
+
+  /* A nav é fixa só no celular; no desktop ela nunca deve sumir. */
+  .bottom-nav.nav-hidden {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .nav-item {
     flex-direction: row;
-    min-height: var(--btn-height-md);
+    min-height: var(--btn-height-sm);
     min-width: auto;
     padding: var(--space-2) var(--space-4);
     font-size: var(--font-size-sm);
@@ -156,16 +160,6 @@
 
   .nav-label {
     display: inline;
-  }
-}
-
-/* ========================================
-   CONTAINER MAX WIDTH
-   ======================================== */
-@media (min-width: 1200px) {
-  .container,
-  .main-content {
-    max-width: var(--container-max);
   }
 }
 
@@ -338,12 +332,6 @@
 /* ========================================
    WIDE SCREENS (>1400px)
    ======================================== */
-@media (min-width: 1400px) {
-  .main-content {
-    padding: var(--space-12) var(--space-16);
-  }
-}
-
 /* ========================================
    VERY LARGE FONT SCALES
    ======================================== */

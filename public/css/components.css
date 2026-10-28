@@ -1221,10 +1221,6 @@
 /* ========================================
    ANALYSIS PAGE
    ======================================== */
-.analisar-page {
-  padding: var(--space-4);
-}
-
 .analisar-page .section-header {
   margin-bottom: var(--space-4);
 }
@@ -1245,7 +1241,6 @@
    WELCOME PAGE
    ======================================== */
 .welcome-page {
-  padding: var(--space-4);
   max-width: 480px;
   margin: 0 auto;
 }
@@ -1286,10 +1281,6 @@
 /* ========================================
    HOME PAGE
    ======================================== */
-.home-page {
-  padding: var(--space-4);
-}
-
 .home-page .section-header {
   margin-bottom: var(--space-4);
 }
@@ -1307,10 +1298,6 @@
 /* ========================================
    ENSINAR PAGE
    ======================================== */
-.ensinar-page {
-  padding: var(--space-4);
-}
-
 .ensinar-page .section-header {
   margin-bottom: var(--space-4);
 }
@@ -1333,10 +1320,6 @@
 /* ========================================
    ASSISTIR PAGE
    ======================================== */
-.assistir-page {
-  padding: var(--space-4);
-}
-
 .assistir-page .section-header {
   margin-bottom: var(--space-4);
 }
@@ -1354,10 +1337,6 @@
 /* ========================================
    CONTEUDO PAGE
    ======================================== */
-.conteudo-page {
-  padding: var(--space-4);
-}
-
 .conteudo-page .page-header {
   margin-bottom: var(--space-4);
 }
@@ -1381,10 +1360,6 @@
 /* ========================================
    QUIZ PAGE
    ======================================== */
-.quiz-page {
-  padding: var(--space-4);
-}
-
 .quiz-page .section-header {
   display: flex;
   align-items: center;
@@ -1431,10 +1406,6 @@
 /* ========================================
    RESULTADO PAGE
    ======================================== */
-.resultado-page {
-  padding: var(--space-4);
-}
-
 .resultado-page .page-header {
   margin-bottom: var(--space-4);
 }
@@ -1527,10 +1498,6 @@
 /* ========================================
    ACESSIBILIDADE PAGE
    ======================================== */
-.acessibilidade-page {
-  padding: var(--space-4);
-}
-
 .acessibilidade-page .page-header {
   margin-bottom: var(--space-4);
 }
@@ -1577,10 +1544,6 @@
 /* ========================================
    AJUDA PAGE
    ======================================== */
-.ajuda-page {
-  padding: var(--space-4);
-}
-
 .ajuda-page .page-header {
   margin-bottom: var(--space-4);
 }
@@ -1644,7 +1607,6 @@
    FECHAMENTO PAGE
    ======================================== */
 .fechamento-page {
-  padding: var(--space-4);
   max-width: 480px;
   margin: 0 auto;
   text-align: center;
@@ -1731,17 +1693,9 @@
   .page-header {
     padding-bottom: var(--space-4);
   }
-  
+
   .page-header-title {
     font-size: var(--font-size-2xl);
-  }
-  
-  .welcome-page {
-    padding: var(--space-8);
-  }
-  
-  .fechamento-page {
-    padding: var(--space-8);
   }
 }
 

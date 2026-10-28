@@ -367,8 +367,12 @@ export function createEmptyState(icon, title, description, action = null) {
 }
 
 /**
- * Navegação inferior: <nav> com links reais.
+ * Navegação principal: <nav> com links reais.
  * aria-current="page" é aplicado pelo router a cada troca de rota.
+ *
+ * IMPORTANTE: a ordem do DOM é header -> nav -> main (em index.html), para que
+ * a ordem de foco e a leitura do leitor de tela sigam a ordem visual. No
+ * celular a nav é fixa no rodapé por CSS, mas continua antes do <main>.
  */
 export function createBottomNav() {
   const items = [
