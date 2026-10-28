@@ -76,10 +76,13 @@ export async function renderQuizPage(params) {
     const correct = correctIndex(index);
 
     return shuffledAnswers(index).map((answer, position) => {
+      const isSelected = answered && answer.originalIndex === selected;
+      const isCorrect = answer.originalIndex === correct;
+
       let mark = '';
       if (answered) {
-        if (answer.originalIndex === correct) mark = 'correct';
-        else if (answer.originalIndex === selected) mark = 'incorrect';
+        if (isCorrect) mark = 'correct';
+        else if (isSelected) mark = 'incorrect';
       }
 
       return createQuizOption(
@@ -90,11 +93,24 @@ export async function renderQuizPage(params) {
         answer.feedback,
         {
           disabled: answered,
-          selected: answered && answer.originalIndex === selected,
-          mark
+          selected: isSelected,
+          mark,
+          stateLabel: optionStateLabel({ answered, isCorrect, isSelected })
         }
       );
     }).join('');
+  }
+
+  /**
+   * O que o leitor fala de cada alternativa DEPOIS da resposta.
+   * Sem isso, a pessoa cega não sabia qual era a certa nem qual foi a sua.
+   */
+  function optionStateLabel({ answered, isCorrect, isSelected }) {
+    if (!answered) return '';
+    if (isCorrect && isSelected) return 'Sua resposta, correta';
+    if (isCorrect) return 'Resposta correta';
+    if (isSelected) return 'Sua resposta, incorreta';
+    return 'não escolhida';
   }
 
   function renderFeedback(index) {
@@ -104,12 +120,19 @@ export async function renderQuizPage(params) {
     const chosen = shuffledAnswers(index).find((a) => a.originalIndex === selected);
     const feedback = chosen?.feedback || '';
 
+    // Errou? Diz QUAL era a correta (com a letra que está na tela).
+    const correctAnswer = questions[index].answers[correct];
+    const correctLetter = LETTERS[shuffledAnswers(index).findIndex((a) => a.originalIndex === correct)];
+    const message = isRight
+      ? feedback
+      : `${feedback} A resposta correta era a letra ${correctLetter}: ${correctAnswer?.answer_text || ''}`.trim();
+
     return `
       <div class="quiz-feedback" id="quiz-feedback" tabindex="-1">
         ${createAlert(
           isRight ? 'success' : 'danger',
           isRight ? 'Resposta correta!' : 'Resposta incorreta',
-          feedback,
+          message,
           isRight ? 'check' : 'warning',
           { role: 'status' }
         )}

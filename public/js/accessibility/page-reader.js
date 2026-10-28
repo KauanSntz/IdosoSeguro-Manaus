@@ -278,6 +278,11 @@ export class PageReader {
    * QUAL opção está selecionada, algo que só olhando a tela daria hoje.
    */
   _stateOf(element) {
+    // Estado escrito à mão vence (ex.: alternativa do quiz depois de responder:
+    // "Sua resposta, incorreta" / "Resposta correta").
+    const declared = element.getAttribute('data-sr-estado');
+    if (declared) return declared;
+
     // <details>: o resumo diz se está recolhido ou expandido.
     if (element.tagName === 'SUMMARY') {
       const details = element.closest('details');

@@ -104,6 +104,10 @@ export function describeDestination(element) {
   const action = element.getAttribute('data-action');
   const isBack = element.hasAttribute('data-sr-back');
 
+  // Alternativa de quiz já respondida: o estado ("Sua resposta, incorreta")
+  // já explica tudo — repetir o destino confundiria.
+  if (action === 'quiz-answer' && element.disabled) return '';
+
   // 2. Ação declarada (navegação por ação usa o data-href).
   if (action) {
     if (action === 'navigate' || action === 'back') {
