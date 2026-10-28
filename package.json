@@ -8,7 +8,9 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "db:criar": "node src/database/db.js",
-    "test": "node tests/backend.test.js",
+    "test": "node tests/backend.test.js && node --test tests/leitor.test.js",
+    "test:leitor": "node --test tests/leitor.test.js",
+    "test:leitor:atualizar": "node tests/atualizar-snapshots.js",
     "lint": "echo \"lint not configured yet\"",
     "check:contraste": "echo \"contraste check not configured yet\""
   },
@@ -26,8 +28,11 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "helmet": "^7.1.0",
     "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.3"
   }
 }
