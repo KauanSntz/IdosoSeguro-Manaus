@@ -493,6 +493,7 @@
 
 .quiz-scenario .text {
   flex: 1;
+  margin: 0;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-secondary-dark);
@@ -549,8 +550,8 @@
 }
 
 .quiz-option.incorrect {
-  border-color: var(--color-text-muted);
-  background-color: var(--color-bg);
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-light);
 }
 
 .quiz-option .letter {
@@ -618,11 +619,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-5);
-  background-color: var(--color-warning-bg);
-  border: var(--border-width-strong) solid var(--color-warning-border);
-  border-radius: var(--radius-xl);
   animation: fadeIn var(--transition-normal) ease;
+}
+
+/* O foco programático (leitor de tela) também precisa ser visível para quem
+   navega por teclado. */
+.quiz-feedback:focus,
+.quiz-page .question-text:focus,
+.quiz-page .result-banner .title:focus {
+  outline: 3px solid var(--color-border-focus);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
 }
 
 @keyframes fadeIn {

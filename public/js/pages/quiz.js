@@ -1,31 +1,53 @@
-import { 
-  createPageHeader, 
+import {
+  createPageHeader,
   createQuizOption,
   createProgressBar,
   createResultActions,
-  createStack,
-  createCard,
-  createAlert 
+  createIconListItem,
+  createAlert
 } from '../components.js';
 
+const LETTERS = 'ABCDEFGH';
+
+/**
+ * Quiz: uma pergunta por vez.
+ *
+ * Regras que este arquivo garante:
+ *  - A ordem das alternativas é embaralhada UMA vez por pergunta e guardada
+ *    (antes, cada re-render reembaralhava e a letra mudava no meio da resposta).
+ *  - Depois de responder, as alternativas ficam desabilitadas e marcadas
+ *    (certa/errada) — a marcação vem do estado, não de manipulação de DOM.
+ *  - A resposta certa é sempre `questions[i].answers.findIndex(a => a.is_correct)`
+ *    (antes, um novo embaralhamento em renderResult podia apontar outra opção).
+ *  - Depois de cada re-render, o foco vai para um elemento com tabindex="-1"
+ *    (feedback ou enunciado), para o leitor de tela ler o conteúdo novo.
+ */
 export async function renderQuizPage(params) {
   const { ok, dados: quiz, erro } = await window.apiClient.getQuiz(params.slug);
 
   if (!ok) {
     return `
       <div class="quiz-page stack-md text-center">
-        ${createPageHeader('Erro', { showBack: true, backHref: '#ensinar' })}
-        <p style="margin-bottom: var(--space-4);">${erro?.mensagem || 'Quiz não encontrado.'}</p>
-        <button class="btn btn-primary" data-action="navigate" data-href="#ensinar">Voltar</button>
+        ${createPageHeader('Quiz não encontrado', { backHref: '#aprender', backLabel: 'Voltar aos tópicos' })}
+        <p style="margin-bottom: var(--space-4);">${erro?.mensagem || 'Não foi possível carregar o quiz.'}</p>
+        <button type="button" class="btn btn-primary" data-action="navigate" data-href="#aprender">Voltar aos tópicos</button>
       </div>
     `;
   }
 
   const { topic, questions } = quiz;
-  const state = { current: 0, answers: [], score: 0, showFeedback: false, lastFeedback: null };
 
-  function shuffleArray(array) {
-    const arr = [...array];
+  const state = {
+    current: 0,
+    answers: new Array(questions.length).fill(undefined),
+    score: 0
+  };
+
+  /** Ordem embaralhada por pergunta — nunca muda depois de criada. */
+  const shuffledCache = new Map();
+
+  function shuffle(list) {
+    const arr = [...list];
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -33,218 +55,214 @@ export async function renderQuizPage(params) {
     return arr;
   }
 
-  function notifyPageReaderQuestionRendered() {
-    if (window.screenReader) {
-      const q = questions[state.current];
-      window.screenReader.announceQuizQuestion(
-        document.getElementById('main-content'),
-        state.current,
-        questions.length,
-        q?.question,
-        q?.scenario
+  function shuffledAnswers(index) {
+    if (!shuffledCache.has(index)) {
+      const withIndex = questions[index].answers.map((answer, originalIndex) => ({
+        ...answer,
+        originalIndex
+      }));
+      shuffledCache.set(index, shuffle(withIndex));
+    }
+    return shuffledCache.get(index);
+  }
+
+  function correctIndex(index) {
+    return questions[index].answers.findIndex((answer) => Boolean(answer.is_correct));
+  }
+
+  /**
+   * Move o foco para o conteúdo novo depois de cada re-render.
+   * Vale para todo mundo: sem isso, o foco cai no <body> quando a alternativa
+   * clicada fica desabilitada — e quem navega por teclado se perde.
+   */
+  function focusElement(id) {
+    const el = document.getElementById(id);
+    if (el) el.focus({ preventScroll: false });
+  }
+
+  function renderOptions(index) {
+    const answered = state.answers[index] !== undefined;
+    const selected = state.answers[index];
+    const correct = correctIndex(index);
+
+    return shuffledAnswers(index).map((answer, position) => {
+      let mark = '';
+      if (answered) {
+        if (answer.originalIndex === correct) mark = 'correct';
+        else if (answer.originalIndex === selected) mark = 'incorrect';
+      }
+
+      return createQuizOption(
+        LETTERS[position],
+        answer.answer_text,
+        Boolean(answer.is_correct),
+        answer.originalIndex,
+        answer.feedback,
+        {
+          disabled: answered,
+          selected: answered && answer.originalIndex === selected,
+          mark
+        }
       );
-    }
+    }).join('');
   }
 
-  function notifyPageReaderAnswerSelected(isCorrect, feedback) {
-    if (window.screenReader) {
-      window.screenReader.announceQuizAnswer(isCorrect, feedback);
-    }
-  }
+  function renderFeedback(index) {
+    const selected = state.answers[index];
+    const correct = correctIndex(index);
+    const isRight = selected === correct;
+    const chosen = shuffledAnswers(index).find((a) => a.originalIndex === selected);
+    const feedback = chosen?.feedback || '';
 
-  function notifyPageReaderQuizFinished() {
-    if (window.screenReader) {
-      window.screenReader.announceQuizFinished(state.score, questions.length);
-    }
+    return `
+      <div class="quiz-feedback" id="quiz-feedback" tabindex="-1" role="status">
+        ${createAlert(
+          isRight ? 'success' : 'danger',
+          isRight ? 'Resposta correta!' : 'Resposta incorreta',
+          feedback,
+          isRight ? 'check' : 'warning',
+          { role: 'none' }
+        )}
+
+        <div class="result-actions">
+          <button type="button" class="btn btn-primary btn-block btn-xl" data-action="quiz-next">
+            <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
+            <span>${index + 1 < questions.length ? 'Próxima pergunta' : 'Ver resultado'}</span>
+          </button>
+        </div>
+      </div>
+    `;
   }
 
   function renderQuestion() {
     const q = questions[state.current];
     if (!q) return renderResult();
 
-    const shuffled = shuffleArray(q.answers.map((a, i) => ({ ...a, originalIndex: i })));
-    
-    // Identificar o originalIndex da resposta correta no array embaralhado
-    const correctShuffled = shuffled.find(a => a.is_correct);
-    const correctOriginalIndex = correctShuffled?.originalIndex;
-
-    const progress = ((state.current) / questions.length) * 100;
-
-    const optionsHtml = shuffled.map((answer, i) => 
-      createQuizOption(
-        String.fromCharCode(65 + i),
-        answer.answer_text,
-        answer.is_correct,
-        answer.originalIndex,
-        answer.feedback
-      )
-    ).join('');
-
-    // Se estiver mostrando feedback, renderizar com botão "Próxima pergunta"
-    if (state.showFeedback && state.lastFeedback) {
-      const { isCorrect, feedback, originalIndex } = state.lastFeedback;
-      return `
-        <div class="quiz-page stack-lg">
-          ${createPageHeader(`Pergunta ${state.current + 1} de ${questions.length}`)}
-
-          ${createProgressBar(progress)}
-
-          <div class="quiz-scenario">
-            <svg class="nav-icon" style="font-size: var(--font-size-2xl); color: var(--color-secondary);" aria-hidden="true"><use href="/assets/icons.svg#chat"></use></svg>
-            <div class="text" style="font-size: var(--font-size-base); font-weight: var(--font-weight-normal);">${q.scenario}</div>
-          </div>
-
-          <p class="question-text">${q.question}</p>
-
-          <div class="options-list stack-md">
-            ${optionsHtml}
-          </div>
-
-          ${createAlert(
-            isCorrect ? 'success' : 'danger',
-            isCorrect ? 'Resposta correta!' : 'Resposta incorreta',
-            feedback,
-            isCorrect ? 'check' : 'warning'
-          )}
-
-          <div class="result-actions">
-            <button class="btn btn-primary btn-block btn-xl" data-action="quiz-next" data-href="#quiz-next">
-              <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
-              <span>PRÓXIMA PERGUNTA</span>
-            </button>
-          </div>
-        </div>
-      `;
-    }
+    const answered = state.answers[state.current] !== undefined;
+    const progress = Math.round((state.current / questions.length) * 100);
 
     return `
       <div class="quiz-page stack-lg">
-        ${createPageHeader(`Pergunta ${state.current + 1} de ${questions.length}`)}
+        ${createPageHeader(`Pergunta ${state.current + 1} de ${questions.length}`, {
+          backHref: `#conteudo/${topic.slug}`,
+          backLabel: 'Voltar à aula'
+        })}
 
         ${createProgressBar(progress)}
 
         <div class="quiz-scenario">
-          <svg class="nav-icon" style="font-size: var(--font-size-2xl); color: var(--color-secondary);" aria-hidden="true"><use href="/assets/icons.svg#chat"></use></svg>
-          <div class="text" style="font-size: var(--font-size-base); font-weight: var(--font-weight-normal);">${q.scenario}</div>
+          <svg class="nav-icon" style="color: var(--color-secondary);" aria-hidden="true"><use href="/assets/icons.svg#chat"></use></svg>
+          <p class="text">${q.scenario || ''}</p>
         </div>
 
-        <p class="question-text">${q.question}</p>
+        <h2 class="question-text" id="quiz-question" tabindex="-1">${q.question}</h2>
 
         <div class="options-list stack-md">
-          ${optionsHtml}
+          ${renderOptions(state.current)}
         </div>
+
+        ${answered ? renderFeedback(state.current) : ''}
       </div>
     `;
   }
 
   function renderResult() {
-    const percent = Math.round((state.score / questions.length) * 100);
+    const total = questions.length;
+    const percent = Math.round((state.score / total) * 100);
 
     const resultsHtml = questions.map((q, i) => {
-      const userAns = state.answers[i];
-      const correctAns = q.answers.find(a => a.is_correct);
-      
-      // Durante o shuffle, identificamos o originalIndex da resposta correta
-      const shuffledForCheck = shuffleArray(q.answers.map((a, idx) => ({ ...a, originalIndex: idx })));
-      const correctShuffled = shuffledForCheck.find(a => a.is_correct);
-      const correctOriginalIndex = correctShuffled?.originalIndex;
-      
-      const isCorrect = userAns === correctOriginalIndex;
-      
-      return `
-        <div class="icon-list-item" style="background: ${isCorrect ? 'var(--color-success-bg)' : 'var(--color-danger_light)'}; border-color: ${isCorrect ? 'var(--color-success-border)' : 'var(--color-danger_border)'};">
-          <svg class="icon" style="color: ${isCorrect ? 'var(--color-primary)' : 'var(--color-danger)'};" aria-hidden="true"><use href="/assets/icons.svg#${isCorrect ? 'check' : 'warning'}"></use></svg>
-          <div class="content">
-            <div class="title">${q.question}</div>
-            <div class="desc">${isCorrect ? 'Resposta correta' : `Sua resposta: ${q.answers[userAns]?.answer_text || 'Não respondida'}. Correta: ${correctAns?.answer_text}`}</div>
-          </div>
-        </div>
-      `;
+      const userAnswer = state.answers[i];
+      const correct = correctIndex(i);
+      const isCorrect = userAnswer === correct;
+      const chosenText = userAnswer !== undefined ? q.answers[userAnswer]?.answer_text : '';
+      const correctText = q.answers[correct]?.answer_text || '';
+
+      const descricao = isCorrect
+        ? 'Você acertou.'
+        : `Sua resposta: ${chosenText || 'não respondida'}. Resposta correta: ${correctText}`;
+
+      return createIconListItem(
+        isCorrect ? 'check' : 'warning',
+        q.question,
+        descricao,
+        {
+          iconColor: isCorrect ? 'var(--color-primary)' : 'var(--color-danger)',
+          bgColor: isCorrect ? 'var(--color-success-bg)' : 'var(--color-danger-light)',
+          borderColor: isCorrect ? 'var(--color-success-border)' : 'var(--color-danger-border)'
+        }
+      );
     }).join('');
+
+    const bannerClass = state.score === total ? 'success' : (state.score >= total / 2 ? 'attention' : 'danger');
+    const bannerTitle = state.score === total
+      ? 'Parabéns!'
+      : (state.score >= total / 2 ? 'Bom trabalho!' : 'Continue praticando');
+    const bannerIcon = state.score >= total / 2 ? 'check' : 'help';
 
     return `
       <div class="quiz-page stack-lg text-center">
-        ${createPageHeader('Quiz Finalizado')}
+        ${createPageHeader('Quiz finalizado', { backHref: '#aprender', backLabel: 'Voltar aos tópicos' })}
 
-        <div class="result-banner ${state.score === questions.length ? 'success' : state.score >= questions.length / 2 ? 'attention' : 'danger'}">
-          <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#${state.score === questions.length ? 'check' : state.score >= questions.length / 2 ? 'check' : 'help'}"></use></svg>
-          <h2 class="title">${state.score === questions.length ? 'Parabéns!' : state.score >= questions.length / 2 ? 'Bom trabalho!' : 'Continue praticando'}</h2>
-          <p class="subtitle-main" style="font-size: var(--font-size-xl);">${state.score} de ${questions.length} corretas (${percent}%)</p>
+        <div class="result-banner ${bannerClass}">
+          <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#${bannerIcon}"></use></svg>
+          <h2 class="title" id="quiz-result-title" tabindex="-1">${bannerTitle}</h2>
+          <p class="subtitle-main">${state.score} de ${total} corretas (${percent}%)</p>
         </div>
 
-        <div class="result-summary card stack-md" style="text-align: left; margin-top: var(--space-4);">
-          <h3 class="title-secondary">Resumo</h3>
-          ${resultsHtml}
-        </div>
+        <section class="result-summary card stack-md" style="text-align: left;" aria-labelledby="quiz-resumo-titulo">
+          <h2 id="quiz-resumo-titulo" class="title-secondary">Resumo das perguntas</h2>
+          <ul class="icon-list">
+            ${resultsHtml}
+          </ul>
+        </section>
 
         ${createResultActions([
-          { action: 'navigate', href: `#conteudo/${topic.slug}`, variant: 'btn-primary', size: 'btn-xl', icon: 'article', label: 'REVER A AULA' },
-          { action: 'navigate', href: '#ensinar', variant: 'btn-outline', size: 'btn-lg', icon: 'school', label: 'OUTRO TÓPICO' }
+          { action: 'navigate', href: `#conteudo/${topic.slug}`, variant: 'btn-primary', size: 'btn-xl', icon: 'article', label: 'Rever a aula' },
+          { action: 'navigate', href: '#aprender', variant: 'btn-outline', size: 'btn-lg', icon: 'school', label: 'Escolher outro assunto' }
         ])}
       </div>
     `;
   }
 
-  function shuffleArray(array) {
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+  function renderInto(container) {
+    container.innerHTML = state.current < questions.length ? renderQuestion() : renderResult();
   }
 
-  window.quizSelectAnswer = function(uiIndex, originalIndex, isCorrect, feedback) {
-    // Impedir pontuação duplicada: só processa se a pergunta ainda não foi respondida
-    if (state.answers[state.current] !== undefined) {
+  window.quizSelectAnswer = function (originalIndex) {
+    const current = state.current;
+
+    // Uma resposta por pergunta.
+    if (state.answers[current] !== undefined) return;
+
+    // O índice precisa existir na ordem embaralhada desta pergunta.
+    if (!shuffledAnswers(current).some((a) => a.originalIndex === originalIndex)) {
+      console.warn('[Quiz] Alternativa desconhecida:', originalIndex);
       return;
     }
 
-    state.answers[state.current] = originalIndex;
-    if (isCorrect) state.score++;
+    state.answers[current] = originalIndex;
+    if (originalIndex === correctIndex(current)) state.score++;
 
     const container = document.getElementById('main-content');
-    const options = container.querySelectorAll('.quiz-option');
-    options.forEach((opt, i) => {
-      opt.disabled = true;
-      const ansIdx = parseInt(opt.dataset.answerIndex);
-      if (ansIdx === originalIndex) {
-        opt.classList.add(isCorrect ? 'correct' : 'incorrect');
-      } else if (questions[state.current].answers.find(a => a.originalIndex === ansIdx)?.is_correct) {
-        opt.classList.add('correct');
-      }
-    });
+    if (container) renderInto(container);
 
-    // Notificar PageReader sobre a resposta selecionada
-    notifyPageReaderAnswerSelected(isCorrect, feedback);
-
-    // Mostrar feedback com botão "Próxima pergunta"
-    state.showFeedback = true;
-    state.lastFeedback = { isCorrect, feedback, originalIndex };
-    container.innerHTML = renderQuestion();
+    focusElement('quiz-feedback');
   };
 
-  // Handler para botão "Próxima pergunta"
-  window.quizNextQuestion = function() {
-    state.showFeedback = false;
-    state.lastFeedback = null;
-    state.current++;
+  window.quizNextQuestion = function () {
+    state.current += 1;
+
+    const container = document.getElementById('main-content');
+    if (!container) return;
+
+    renderInto(container);
+
     if (state.current < questions.length) {
-      const container = document.getElementById('main-content');
-      container.innerHTML = renderQuestion();
-      notifyPageReaderQuestionRendered();
+      focusElement('quiz-question');
     } else {
-      // Quiz finalizado
-      notifyPageReaderQuizFinished();
-      const container = document.getElementById('main-content');
-      container.innerHTML = renderResult();
+      focusElement('quiz-result-title');
     }
   };
 
-  // Renderizar primeira pergunta e notificar PageReader
-  const initialHtml = renderQuestion();
-  // Usar setTimeout para garantir que o DOM esteja pronto
-  setTimeout(notifyPageReaderQuestionRendered, 100);
-
-  return initialHtml;
+  return renderQuestion();
 }

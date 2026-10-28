@@ -71,13 +71,10 @@ function quizAnswer(element, event) {
   event.preventDefault();
   if (element.disabled) return;
 
-  const uiIndex = parseInt(element.dataset.uiIndex, 10);
   const originalIndex = parseInt(element.dataset.answerIndex, 10);
-  const isCorrect = element.dataset.correct === '1';
-  const feedback = element.dataset.feedback;
 
   if (window.quizSelectAnswer) {
-    window.quizSelectAnswer(uiIndex, originalIndex, isCorrect, feedback);
+    window.quizSelectAnswer(originalIndex);
   }
 }
 

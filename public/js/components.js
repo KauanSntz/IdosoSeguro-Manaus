@@ -271,10 +271,26 @@ export function createSectionHeader(title, options = {}) {
 /**
  * Alternativa do quiz: <button> simples (não é rádio — não existe radiogroup).
  * O texto visível já inclui a letra: "A. Clicar rapidamente."
+ *
+ * @param {object} [opts] `disabled` (já respondida), `selected` (foi a escolhida)
+ *                        e `mark` ('correct' | 'incorrect' | '').
  */
-export function createQuizOption(letter, text, isCorrect, originalIndex, feedback) {
+export function createQuizOption(letter, text, isCorrect, originalIndex, feedback, opts = {}) {
+  const { disabled = false, selected = false, mark = '' } = opts;
+
+  const classes = ['quiz-option'];
+  if (mark === 'correct') classes.push('correct');
+  if (mark === 'incorrect') classes.push('incorrect');
+
+  const stateAttrs = disabled
+    ? `disabled aria-disabled="true" aria-pressed="${selected ? 'true' : 'false'}"`
+    : '';
+
   return `
-    <button type="button" class="quiz-option" data-answer-index="${originalIndex}" data-action="quiz-answer" data-ui-index="${letter.charCodeAt(0) - 65}" data-correct="${isCorrect}" data-feedback="${escapeAttr(feedback)}">
+    <button type="button" class="${classes.join(' ')}"
+            data-answer-index="${originalIndex}" data-action="quiz-answer"
+            data-ui-index="${letter.charCodeAt(0) - 65}" data-correct="${isCorrect ? '1' : '0'}"
+            data-feedback="${escapeAttr(feedback)}" ${stateAttrs}>
       <span class="option-text">${letter}. ${escapeAttr(text)}</span>
     </button>
   `;

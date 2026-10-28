@@ -3,7 +3,9 @@ class Router {
     this.routes = {};
     window.addEventListener('hashchange', () => this.handleRoute());
     console.log('[Router] Constructor - readyState:', document.readyState, 'hash:', window.location.hash);
-    this.handleRoute();
+    // Não renderizar aqui: no carregamento inicial as rotas ainda não foram
+    // registradas (app.js registra e depois chama init()). Renderizar antes
+    // fazia deep links (ex.: #quiz/links-suspeitos) caírem em #home.
   }
 
   init() {
