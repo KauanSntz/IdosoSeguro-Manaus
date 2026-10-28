@@ -1717,4 +1717,10 @@
   .result-actions {
     gap: var(--space-2);
   }
+
+  /* O botão "voltar" pode ocupar quase toda a linha (ex.: "Escolher outro
+     tipo"). Sem isto o título é espremido a ~10px e cai uma letra por linha. */
+  .page-header-title {
+    flex-basis: 100%;
+  }
 }
