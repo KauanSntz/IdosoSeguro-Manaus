@@ -10,7 +10,7 @@ export async function renderWelcomePage() {
       <h1 class="title-primary" tabindex="-1">Idoso Seguro+ Manaus</h1>
       <p class="subtitle-main">Segurança digital para pessoas idosas. Aprenda, verifique, proteja-se.</p>
 
-      <div class="reader-discovery stack-sm">
+      <div class="reader-discovery stack-md">
         ${createScreenReaderToggle(readerEnabled)}
         <p class="form-help">O leitor fala a tela em voz alta. No computador, o atalho é Alt + L.</p>
       </div>

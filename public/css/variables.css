@@ -318,7 +318,18 @@ body {
   padding: 0 var(--space-4);
 }
 
-.stack { display: flex; flex-direction: column; }
+/* Empilhamento vertical: o gap é o ÚNICO mecanismo de espaço entre irmãos.
+   Antes estas classes só declaravam `gap`, que não tem efeito em elemento
+   `display: block` — por isso cards e botões ficavam colados. */
+.stack,
+.stack-sm,
+.stack-md,
+.stack-lg,
+.stack-xl {
+  display: flex;
+  flex-direction: column;
+}
+
 .stack-sm { gap: var(--space-2); }
 .stack-md { gap: var(--space-4); }
 .stack-lg { gap: var(--space-6); }
