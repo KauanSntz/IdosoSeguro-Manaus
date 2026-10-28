@@ -143,7 +143,10 @@
   --section-gap-lg: 32px;
   --container-max: 1120px;
   --header-height: 60px;
-  --nav-height: 72px;
+  /* Altura da nav fixa do celular. Com 5 itens e rótulos de 16-18px em 360px
+     o rótulo mais longo quebra em 2 linhas, então a altura já nasce folgada:
+     é ela que o <main> reserva no padding-bottom. */
+  --nav-height: 80px;
   /* Respiro lateral único do app: header, main e nav usam o mesmo valor,
      então tudo fica alinhado em qualquer largura (B-R18). */
   --gutter: var(--space-4);
@@ -223,20 +226,6 @@ html[data-high-contrast="true"] {
   --shadow-sm: 0 0 0 1px #FFFFFF;
   --shadow-md: 0 0 0 2px #FFFFFF;
   --shadow-lg: 0 0 0 3px #FFFFFF;
-}
-
-/* ========================================
-   REDUÇÃO DE MOVIMENTO
-   ======================================== */
-@media (prefers-reduced-motion: reduce) {
-  html[data-reduced-motion="true"] *,
-  html[data-reduced-motion="true"] *::before,
-  html[data-reduced-motion="true"] *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
 }
 
 /* ========================================
@@ -421,13 +410,6 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation: none;
-    border-top-color: transparent;
-  }
 }
 
 .loader-text {

@@ -10,30 +10,22 @@
   gap: var(--space-2);
   min-height: var(--btn-height-md);
   min-width: var(--touch-target-min);
-  padding: 0 var(--btn-padding-x);
+  padding: var(--space-2) var(--btn-padding-x);
   border-radius: var(--radius-lg);
   font-size: var(--btn-font-size);
   font-weight: var(--font-weight-bold);
-  line-height: 1.2;
+  line-height: 1.3;
   text-align: center;
   text-decoration: none;
   white-space: normal;
-  overflow-wrap: anywhere;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
   transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
   cursor: pointer;
   border: var(--border-width) solid transparent;
   outline-offset: 3px;
 }
 
-/* Botões de opção (rótulos, não comandos) ficam em caixa normal para
-   facilitar a leitura de quem tem baixa visão. */
-.btn[data-action="tts-speed"],
-.btn[data-action="font-scale"],
-.btn-sentence-case {
-  text-transform: none;
-}
+/* Rótulo de botão nunca em caixa alta: quem tem baixa visão lê melhor em
+   caixa mista (B-R8). */
 
 /* Estado "ligado" de qualquer botão de alternância é visível, não só falado. */
 .btn[aria-pressed="true"] {
@@ -131,18 +123,22 @@
   justify-content: center;
   gap: var(--space-2);
   min-height: var(--btn-height-md);
-  padding: 0 var(--space-4);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-bold);
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 1.3;
+  max-width: 100%;
   transition: background-color var(--transition-fast), border-color var(--transition-fast);
   cursor: pointer;
   border: var(--border-width-strong) solid var(--color-info-border);
   background-color: var(--color-info-bg);
   color: var(--color-secondary);
   outline-offset: 3px;
+}
+
+.btn-voice .btn-label {
+  min-width: 0;
 }
 
 .btn-voice:hover:not(:disabled) {
@@ -169,10 +165,6 @@
 @keyframes voicePulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(1.1); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .btn-voice.speaking .voice-icon { animation: none; }
 }
 
 /* ========================================
@@ -274,8 +266,9 @@
   border-radius: var(--radius-pill);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 1.2;
+  max-width: 100%;
+  text-align: left;
 }
 
 .badge-success {
@@ -355,8 +348,7 @@
   font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   line-height: var(--line-height-body);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ========================================
@@ -421,8 +413,7 @@
 .alert .desc {
   font-size: var(--font-size-base);
   line-height: var(--line-height-body);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ========================================
@@ -497,8 +488,7 @@
   font-weight: var(--font-weight-semibold);
   color: var(--color-secondary-dark);
   line-height: var(--line-height-heading);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .quiz-scenario .character {
@@ -583,8 +573,7 @@
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
   line-height: var(--line-height-tight);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .quiz-option .check {
@@ -636,10 +625,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .quiz-feedback { animation: none; }
-}
-
 .quiz-feedback .header {
   display: flex;
   align-items: center;
@@ -679,8 +664,7 @@
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   line-height: var(--line-height-body);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .quiz-feedback .explanation .character {
@@ -834,10 +818,6 @@
   50% { opacity: 0.5; transform: scale(1.2); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .speaking-indicator .dot { animation: none; }
-}
-
 /* ========================================
    GOLDEN TIP (Dica destacada)
    ======================================== */
@@ -868,8 +848,7 @@
   font-weight: var(--font-weight-semibold);
   color: #3A3000;
   margin: 0;
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ========================================
@@ -884,17 +863,26 @@
 
 .btn-group > * {
   flex: 1 1 auto;
-  min-width: 120px;
+  min-width: min(100%, 120px);
 }
 
-@media (min-width: 480px) {
+/* Abaixo de 600px os botões de um grupo ocupam a linha inteira: alvo maior,
+   nenhum rótulo apertado (B-R17). */
+@media (max-width: 599px) {
+  .btn-group > * {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 600px) {
   .btn-group-4 > * {
     flex: 1 1 calc(50% - var(--space-1));
     min-width: unset;
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .btn-group-4 > * {
     flex: 1 1 calc(25% - var(--space-1));
     min-width: unset;
@@ -930,11 +918,13 @@
   font-weight: var(--font-weight-bold);
   color: var(--color-primary-dark);
   margin: 0;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .btn-back {
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ========================================
@@ -995,8 +985,7 @@
   color: var(--color-text-secondary);
   margin: 0;
   line-height: var(--line-height-body);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .action-card-arrow {
@@ -1025,10 +1014,12 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: var(--nav-height);
+  min-height: var(--nav-height);
+  height: auto;
+  gap: 0;
   background: var(--color-surface);
   border-top: var(--border-width-strong) solid var(--color-border);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-1) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
   box-shadow: var(--shadow-md);
   transition: transform var(--transition-normal), opacity var(--transition-normal);
 }
@@ -1043,10 +1034,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--space-1);
-  min-width: var(--touch-target-comfortable);
+  flex: 1 1 0;
+  min-width: 0;
   min-height: var(--touch-target-comfortable);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-1) 0;
   color: var(--color-text-muted);
   text-decoration: none;
   font-size: var(--font-size-xs);
@@ -1077,8 +1070,19 @@
   flex-shrink: 0;
 }
 
+/* No celular são 5 itens fixos em 360px: com fonte grande o rótulo não cabe
+   em uma linha e passava por cima do vizinho (B-R10). Aqui ele pode quebrar
+   em duas linhas, fica centralizado e o tamanho é limitado a 18px — nunca
+   abaixo de 16px — para não invadir o item ao lado. */
 .nav-label {
-  white-space: nowrap;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.1;
+  font-size: clamp(16px, var(--font-size-xs), 18px);
+  overflow-wrap: break-word;
+  hyphens: auto;
+  /* ocupa a largura do item para poder quebrar em vez de invadir o vizinho */
+  width: 100%;
 }
 
 /* ========================================
@@ -1091,7 +1095,7 @@
 }
 
 .btn-voice .btn-label {
-  white-space: nowrap;
+  min-width: 0;
 }
 
 /* ========================================
@@ -1161,8 +1165,7 @@
   font-size: var(--font-size-sm);
   color: var(--color-danger);
   margin: 0;
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ========================================
@@ -1421,8 +1424,7 @@
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   margin-bottom: var(--space-4);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .resultado-page .result-description p {
@@ -1436,15 +1438,13 @@
 .resultado-page .result-description.attention {
   background-color: var(--color-warning-bg);
   border-color: var(--color-warning-border);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .resultado-page .result-description.danger {
   background-color: var(--color-danger-light);
   border-color: var(--color-danger-border);
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .resultado-page .signals-list {
@@ -1475,8 +1475,7 @@
   color: var(--color-text-secondary);
   line-height: var(--line-height-body);
   margin: 0;
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .resultado-page .recommendations {
@@ -1689,24 +1688,32 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 599px) {
   .font-scale-btn {
     min-width: 48px;
     min-height: 48px;
   }
-  
+
+  /* No celular o ícone do card fica acima do texto: em 360px o texto ganha
+     a largura inteira do card e passa a caber ≥30 caracteres por linha. */
   .action-card {
+    flex-direction: column;
+    align-items: flex-start;
     padding: var(--space-4);
-    gap: var(--space-3);
+    gap: var(--space-2);
   }
-  
+
   .action-card-icon {
     width: 40px;
     height: 40px;
     min-width: 40px;
     min-height: 40px;
   }
-  
+
+  .action-card-arrow {
+    align-self: flex-end;
+  }
+
   .result-actions {
     gap: var(--space-2);
   }

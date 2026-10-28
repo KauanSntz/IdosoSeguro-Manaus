@@ -103,6 +103,7 @@
     z-index: calc(var(--z-sticky) - 1);
     flex-direction: row;
     height: auto;
+    min-height: 0;
     padding: var(--space-2) var(--gutter);
     border-top: none;
     border-bottom: var(--border-width) solid var(--color-border);
@@ -120,6 +121,7 @@
   }
 
   .nav-item {
+    flex: 0 0 auto;
     flex-direction: row;
     min-height: var(--btn-height-sm);
     min-width: auto;
@@ -148,6 +150,8 @@
 
   .nav-label {
     display: inline;
+    font-size: inherit;
+    white-space: nowrap;
   }
 }
 
@@ -156,17 +160,12 @@
    ======================================== */
 
 /* ========================================
-   ORIENTATION: LANDSCAPE MOBILE
+   ORIENTAÇÃO: CELULAR DEITADO (pouca altura)
+   Só enxuga o que é decorativo. A nav mantém a altura do token para o
+   <main> continuar reservando o espaço certo, e o rótulo nunca cai
+   abaixo de 16px.
    ======================================== */
 @media (max-height: 500px) and (orientation: landscape) {
-  .bottom-nav {
-    height: 60px;
-  }
-
-  .nav-label {
-    font-size: 10px;
-  }
-
   .hero-illustration {
     max-height: 160px;
   }
@@ -211,114 +210,14 @@
 }
 
 /* ========================================
-   PRINT MEDIA
+   ESCALAS DE FONTE GRANDES
+   Alturas de controle acompanham o texto para o alvo continuar ≥44x44px.
+   --nav-height também cresce: é ela que reserva o espaço da nav fixa.
    ======================================== */
-@media print {
-  @page {
-    margin: 2cm;
-  }
-
-  .app-header,
-  .bottom-nav,
-  .skip-link,
-  .btn,
-  .btn-voice,
-  .access-toolbar,
-  .loader {
-    display: none !important;
-  }
-
-  .app-container {
-    min-height: auto;
-  }
-
-  .main-content {
-    padding: 0;
-    max-width: 100%;
-  }
-
-  body {
-    font-size: 12pt;
-    line-height: 1.5;
-    color: #000;
-    background: #fff;
-  }
-
-  .card {
-    border: 1px solid #999;
-    box-shadow: none;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .result-banner {
-    border: 2px solid #000;
-    break-inside: avoid;
-  }
-
-  a {
-    text-decoration: none;
-    color: #000;
-  }
+html[data-font-scale="large"] {
+  --nav-height: 86px;
 }
 
-/* ========================================
-   ACCESSIBILITY: HIGH CONTRAST MODE
-   ======================================== */
-@media (prefers-contrast: high) {
-  :root {
-    --color-border: currentColor;
-    --color-border-strong: currentColor;
-    --color-border-focus: currentColor;
-    --shadow-sm: 0 0 0 1px currentColor;
-    --shadow-md: 0 0 0 2px currentColor;
-    --shadow-lg: 0 0 0 3px currentColor;
-  }
-
-  .btn {
-    border-width: var(--border-width-strong);
-  }
-
-  .card {
-    border-width: var(--border-width-strong);
-  }
-
-  .form-input,
-  .form-textarea,
-  .form-select {
-    border-width: var(--border-width-strong);
-  }
-
-  .quiz-option {
-    border-width: var(--border-width-strong);
-  }
-}
-
-/* ========================================
-   ACCESSIBILITY: REDUCED MOTION
-   ======================================== */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .spinner {
-    animation: none;
-    border-top-color: transparent;
-  }
-}
-
-/* ========================================
-   WIDE SCREENS (>1400px)
-   ======================================== */
-/* ========================================
-   VERY LARGE FONT SCALES
-   ======================================== */
 html[data-font-scale="xlarge"] {
   --btn-height-sm: 48px;
   --btn-height-md: 56px;
@@ -327,5 +226,5 @@ html[data-font-scale="xlarge"] {
   --touch-target-min: 48px;
   --touch-target-comfortable: 56px;
   --touch-target-large: 64px;
-  --nav-height: 80px;
+  --nav-height: 92px;
 }

@@ -40,34 +40,51 @@ html[data-font-scale="large"] .hero-illustration { max-height: 260px; }
 html[data-font-scale="xlarge"] .hero-illustration { max-height: 300px; }
 
 /* ========================================
-   REDUCED MOTION
+   TEMA: MOVIMENTO REDUZIDO
+   Uma única regra para a preferência do sistema e para a escolha manual
+   (data-reduced-motion). Antes o seletor manual só valia se o sistema também
+   estivesse em "reduce".
    ======================================== */
 @media (prefers-reduced-motion: reduce) {
-  html[data-reduced-motion="true"] *,
-  html[data-reduced-motion="true"] *::before,
-  html[data-reduced-motion="true"] *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 
-  html[data-reduced-motion="true"] .spinner {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .spinner {
     animation: none;
     border-top-color: transparent;
   }
 
-  html[data-reduced-motion="true"] .btn-voice.speaking .voice-icon {
+  .btn-voice.speaking .voice-icon,
+  .speaking-indicator .dot,
+  .quiz-feedback {
     animation: none;
   }
+}
 
-  html[data-reduced-motion="true"] .speaking-indicator .dot {
-    animation: none;
-  }
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
 
-  html[data-reduced-motion="true"] .quiz-feedback {
-    animation: none;
-  }
+html[data-reduced-motion="true"] .spinner,
+html[data-reduced-motion="true"] .btn-voice.speaking .voice-icon,
+html[data-reduced-motion="true"] .speaking-indicator .dot,
+html[data-reduced-motion="true"] .quiz-feedback {
+  animation: none;
 }
 
 /* ========================================
@@ -119,14 +136,10 @@ html[data-font-scale="xlarge"] .hero-illustration { max-height: 300px; }
 }
 
 /* ========================================
-   TEXT SPACING (WCAG 1.4.12)
+   ESPAÇAMENTO DE TEXTO (WCAG 1.4.12)
+   Os valores já são o padrão em variables.css. A regra antiga usava uma
+   media query inválida (largura máxima de 100%) e nunca aplicava.
    ======================================== */
-@media (max-width: 100%) {
-  :root {
-    --line-height-body: 1.6;
-    --line-height-heading: 1.3;
-  }
-}
 
 /* ========================================
    SCREEN READER ONLY
@@ -165,9 +178,28 @@ article {
 }
 
 /* ========================================
-   HIGH CONTRAST FOCUS FOR INTERACTIVE ELEMENTS
+   TEMA: ALTO CONTRASTE (preferência do sistema)
+   Os tokens manuais ficam em variables.css (html[data-high-contrast="true"]).
    ======================================== */
 @media (prefers-contrast: high) {
+  :root {
+    --color-border: currentColor;
+    --color-border-strong: currentColor;
+    --color-border-focus: currentColor;
+    --shadow-sm: 0 0 0 1px currentColor;
+    --shadow-md: 0 0 0 2px currentColor;
+    --shadow-lg: 0 0 0 3px currentColor;
+  }
+
+  .btn,
+  .card,
+  .quiz-option,
+  .form-input,
+  .form-textarea,
+  .form-select {
+    border-width: var(--border-width-strong);
+  }
+
   :focus-visible {
     outline-width: 4px;
     outline-offset: 3px;
@@ -175,16 +207,25 @@ article {
 }
 
 /* ========================================
-   PRINT STYLES
+   TEMA: IMPRESSÃO
    ======================================== */
 @media print {
+  @page {
+    margin: 2cm;
+  }
+
   .app-header,
   .bottom-nav,
+  .skip-link,
   .btn,
   .btn-voice,
   .access-toolbar,
-  .skip-link {
+  .loader {
     display: none !important;
+  }
+
+  .app-container {
+    min-height: auto;
   }
 
   .main-content {
@@ -193,14 +234,27 @@ article {
   }
 
   body {
-    background: white;
-    color: black;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+    background: #fff;
   }
 
   .card {
-    border: 1px solid #ccc;
+    border: 1px solid #999;
     box-shadow: none;
     break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .result-banner {
+    border: 2px solid #000;
+    break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none;
+    color: #000;
   }
 }
 
@@ -300,7 +354,7 @@ html[data-screen-reader="true"] [data-voice-btn]:not([data-action="toggle-screen
 }
 
 /* Ajustes para o modo leitor em telas pequenas */
-@media (max-width: 480px) {
+@media (max-width: 599px) {
   .sr-indicator-content {
     flex-direction: column;
     text-align: center;
@@ -317,8 +371,10 @@ html[data-screen-reader="true"] [data-voice-btn]:not([data-action="toggle-screen
   color: var(--color-text-on-primary, #fff);
   border: none;
   border-radius: var(--radius-pill);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   font-size: var(--font-size-lg);
   cursor: pointer;
   display: inline-flex;

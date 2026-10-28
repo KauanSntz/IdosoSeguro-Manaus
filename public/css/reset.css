@@ -21,12 +21,6 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-}
-
 body {
   min-height: 100vh;
   min-height: 100dvh;
