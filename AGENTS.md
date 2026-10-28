@@ -5,7 +5,22 @@
 ---
 
 ## Última Atualização
-**v1.1.0 (2026-10-08)** — Bugfixes críticos + Logging completo + Docs (CHANGELOG.md)
+**v1.2.0 (2026-10-28)** — Etapa D: leitor de tela por CONTEÚDO (destinos, chegada pelo
+título, listas sem duplicação, `<details>`, "ler tudo" com pausa, sem contagens).
+
+### Etapa D — leitor de tela (v1.2.0)
+
+| Regra | Onde |
+|-------|------|
+| Chegada fala o `h1` + introdução e PARA | `screen-reader.js` `_announceArrival`/`_arrival` |
+| Foco no `h1` a cada rota | `router.js` + `components.js` (`tabindex="-1"`) |
+| "Para onde leva" dos acionáveis | `accessibility/destinos.js` |
+| Listas: só os itens, "Seção N de M: texto" | `page-reader.js` `_walk` + `chunk-descriptor.js` |
+| `<details>`: recolhida/expandida | `page-reader.js` `_stateOf` + observer `open` |
+| Tab não dá a volta: "Fim da tela." | `screen-reader.js` `handleTab` |
+| "Ler tudo" com pausa/retomada e Esc | `screen-reader.js` `_startReadingAll`/`_cancelAll` |
+| Nunca contagens automáticas | `chunk-descriptor.js` `describeSummary` |
+| Campos: "obrigatório", "vazio/preenchido" | `page-reader.js` `_fieldInfo` |
 
 ---
 

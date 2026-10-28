@@ -56,8 +56,7 @@ export function initKeyboardInput({ reader }) {
 
     if (event.key === 'Escape') {
       event.preventDefault();
-      if (reader._pending) reader.handleIntent('cancel');
-      else reader.handleIntent('toggle');
+      reader.handleIntent('cancel');
       return;
     }
 

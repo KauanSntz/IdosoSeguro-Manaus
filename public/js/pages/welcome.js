@@ -5,7 +5,7 @@ export async function renderWelcomePage() {
     <div class="welcome-page stack-xl text-center">
       <svg class="hero-illustration" aria-hidden="true"><use href="/assets/icons.svg#shield"></use></svg>
 
-      <h1 class="title-primary">Idoso Seguro+ Manaus</h1>
+      <h1 class="title-primary" tabindex="-1">Idoso Seguro+ Manaus</h1>
       <p class="subtitle-main">Segurança digital para pessoas idosas. Aprenda, verifique, proteja-se.</p>
 
       ${createAlert('info', 'Como funciona', 'Este aplicativo tem duas partes: <strong>Aprender</strong> com aulas curtas sobre golpes comuns, e <strong>Assistir</strong> para verificar mensagens, links ou áudios suspeitos.', 'info', { role: 'none' })}

@@ -70,16 +70,6 @@ export async function renderQuizPage(params) {
     return questions[index].answers.findIndex((answer) => Boolean(answer.is_correct));
   }
 
-  /**
-   * Move o foco para o conteúdo novo depois de cada re-render.
-   * Vale para todo mundo: sem isso, o foco cai no <body> quando a alternativa
-   * clicada fica desabilitada — e quem navega por teclado se perde.
-   */
-  function focusElement(id) {
-    const el = document.getElementById(id);
-    if (el) el.focus({ preventScroll: false });
-  }
-
   function renderOptions(index) {
     const answered = state.answers[index] !== undefined;
     const selected = state.answers[index];
@@ -115,13 +105,13 @@ export async function renderQuizPage(params) {
     const feedback = chosen?.feedback || '';
 
     return `
-      <div class="quiz-feedback" id="quiz-feedback" tabindex="-1" role="status">
+      <div class="quiz-feedback" id="quiz-feedback" tabindex="-1">
         ${createAlert(
           isRight ? 'success' : 'danger',
           isRight ? 'Resposta correta!' : 'Resposta incorreta',
           feedback,
           isRight ? 'check' : 'warning',
-          { role: 'none' }
+          { role: 'status' }
         )}
 
         <div class="result-actions">
@@ -228,6 +218,16 @@ export async function renderQuizPage(params) {
     container.innerHTML = state.current < questions.length ? renderQuestion() : renderResult();
   }
 
+  /** Foco + anúncio do bloco novo (feedback ou resultado). */
+  function announce(focusSelector, announceSelector) {
+    const focusEl = document.querySelector(focusSelector);
+    if (focusEl) {
+      try { focusEl.focus({ preventScroll: false }); } catch { /* ignorado */ }
+    }
+    const alvo = announceSelector ? document.querySelector(announceSelector) : focusEl;
+    window.screenReader?.announceElement?.(alvo || focusEl);
+  }
+
   window.quizSelectAnswer = function (originalIndex) {
     const current = state.current;
 
@@ -246,7 +246,7 @@ export async function renderQuizPage(params) {
     const container = document.getElementById('main-content');
     if (container) renderInto(container);
 
-    focusElement('quiz-feedback');
+    announce('#quiz-feedback', '#quiz-feedback .alert');
   };
 
   window.quizNextQuestion = function () {
@@ -258,9 +258,9 @@ export async function renderQuizPage(params) {
     renderInto(container);
 
     if (state.current < questions.length) {
-      focusElement('quiz-question');
+      announce('#quiz-question');
     } else {
-      focusElement('quiz-result-title');
+      announce('#quiz-result-title', '.result-banner');
     }
   };
 

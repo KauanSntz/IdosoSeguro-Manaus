@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this format.
 The format is based on [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.2.0] - 2026-10-28 — Leitor de tela: navegação por conteúdo (Etapa D)
+
+### Added
+- **`public/js/accessibility/destinos.js`** — traduz "para onde este elemento leva" em fala:
+  prioridade `data-sr-destino` > `data-action` > `data-href`/`href` > vazio.
+  Cards: "Abre a aula sobre Links Suspeitos." Voltar: "Volta para o início."
+- **Chegada de tela pelo CONTEÚDO** — foco no `h1` (`tabindex="-1"`), fala começando pelo
+  título, sem contagens e sem "use Tab". `#aprender` fala o título + introdução;
+  a aula fala "Aula: <título>. Introdução. <texto>"; o quiz fala a situação e o enunciado.
+- **`ScreenReader.announceElement()`** — anuncia bloco recém-criado (feedback do quiz,
+  resultado) depois de re-extrair o DOM.
+- **`PageReader.refresh()`** — atualiza estado volátil (`disabled`, `open`, valor do campo)
+  antes de cada fala.
+- **Campos de formulário** falam "obrigatório" e "vazio"/"preenchido".
+
+### Changed
+- **Listas**: o container `list` não é mais um passo de navegação (Tab e "ler tudo" vão
+  direto aos itens). Itens falam "<Rótulo da seção> N de M: texto".
+- **Tab/Shift+Tab** não dão mais a volta: terminam em "Fim da tela." / "Início da tela."
+- **"Ler tudo" (P)** começa na posição atual, pausa/retoma e para com Esc.
+- **Menu**: usa `aria-current="page"` e fala "Página atual." em vez de "Item de menu".
+- **`<details>`**: fala "recolhida"/"expandida"; a resposta só é lida quando aberta.
+- **Esc** interrompe leitura/pausa antes de desligar o modo.
+- **Atalhos H/B/L/T/M** dão a volta na tela (o "Voltar", que fica acima do título,
+  agora é alcançável).
+- **Router** anuncia a tela com `setTimeout(0)` em vez de `requestAnimationFrame`
+  (em aba oculta o rAF não dispara e o leitor ficava mudo).
+- **`app.js`** não chama mais `onNavigate` no boot (o router já chama) — falava duas vezes.
+- **Indicador** troca o emoji 🎤 por SVG do sprite (`#mic`, rótulo "Falar um comando").
+
+### Removed
+- Falas automáticas de contagem ("Esta tela tem 1 título, 13 botões", "Menu com 5 abas").
+- `console.table` de diagnóstico do `page-reader.js`.
+- `announceQuizQuestion/Answer/Finished` (substituídos pela chegada por rota e pelo
+  anúncio do bloco novo).
+
+---
+
 ## [1.1.0] - 2026-10-08
 
 ### Fixed

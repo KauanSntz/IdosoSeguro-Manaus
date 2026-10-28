@@ -33,7 +33,7 @@ export function createPageHeader(title, options = {}) {
   } = options;
 
   const backBtn = showBack ? `
-    <button type="button" class="btn btn-ghost btn-back" data-action="navigate" data-href="${escapeAttr(backHref)}">
+    <button type="button" class="btn btn-ghost btn-back" data-action="navigate" data-sr-back="true" data-href="${escapeAttr(backHref)}">
       <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
       <span>${escapeAttr(backLabel)}</span>
     </button>
@@ -49,7 +49,7 @@ export function createPageHeader(title, options = {}) {
   return `
     <header class="page-header">
       ${backBtn}
-      <h1 class="page-header-title">${escapeAttr(title)}</h1>
+      <h1 class="page-header-title" tabindex="-1">${escapeAttr(title)}</h1>
       <div class="page-header-actions">
         ${screenReaderToggleBtn}
       </div>
@@ -198,7 +198,7 @@ export function createFormField(type, id, label, options = {}) {
 /** Grupo de botões de ação no fim de uma tela. */
 export function createResultActions(actions) {
   const buttons = actions.map(action => `
-    <button type="button" class="btn ${action.variant || 'btn-primary'} btn-block ${action.size || 'btn-xl'}" data-action="${action.action}" ${action.href ? `data-href="${escapeAttr(action.href)}"` : ''} ${action.confirm ? 'data-confirm="true"' : ''}>
+    <button type="button" class="btn ${action.variant || 'btn-primary'} btn-block ${action.size || 'btn-xl'}" data-action="${action.action}" ${action.href ? `data-href="${escapeAttr(action.href)}"` : ''} ${/^voltar/i.test(action.label) ? 'data-sr-back="true"' : ''} ${action.confirm ? 'data-confirm="true"' : ''}>
       ${action.icon ? `<svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#${escapeAttr(action.icon)}"></use></svg>` : ''}
       <span>${escapeAttr(action.label)}</span>
     </button>

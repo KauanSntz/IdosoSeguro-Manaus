@@ -13,6 +13,8 @@
  * (A versão anterior usava whitelist e perdia boa parte do conteúdo.)
  */
 
+import { describeDestination } from './destinos.js';
+
 /** Tags decorativas ou invisíveis — subtree inteira é ignorada. */
 const BLACKLIST_TAGS = new Set([
   'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'TEMPLATE', 'HEAD', 'TITLE',
@@ -109,7 +111,7 @@ export class PageReader {
 
     const list = Array.isArray(containers) ? containers : [containers];
     for (const container of list) {
-      if (container) this._walk(container, this.chunks);
+      if (container) this._walk(container, this.chunks, { sectionLabel: '', list: null });
     }
 
     this.chunks.forEach((chunk, i) => {
@@ -117,45 +119,54 @@ export class PageReader {
       chunk.total = this.chunks.length;
     });
 
-    // [DIAGNÓSTICO TEMPORÁRIO — ETAPA A] remover depois da auditoria.
-    if (typeof console !== 'undefined' && console.table) {
-      console.table(this.chunks.map((c) => ({
-        papel: c.type,
-        regiao: c.region,
-        texto: (c.text || '').slice(0, 40)
-      })));
-    }
-
     return this.chunks;
   }
 
-  _walk(element, out) {
+  /**
+   * Percorre a árvore mantendo CONTEXTO:
+   *  - `sectionLabel`: último título visto (para "Sinais de alerta 2 de 3: ...")
+   *  - `list`: posição do item dentro da lista atual
+   */
+  _walk(element, out, ctx) {
     if (!this._isReadable(element)) return;
 
     // Rótulo associado a um campo de formulário é falado pelo próprio campo.
     if (this._isAssociatedLabel(element)) return;
 
+    // <details> fechado: lê só o resumo. A resposta aparece ao abrir.
+    if (element.tagName === 'DETAILS' && !element.open) {
+      const summary = element.querySelector('summary');
+      if (summary) this._walk(summary, out, ctx);
+      return;
+    }
+
     const type = this.classify(element);
 
-    // Listas: anunciar "Lista com N itens" e ainda descer para os itens.
+    // Lista: o container NÃO é um passo de navegação (evita falar duas vezes).
+    // Os itens vão para a lista com a posição ("2 de 3") e o rótulo da seção.
     if (type === 'list') {
-      out.push(this._makeChunk(element, type));
-      for (const child of element.children) this._walk(child, out);
+      const items = [...element.children].filter((child) => child.tagName === 'LI');
+      out.push(this._makeChunk(element, type, ctx, { navigable: false }));
+      items.forEach((li, i) => {
+        this._walk(li, out, { ...ctx, list: { index: i + 1, total: items.length } });
+      });
       return;
     }
 
     if (type) {
-      out.push(this._makeChunk(element, type));
+      const chunk = this._makeChunk(element, type, ctx);
+      out.push(chunk);
+      if (type === 'heading') ctx.sectionLabel = chunk.text;
       return; // Não desce: o texto já está contido neste chunk.
     }
 
     // Container puro: se tem texto direto, vira um chunk de texto.
     const directText = this._directText(element);
     if (directText) {
-      out.push(this._makeChunk(element, 'text'));
+      out.push(this._makeChunk(element, 'text', ctx));
     }
 
-    for (const child of element.children) this._walk(child, out);
+    for (const child of element.children) this._walk(child, out, ctx);
   }
 
   _isReadable(element) {
@@ -203,6 +214,7 @@ export class PageReader {
     if (HEADING_TAGS.has(tag)) return 'heading';
     if (tag === 'UL' || tag === 'OL') return 'list';
     if (tag === 'LI') return 'list-item';
+    if (tag === 'SUMMARY') return 'button';
     if (tag === 'P') return 'paragraph';
     if (tag === 'IMG') return 'image';
     if (tag === 'TEXTAREA') return 'textarea';
@@ -237,18 +249,27 @@ export class PageReader {
     return 'input';
   }
 
-  _makeChunk(element, type) {
-    return {
+  _makeChunk(element, type, ctx = {}, extra = {}) {
+    const chunk = {
       type,
       element,
       text: this._extractText(element, type),
       state: this._stateOf(element),
+      field: this._fieldInfo(element),
       itemCount: type === 'list' ? element.children.length : 0,
       interactive: this._isInteractive(element),
       region: this._regionOf(element),
+      sectionLabel: ctx.sectionLabel || '',
+      itemIndex: ctx.list ? ctx.list.index : 0,
+      itemTotal: ctx.list ? ctx.list.total : 0,
+      destination: describeDestination(element),
+      current: element.getAttribute('aria-current') === 'page',
+      // Passo de navegação? Listas não são: o conteúdo está nos itens.
+      navigable: extra.navigable !== false && type !== 'list',
       index: 0,
       total: 0
     };
+    return chunk;
   }
 
   /**
@@ -257,6 +278,12 @@ export class PageReader {
    * QUAL opção está selecionada, algo que só olhando a tela daria hoje.
    */
   _stateOf(element) {
+    // <details>: o resumo diz se está recolhido ou expandido.
+    if (element.tagName === 'SUMMARY') {
+      const details = element.closest('details');
+      return details && details.open ? 'expandida' : 'recolhida';
+    }
+
     const pressed = element.getAttribute('aria-pressed');
     if (pressed === 'true') return 'ativado';
     if (pressed === 'false') return 'desativado';
@@ -264,6 +291,31 @@ export class PageReader {
         element.getAttribute('aria-selected') === 'true') return 'selecionado';
     if (element.disabled) return 'indisponível';
     return null;
+  }
+
+  /**
+   * Campos de formulário: a pessoa cega precisa saber se é obrigatório e se
+   * já está preenchido — a tela mostra o asterisco e o texto digitado, e isso
+   * não chega pelo som.
+   */
+  _fieldInfo(element) {
+    const tag = element.tagName;
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return null;
+
+    const required = Boolean(element.required) || element.getAttribute('aria-required') === 'true';
+    const value = String(element.value || '').trim();
+    return { required, filled: value.length > 0 };
+  }
+
+  /**
+   * Atualiza o que muda sem recriar o nó (valor digitado, disabled, details).
+   * Chamado pelo orquestrador imediatamente antes de falar.
+   */
+  refresh(chunk) {
+    if (!chunk || !chunk.element) return chunk;
+    chunk.state = this._stateOf(chunk.element);
+    chunk.field = this._fieldInfo(chunk.element);
+    return chunk;
   }
 
   /** Região do elemento: menu de navegação, cabeçalho ou conteúdo principal. */
@@ -275,7 +327,8 @@ export class PageReader {
 
   _isInteractive(element) {
     const tag = element.tagName;
-    if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    // <summary> abre/fecha o <details>: é acionável mesmo sem ser <button>.
+    if (tag === 'BUTTON' || tag === 'SUMMARY' || tag === 'A' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
     try {
       return element.matches(INTERACTIVE_SELECTORS);
     } catch {
@@ -330,21 +383,35 @@ export class PageReader {
   }
 
   /**
-   * Cards e blocos com título + descrição: "Título. Descrição."
-   * Sem isso o textContent cola as palavras (h2 + p não têm espaço entre si).
+   * Blocos com título + descrição (cards de ação, avisos, itens de lista):
+   * "Título. Descrição." Sem isso o textContent cola as palavras.
    */
   _structuredText(element) {
+    const textOf = (el) => (el ? this._textOf(el) : '');
     const heading = element.querySelector('h1, h2, h3, h4, h5, h6');
-    if (!heading) return '';
 
-    const parts = [this._textOf(heading)];
-    element.querySelectorAll('p').forEach((p) => {
-      const t = this._textOf(p);
-      if (t) parts.push(t);
-    });
+    // Junta partes sem duplicar pontuação ("Parabéns!" + "1 de 1...").
+    const joinParts = (parts) => parts
+      .filter(Boolean)
+      .reduce((acc, part) => (acc ? `${acc}${/[.!?]$/.test(acc) ? ' ' : '. '}${part}` : part), '');
 
-    const texto = parts.filter(Boolean).join('. ');
-    return texto ? this._clean(texto) : '';
+    if (heading) {
+      const parts = [textOf(heading)];
+      element.querySelectorAll('p').forEach((p) => {
+        const t = textOf(p);
+        if (t) parts.push(t);
+      });
+      return this._clean(joinParts(parts));
+    }
+
+    // Avisos e itens com <div class="title"> + <div class="desc">.
+    const title = element.querySelector(':scope > .content > .title, :scope > .title');
+    const desc = element.querySelector(':scope > .content > .desc, :scope > .desc');
+    if (title) {
+      return this._clean(joinParts([textOf(title), desc ? textOf(desc) : '']));
+    }
+
+    return '';
   }
 
   /**
@@ -402,16 +469,47 @@ export class PageReader {
     return this.chunks[this.index];
   }
 
+  /** Chunks que são PASSOS de navegação (listas ficam de fora). */
+  get steps() {
+    return this.chunks.filter((c) => c.navigable !== false);
+  }
+
+  /** Próximo passo, sem dar a volta (usado pelo Tab: termina em "Fim da tela"). */
+  nextStep() {
+    for (let i = this.index + 1; i < this.chunks.length; i++) {
+      if (this.chunks[i].navigable !== false) {
+        this.index = i;
+        return this.current();
+      }
+    }
+    return null;
+  }
+
+  /** Passo anterior, sem dar a volta. */
+  previousStep() {
+    for (let i = this.index - 1; i >= 0; i--) {
+      if (this.chunks[i].navigable !== false) {
+        this.index = i;
+        return this.current();
+      }
+    }
+    return null;
+  }
+
   next() {
+    const found = this.nextStep();
+    if (found) return found;
     if (this.chunks.length === 0) return null;
-    this.index = this.index < this.chunks.length - 1 ? this.index + 1 : 0;
-    return this.current();
+    this.index = -1;
+    return this.nextStep();
   }
 
   previous() {
+    const found = this.previousStep();
+    if (found) return found;
     if (this.chunks.length === 0) return null;
-    this.index = this.index > 0 ? this.index - 1 : this.chunks.length - 1;
-    return this.current();
+    this.index = this.chunks.length;
+    return this.previousStep();
   }
 
   goTo(index) {
@@ -420,7 +518,7 @@ export class PageReader {
     return this.current();
   }
 
-  /** Avança até o próximo chunk que satisfaz o predicado. */
+  /** Avança até o próximo chunk que satisfaz o predicado (pode ser lista). */
   findNext(predicate) {
     if (this.chunks.length === 0) return null;
     for (let i = this.index + 1; i < this.chunks.length; i++) {

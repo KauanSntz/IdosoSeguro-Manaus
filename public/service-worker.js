@@ -1,4 +1,4 @@
-const CACHE_NAME = 'idoso-seguro-v20';
+const CACHE_NAME = 'idoso-seguro-v34';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

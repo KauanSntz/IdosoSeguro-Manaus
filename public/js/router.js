@@ -74,23 +74,30 @@ class Router {
       try {
         const html = await matchedRoute(params);
         container.innerHTML = html;
-        container.focus();
+
+        // Foco no título (tabindex="-1"): a tela é lida pelo CONTEÚDO, não
+        // pelo botão Voltar. Sem h1 (tela de erro), foca o container.
+        const title = container.querySelector('h1');
+        if (title) {
+          title.focus({ preventScroll: true });
+        } else {
+          container.focus();
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
         console.log('[Router] Renderização concluída para:', cleanHash);
 
-        // Se modo leitor ativo, apenas preparar o PageReader (não ler automaticamente)
-        // A leitura acontece quando o usuário ativa o botão principal
+        // Se modo leitor ativo, preparar o PageReader e anunciar a tela.
+        // setTimeout(0) em vez de requestAnimationFrame: rAF não dispara em
+        // aba oculta/background e o leitor ficava mudo até o próximo comando.
         if (window.screenReader?.enabled) {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              const routeInfo = {
-                route: cleanHash,
-                section: this.getSectionFromRoute(cleanHash),
-                params: params
-              };
-              window.screenReader.onNavigate(container, routeInfo);
-            });
-          });
+          setTimeout(() => {
+            const routeInfo = {
+              route: cleanHash,
+              section: this.getSectionFromRoute(cleanHash),
+              params: params
+            };
+            window.screenReader.onNavigate(container, routeInfo);
+          }, 0);
         }
       } catch (err) {
         console.error('[Router] Erro ao renderizar rota:', err);

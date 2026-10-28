@@ -16,6 +16,7 @@
  */
 
 import { describeChunk, describeSummary, describeContext, describePosition } from './chunk-descriptor.js';
+import { topicTitle } from './destinos.js';
 
 const STORAGE_KEY = 'idoso_seguro_screen_reader_mode';
 const ACTIVATION_WINDOW_MS = 8000;
@@ -42,6 +43,12 @@ export class ScreenReader {
 
     // Leitura sequencial automática ("ler tudo").
     this._readingAll = false;
+    this._readAllPos = null;
+    this._readAllPausedAt = null;
+
+    // Deduplicação de fala (foco nativo + leitor dizendo o mesmo).
+    this._lastSpokenText = '';
+    this._lastSpokenAt = 0;
 
     this._observer = null;
     this._observerTimer = null;
@@ -99,10 +106,27 @@ export class ScreenReader {
     return [main, nav].filter(Boolean);
   }
 
+  /** Descrição falável de um chunk (atualiza estado volátil antes). */
+  _describe(chunk) {
+    this.reader.refresh?.(chunk);
+    return describeChunk(chunk);
+  }
+
   /** Fala um texto externo (feedback de ações, preferências, etc). */
-  speak(text) {
+  speak(text, options = {}) {
     if (!this.enabled) return Promise.resolve();
-    return this.speech.speak(text);
+    const value = String(text || '').trim();
+    if (!value) return Promise.resolve();
+
+    // Deduplica: o mesmo texto em sequência (foco nativo + leitor) sai uma vez.
+    const now = Date.now();
+    if (!options.force && value === this._lastSpokenText && now - this._lastSpokenAt < 900) {
+      return Promise.resolve();
+    }
+    this._lastSpokenText = value;
+    this._lastSpokenAt = now;
+
+    return this.speech.speak(value);
   }
 
   stop() {
@@ -113,7 +137,11 @@ export class ScreenReader {
   /** Chamado pelo router a cada troca de rota. */
   onNavigate(container, routeInfo) {
     this.container = container;
-    this.routeInfo = routeInfo;
+    // Normaliza: aceita 'quiz/x' ou '#quiz/x'.
+    this.routeInfo = {
+      ...routeInfo,
+      route: String(routeInfo?.route || '').replace(/^#/, '')
+    };
     this._cancelPending();
     this._stopReadingAll();
     this._syncToggles();
@@ -125,42 +153,33 @@ export class ScreenReader {
     this._connectObserver(container);
   }
 
-  /**
-   * Chamado pelo quiz quando uma nova pergunta é renderizada.
-   * Fala a SITUAÇÃO e a PERGUNTA — sem isso a pessoa cega só ouvia o resumo
-   * da tela e ficava sem saber o que estava sendo perguntado.
-   */
-  announceQuizQuestion(container, currentIndex, total, question, scenario) {
-    if (!this.enabled) return;
-    this.container = container;
-    this.reader.extract(this._contentContainers());
-    this._cancelPending();
-
-    const parts = [`Pergunta ${currentIndex + 1} de ${total}.`];
-    if (scenario) parts.push(`Situação: ${scenario}`);
-    if (question) parts.push(`Pergunta: ${question}`);
-    parts.push('Use Tab ou as setas para ouvir as respostas.');
-
-    this.speech.speak(parts.join(' '));
-    this._connectObserver(container);
-  }
-
-  announceQuizAnswer(isCorrect, feedback) {
-    if (!this.enabled) return;
-    const prefix = isCorrect ? 'Resposta correta.' : 'Resposta incorreta.';
-    this.speech.speak(`${prefix} ${feedback || ''}`.trim());
-  }
-
-  announceQuizFinished(score, total) {
-    if (!this.enabled) return;
-    const percent = Math.round((score / total) * 100);
-    this.speech.speak(`Quiz finalizado. Você acertou ${score} de ${total}, ${percent} por cento.`);
-  }
-
   /** Observa mudanças de DOM (quiz, resultados dinâmicos) e re-extrai. */
   observe(container) {
     if (!this.enabled) return;
     this._connectObserver(container);
+  }
+
+  /**
+   * Anuncia um elemento que acabou de aparecer (feedback do quiz, resultado).
+   * Re-extrai antes de falar porque o DOM mudou desde a última extração.
+   * @param {HTMLElement} element
+   */
+  announceElement(element) {
+    if (!this.enabled || !element) return Promise.resolve();
+
+    const previous = this.reader.current()?.element;
+    this.reader.extract(this._contentContainers());
+
+    const index = this.reader.chunks.findIndex((c) => c.element === element);
+    const chunk = index >= 0 ? this.reader.goTo(index) : (this.reader.current() || this._chunkFor(element));
+
+    if (previous && index < 0) {
+      const previousIndex = this.reader.chunks.findIndex((c) => c.element === previous);
+      if (previousIndex >= 0) this.reader.goTo(previousIndex);
+    }
+
+    this._highlight(element);
+    return this.speak(this._describe(chunk), { force: true });
   }
 
   /**
@@ -188,7 +207,7 @@ export class ScreenReader {
         'Nenhum texto nesta tela.'
       );
       case 'jump-menu': return this._jumpMenu();
-      case 'cancel': return this._cancelPending();
+      case 'cancel': return this._cancelAll();
       case 'toggle': return this.toggle();
       default:
         console.warn('[ScreenReader] Intenção desconhecida:', intent);
@@ -202,12 +221,13 @@ export class ScreenReader {
     if (this._pending && this._pending.element === element) {
       this._cancelPending();
       this.onExecute(element);
+      this._afterExecute(element);
       return;
     }
 
     const chunk = this._chunkFor(element);
     this._cancelPending();
-    this._present(element, `${describeChunk(chunk)} Toque de novo para ativar.`);
+    this._present(element, `${this._describe(chunk)} Toque de novo para ativar.`);
   }
 
   /**
@@ -233,16 +253,19 @@ export class ScreenReader {
     if (!chunk) return;
 
     this._highlight(element);
-    this.speech.speak(describeChunk(chunk));
+    this.speak(this._describe(chunk));
   }
 
   /**
-   * Tab/Shift+Tab percorrendo o CONTEÚDAO (chamado por inputs/focus.js).
+   * Tab/Shift+Tab percorrendo o CONTEÚDO (chamado por inputs/focus.js).
    *
    * Diferente do foco nativo, aqui o cursor avança por TUDO que a tela
    * contém — títulos, parágrafos, botões e menu — como o deslizar do
    * TalkBack. Num item acionável leva o foco real do browser junto (para o
    * Enter funcionar); em textos fica só no cursor virtual.
+   *
+   * Aqui NÃO dá a volta: no fim fala "Fim da tela." e no começo "Início da
+   * tela.", para a pessoa saber que acabou.
    * @param {number} direction +1 próximo, -1 anterior
    */
   handleTab(direction) {
@@ -251,19 +274,23 @@ export class ScreenReader {
     this._stopReadingAll();
     this._cancelPending();
 
-    const chunk = direction > 0 ? this.reader.next() : this.reader.previous();
-    if (!chunk) return;
+    const chunk = direction > 0 ? this.reader.nextStep() : this.reader.previousStep();
+    if (!chunk) {
+      this.speak(direction > 0 ? 'Fim da tela.' : 'Início da tela.');
+      return;
+    }
 
     this._applyRealFocus(chunk);
     this._highlight(chunk.element);
-    this.speech.speak(describeChunk(chunk));
+    this.speak(this._describe(chunk));
   }
 
   /** Leva o foco real do browser junto quando o item é acionável. */
   _applyRealFocus(chunk) {
     const element = chunk.element;
 
-    if (chunk.interactive && typeof element?.focus === 'function') {
+    // Alternativa já respondida fica `disabled`: não dá para focar.
+    if (chunk.interactive && element && !element.disabled && typeof element.focus === 'function') {
       try {
         element.focus({ preventScroll: true }); // o scroll é papel do _highlight
       } catch { /* elemento não focável */ }
@@ -288,26 +315,35 @@ export class ScreenReader {
     if (!chunk) return;
 
     this._highlight(chunk.element);
-    this.speech.speak(describeChunk(chunk));
+    this.speak(this._describe(chunk));
   }
 
   _repeat() {
     const chunk = this.reader.current();
-    if (chunk) this.speech.speak(describeChunk(chunk));
+    if (chunk) this.speak(this._describe(chunk), { force: true });
   }
 
   _jump(predicate, notFoundMessage) {
     this._stopReadingAll();
     this._cancelPending();
 
-    const chunk = this.reader.findNext(predicate);
+    // Procura adiante; se não houver, dá a volta (senão o "Voltar", que fica
+    // ACIMA do título, nunca seria alcançado atalho nenhum).
+    let chunk = this.reader.findNext(predicate);
+    if (!chunk && this.reader.index > 0) {
+      const saved = this.reader.index;
+      this.reader.index = -1;
+      chunk = this.reader.findNext(predicate);
+      if (!chunk) this.reader.index = saved;
+    }
+
     if (!chunk) {
-      this.speech.speak(notFoundMessage);
+      this.speak(notFoundMessage);
       return;
     }
 
     this._highlight(chunk.element);
-    this.speech.speak(describeChunk(chunk));
+    this.speak(this._describe(chunk));
   }
 
   /** Vai direto para o menu de abas (Início, Aprender, Assistir...). */
@@ -317,14 +353,14 @@ export class ScreenReader {
 
     const navChunks = this.reader.navChunks();
     if (navChunks.length === 0) {
-      this.speech.speak('Menu de abas não encontrado nesta tela.');
+      this.speak('Menu de abas não encontrado nesta tela.');
       return;
     }
 
     const first = navChunks[0];
     this.reader.goTo(first.index);
     this._highlight(first.element);
-    this.speech.speak(`Menu de abas com ${navChunks.length} opções. ${describeChunk(first)}`);
+    this.speak(`Menu de abas. ${this._describe(first)}`);
   }
 
   _activate() {
@@ -332,17 +368,38 @@ export class ScreenReader {
     if (!chunk) return;
 
     if (!chunk.interactive) {
-      this.speech.speak(describeChunk(chunk));
+      this.speak(this._describe(chunk));
       return;
     }
 
     if (this._pending && this._pending.element === chunk.element) {
       this._cancelPending();
       this.onExecute(chunk.element);
+      this._afterExecute(chunk.element);
       return;
     }
 
-    this._present(chunk.element, `${describeChunk(chunk)} Pressione de novo para ativar.`);
+    this._present(chunk.element, `${this._describe(chunk)} Pressione de novo para ativar.`);
+  }
+
+  /**
+   * Depois de executar, o elemento pode ter mudado de estado sem sair da tela.
+   * Só re-anuncia quando o app NÃO fala sozinho: o caso do <details>, em que
+   * abrir/fechar não dispara nenhuma mensagem. (Botões de ajuste já têm o
+   * próprio feedback — repetir aqui faria o leitor falar duas vezes.)
+   */
+  _afterExecute(element) {
+    if (!element || !element.isConnected) return;
+    if (element.tagName !== 'SUMMARY') return;
+    setTimeout(() => {
+      if (!this.enabled || !element.isConnected) return;
+      this.reader.extract(this._contentContainers());
+      const index = this.reader.chunks.findIndex((c) => c.element === element);
+      if (index < 0) return;
+      this.reader.goTo(index);
+      this._highlight(element);
+      this.speak(this._describe(this.reader.chunks[index]), { force: true });
+    }, 150);
   }
 
   _present(element, message) {
@@ -351,7 +408,7 @@ export class ScreenReader {
       timer: setTimeout(() => { this._pending = null; }, ACTIVATION_WINDOW_MS)
     };
     this._highlight(element);
-    this.speech.speak(message);
+    this.speak(message);
   }
 
   _cancelPending() {
@@ -373,25 +430,80 @@ export class ScreenReader {
     this._announceArrival();
   }
 
+  /** Chunk do título principal da tela (h1). */
+  _titleChunk() {
+    return this.reader.chunks.find((c) => c.type === 'heading' && c.element?.tagName === 'H1')
+      || this.reader.chunks.find((c) => c.type === 'heading')
+      || null;
+  }
+
+  /**
+   * Fala de chegada: começa SEMPRE pelo título da tela e lê o primeiro
+   * parágrafo — sem contagens e sem "use Tab" (a pessoa navega quando quiser).
+   *
+   *  - #aprender  → "Aprender. <parágrafo de introdução>."
+   *  - aula       → "Aula: <título>. Introdução. <texto da introdução>."
+   *  - quiz       → "<Pergunta N de M>. <situação> <enunciado>."
+   *
+   * @returns {{text: string, endIndex: number|null}}
+   */
+  _arrival(start) {
+    // Sem título = tela ainda não renderizada (o router anuncia em seguida).
+    if (!start) return { text: '', endIndex: null };
+
+    const title = (start.text || '').trim();
+    const rest = this.reader.chunks.filter((c) => c.index > start.index && c.navigable !== false);
+    // Só conta como introdução um bloco que TEM texto (senão o cursor pulava
+    // para um parágrafo vazio e o Tab começava no fim da tela).
+    const firstParagraph = rest.find(
+      (c) => (c.type === 'paragraph' || c.type === 'text') && (c.text || '').trim()
+    );
+    const firstHeading = rest.find((c) => c.type === 'heading');
+    const route = this.routeInfo?.route || '';
+    const base = route.split('/')[0];
+
+    const join = (head, tail) => {
+      if (!tail) return head;
+      return /[.!?]$/.test(head) ? `${head} ${tail}` : `${head}. ${tail}`;
+    };
+
+    if (base === 'conteudo') {
+      const introTitle = firstHeading ? firstHeading.text.replace(/[.!?]+$/, '') : 'Introdução';
+      const parts = [`Aula: ${title.replace(/[.!?]+$/, '')}.`, `${introTitle}.`];
+      if (firstParagraph?.text) parts.push(firstParagraph.text);
+      return { text: parts.join(' '), endIndex: firstParagraph?.index ?? firstHeading?.index ?? start.index };
+    }
+
+    if (base === 'quiz') {
+      const parts = [join(title, firstParagraph?.text)];
+      if (firstHeading?.text) parts.push(`Pergunta: ${firstHeading.text.replace(/[.!?]+$/, '')}.`);
+      return { text: parts.join(' '), endIndex: firstHeading?.index ?? firstParagraph?.index ?? start.index };
+    }
+
+    // Demais telas: título + primeiro parágrafo (quando existe).
+    return {
+      text: join(title, firstParagraph?.text),
+      endIndex: firstParagraph?.index ?? start.index
+    };
+  }
+
   _announceArrival() {
-    const section = this._sectionName();
-    const summary = describeSummary(this.reader.summary());
-    const firstIndex = this.reader.firstContentIndex();
-    const firstChunk = this.reader.goTo(firstIndex);
+    const start = this._titleChunk();
 
-    const parts = [section ? describeContext(section) : 'Você está nesta página.', summary];
-    if (firstChunk) {
-      this._highlight(firstChunk.element);
-      parts.push(describeChunk(firstChunk));
+    if (start) {
+      this.reader.goTo(start.index);
+      this._highlight(start.element);
     }
 
-    // Avisa sobre o menu de abas e o atalho para alcançá-lo.
-    const navCount = this.reader.navChunks().length;
-    if (navCount > 0) {
-      parts.push(`Menu com ${navCount} abas ao final. Toque na letra M ou diga menu para ir direto a ele.`);
-    }
+    const arrival = this._arrival(start);
+    if (!arrival.text) return;
 
-    this.speech.speak(parts.join(' '));
+    this.speak(arrival.text);
+
+    // O cursor fica no último trecho já lido: o Tab continua de onde parou
+    // (sem repetir a introdução).
+    if (arrival.endIndex != null) this.reader.goTo(arrival.endIndex);
+    this._updatePositionIndicator();
   }
 
   _announceContext() {
@@ -399,11 +511,27 @@ export class ScreenReader {
     const chunk = this.reader.current();
     const position = chunk ? describePosition(chunk.index, chunk.total) : '';
     const context = section ? describeContext(section) : 'Você está nesta página.';
-    this.speech.speak(`${context} ${position}`.trim());
+    this.speak(`${context} ${position}`.trim());
   }
 
+  /**
+   * Resumo sob demanda (tecla S): o que EXISTE nesta tela, sem contar
+   * ("tem 13 botões" não ajuda ninguém). Prefere as seções; se a tela não
+   * tem seções, usa o nome dos cards/links.
+   */
   _announceSummary() {
-    this.speech.speak(describeSummary(this.reader.summary()));
+    const headings = this.reader.chunks
+      .filter((c) => c.type === 'heading' && c.element?.tagName !== 'H1')
+      .map((c) => (c.text || '').replace(/[.!?]+$/, ''))
+      .filter(Boolean);
+
+    const links = this.reader.chunks
+      .filter((c) => c.type === 'link' && c.region !== 'nav')
+      .map((c) => (c.text || '').split('.')[0].replace(/[.!?]+$/, '').trim())
+      .filter(Boolean);
+
+    const titles = (headings.length ? headings : links).slice(0, 8);
+    this.speak(describeSummary({ titles }));
   }
 
   /** Nome da seção atual, ou null quando a rota é desconhecida. */
@@ -421,52 +549,81 @@ export class ScreenReader {
     };
     const base = map[this.routeInfo.section] || this.routeInfo.section || null;
     const slug = this.routeInfo.params?.slug;
-    return slug ? `${base}: ${this._topicName(slug)}` : base;
-  }
-
-  _topicName(slug) {
-    const topics = {
-      'links-suspeitos': 'Links Suspeitos',
-      'golpes-whatsapp': 'Golpes no WhatsApp',
-      'senhas-dados': 'Senhas e Dados',
-      'pix-transferencias': 'Pix e Transferências',
-      'falsa-central': 'Falsa Central Bancária',
-      'promocoes-falsas': 'Promoções Falsas',
-      'cpf-documentos': 'CPF e Documentos'
-    };
-    return topics[slug] || String(slug).replace(/-/g, ' ');
+    return slug ? `${base}: ${topicTitle(slug)}` : base;
   }
 
   // ── Leitura sequencial ("ler tudo") ────────────────────────────────────────
 
+  /**
+   * P (ou "ler tudo"): lê o texto a partir da posição atual, pulando
+   * listas (os itens já são falados) e botões. Apertar de novo PAUSA;
+   * apertar outra vez continua de onde parou. Esc interrompe.
+   */
   _startReadingAll() {
-    this._cancelPending();
-    const readable = this.reader.chunks.filter((c) => !c.interactive);
-    if (readable.length === 0) {
-      this.speech.speak('Nenhum texto para ler.');
+    // Já está lendo → pausar.
+    if (this._readingAll) {
+      this._readingAll = false;
+      this._readAllPausedAt = this._readAllPos;
+      this.speech.stop();
+      this.speak('Leitura pausada. Aperte P para continuar.');
       return;
     }
 
+    const readable = this.reader.chunks.filter(
+      (c) => c.navigable !== false && !c.interactive && (c.text || '').trim()
+    );
+
+    if (readable.length === 0) {
+      this.speak('Nenhum texto para ler nesta tela.');
+      return;
+    }
+
+    // Retomada: começa exatamente onde parou. Início: da posição atual.
+    let start = 0;
+    if (this._readAllPausedAt != null) {
+      const found = readable.findIndex((c) => c.index >= this._readAllPausedAt);
+      start = found >= 0 ? found : 0;
+    } else {
+      const current = Math.max(this.reader.index, 0);
+      const found = readable.findIndex((c) => c.index >= current);
+      start = found >= 0 ? found : 0;
+    }
+
+    this._cancelPending();
     this._readingAll = true;
-    this._readAllFrom(readable, 0);
+    this._readAllPausedAt = null;
+    this._readAllFrom(readable, start);
   }
 
   async _readAllFrom(readable, startIndex) {
     for (let i = startIndex; i < readable.length; i++) {
       if (!this._readingAll || !this.enabled) return;
       const chunk = readable[i];
+      this._readAllPos = chunk.index;
       this.reader.goTo(chunk.index);
       this._highlight(chunk.element);
-      await this.speech.speak(describeChunk(chunk));
+      this._updatePositionIndicator();
+      await this.speak(this._describe(chunk));
     }
     if (this._readingAll) {
       this._readingAll = false;
-      this.speech.speak('Fim da leitura da página.');
+      this._readAllPausedAt = null;
+      this.speak('Fim da leitura da tela.');
     }
   }
 
   _stopReadingAll() {
     this._readingAll = false;
+  }
+
+  /** Esc: cancela o que estiver acontecendo; se nada acontecia, desliga. */
+  _cancelAll() {
+    const busy = this._readingAll || this.isSpeaking || !!this._pending;
+    this._cancelPending();
+    this._stopReadingAll();
+    this._readAllPausedAt = null;
+    this.speech.stop();
+    if (!busy) this.disable();
   }
 
   // ── Destaque visual / utilitários ──────────────────────────────────────────
@@ -523,16 +680,27 @@ export class ScreenReader {
       clearTimeout(this._observerTimer);
       this._observerTimer = setTimeout(() => {
         if (!this.enabled || !this.container) return;
-        const previousIndex = this.reader.index;
-        // Re-extrai conteúdo + menu (nunca só o principal, senão o menu some).
+
+        // Preserva a POSIÇÃO pelo elemento atual (o índice muda quando o
+        // conteúdo é trocado, e resetar deixaria a pessoa sem cursor).
+        const previous = this.reader.current()?.element;
         this.reader.extract(this._contentContainers());
-        if (previousIndex >= this.reader.size) {
-          this.reader.goTo(Math.max(0, this.reader.size - 1));
+
+        if (previous) {
+          const i = this.reader.chunks.findIndex((c) => c.element === previous);
+          if (i >= 0) this.reader.goTo(i);
         }
       }, 150);
     });
 
-    this._observer.observe(container, { childList: true, subtree: true });
+    // `open` do <details> muda sem trocar de nó: precisa de attributes.
+    // `class` NÃO entra na lista (o destaque do leitor mudaria toda hora).
+    this._observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['open']
+    });
   }
 
   _disconnectObserver() {
@@ -553,7 +721,9 @@ export class ScreenReader {
   /** Mantém TODO botão de ligar/desligar coerente com o estado real. */
   _syncToggles() {
     document.querySelectorAll('[data-action="toggle-screen-reader"]').forEach((btn) => {
-      btn.setAttribute('aria-pressed', String(this.enabled));
+      // O nome do botão já diz o estado ("Ativar"/"Desativar"); aria-pressed
+      // aqui contradizia a fala: "Desativar leitor de tela, ativado".
+      btn.removeAttribute('aria-pressed');
       const label = btn.querySelector('.btn-label');
       if (label) {
         label.textContent = this.enabled ? 'Desativar leitor de tela' : 'Ativar leitor de tela';
@@ -570,7 +740,9 @@ export class ScreenReader {
       <div class="sr-indicator-content">
         <svg aria-hidden="true"><use href="/assets/icons.svg#accessibility"></use></svg>
         <span>Leitor de tela ativo</span>
-        <button type="button" class="sr-mic-btn" aria-label="Ouvir comando de voz">🎤</button>
+        <button type="button" class="sr-mic-btn" aria-label="Falar um comando">
+          <svg aria-hidden="true"><use href="/assets/icons.svg#mic"></use></svg>
+        </button>
         <button type="button" class="btn btn-ghost btn-sm" data-reader-action="toggle" aria-label="Desativar leitor de tela">Desativar</button>
       </div>
     `;

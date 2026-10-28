@@ -116,19 +116,8 @@ registerServiceWorker();
 initializeComponents();
 initializeEventDelegation();
 
-// Restaura o modo leitor se estava ativo (onNavigate será chamado pelo router).
-if (screenReader.enabled) {
-  setTimeout(() => {
-    const container = document.getElementById('main-content');
-    if (container) {
-      screenReader.onNavigate(container, {
-        route: window.location.hash,
-        section: window.router.getSectionFromRoute(window.location.hash),
-        params: {}
-      });
-    }
-  }, 400);
-}
+// Se o modo leitor já estava ativo, o próprio router chama onNavigate() depois
+// de renderizar a primeira rota. Não anuncie aqui: isso duplicava a fala.
 
 const originalHandleRoute = window.router.handleRoute.bind(window.router);
 window.router.handleRoute = async function (...args) {
