@@ -44,7 +44,7 @@ export async function renderAcessibilidadePage() {
       <section class="card stack-md" aria-labelledby="ajuste-contraste">
         <h2 id="ajuste-contraste" class="title-secondary">Alto contraste</h2>
         <p>Facilita a leitura das cores.</p>
-        <button type="button" id="btn-contraste" class="btn ${isHighContrast ? 'btn-primary' : 'btn-outline'} btn-block btn-lg"
+        <button type="button" id="btn-contraste" class="btn btn-primary btn-block btn-lg"
                 data-action="toggle-contrast" aria-pressed="${isHighContrast}">
           <span class="btn-label">${isHighContrast ? 'Desativar alto contraste' : 'Ativar alto contraste'}</span>
         </button>
@@ -55,7 +55,7 @@ export async function renderAcessibilidadePage() {
         <div class="btn-group" role="group" aria-label="Velocidade da voz">
           ${speedButtons}
         </div>
-        <button type="button" class="btn btn-secondary btn-block btn-lg" data-action="test-voice">
+        <button type="button" class="btn btn-audio btn-block btn-lg" data-action="test-voice">
           <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#volume"></use></svg>
           <span>Ouvir exemplo</span>
         </button>

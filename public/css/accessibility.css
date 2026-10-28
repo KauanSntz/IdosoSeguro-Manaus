@@ -4,7 +4,7 @@
    HIGH CONTRAST OVERRIDES
    ======================================== */
 html[data-high-contrast="true"] .btn-primary,
-html[data-high-contrast="true"] .btn-secondary {
+html[data-high-contrast="true"] .btn-audio {
   border-width: var(--border-width-strong);
 }
 

@@ -174,7 +174,7 @@ export function createFormField(type, id, label, options = {}) {
   }
 
   const buttonHtml = button ? `
-    <button type="button" class="btn btn-secondary btn-block btn-lg form-field-voice-btn" data-action="voice-input" data-target="${id}">
+    <button type="button" class="btn btn-audio btn-block btn-lg form-field-voice-btn" data-action="voice-input" data-target="${id}">
       <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#mic"></use></svg>
       <span>${escapeAttr(button)}</span>
     </button>
