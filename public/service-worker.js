@@ -1,4 +1,4 @@
-const CACHE_NAME = 'idoso-seguro-v40';
+const CACHE_NAME = 'idoso-seguro-v41';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -9,7 +9,6 @@ const STATIC_ASSETS = [
   '/css/responsive.css',
   '/js/router.js',
   '/js/api.js',
-  '/js/speech.js',
   '/js/accessibility.js',
   '/js/app.js',
   '/js/sw-register.js',
