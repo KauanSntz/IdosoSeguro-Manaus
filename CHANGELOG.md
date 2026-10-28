@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this format.
 The format is based on [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.4.0] - 2026-10-28 — Responsividade: menu no topo, escala de fonte e telas pequenas
+
+### Added
+- **Tema de alto contraste**: tokens de texto próprios (`--color-success-text`,
+  `--color-info-text`, `--color-danger-text`) para alertas, feedback do quiz, erros e
+  links. No alto contraste, todos os 88 pares medidos passam de 7:1 (mínimo 7,56:1,
+  antes 5,1:1). No tema normal o mínimo é 5,23:1.
+- **Tokens novos**: `--space-14`, `--space-16`, `--color-info-light`,
+  `--font-weight-black`.
+
+### Changed
+- **CSS**: `reset.css` é a primeira folha carregada e `style.css` foi removido. Ordem
+  final: `reset.css`, `variables.css`, `components.css`, `accessibility.css`,
+  `responsive.css`. A camada base (`body`, títulos, links) vive em `reset.css`.
+- **Escala de fonte** (0,875 / 1 / 1,25 / 1,5) é aplicada **uma única vez**, no
+  `font-size` do `<html>`; o `body` usa `calc(1.125rem × escala)` — 15,75 / 18 / 22,5 /
+  27px. Nenhum componente repete o cálculo.
+- **Menu**: no desktop fica no **topo**, entre o cabeçalho e o conteúdo (mudança na
+  ordem do DOM em `index.html` e em `createBottomNav()`); abaixo de 900px volta a ser
+  barra fixa no rodapé, e o `<main>` reserva `--nav-height` + `env(safe-area-inset-bottom)`.
+  O leitor de tela continua lendo `[main, nav]`, na mesma ordem de antes.
+- **Títulos**: dono único em `variables.css` — `h1`/`.page-header-title` = 2rem,
+  `h2` = 1,5rem, `h3` = 1,25rem, com `text-wrap: balance`. O `h1` é sempre 2× o corpo
+  (31,5 / 36 / 45 / 54px).
+- **Breakpoints finais**: 360, 600, 900, 1200 e `(max-height: 500px)`, uma media query
+  por tema em cada arquivo. Padding lateral passou a existir só no `<main>`.
+- **Alvos de toque**: todos ≥ 44×44 (`.btn-sm` com 46px), botões empilham abaixo de
+  480px, `.btn-back` pode encolher e o título do cabeçalho passa a ocupar a linha
+  inteira abaixo de 600px.
+- **Textos**: nenhuma caixa alta forçada; `--font-size-xs` subiu para 0,9rem e
+  `--font-size-sm` para 0,95rem, então **nenhum texto fica abaixo de 16px** na escala
+  normal.
+- **Cards de ação**: em telas ≤ 599px o ícone fica acima do texto, o que leva a linha
+  de 181px para 277px (~31 caracteres) em 360px.
+
+### Fixed
+- Rolagem horizontal em 320px com fonte grande (menu, títulos e chips estouravam a
+  coluna).
+- Título espremido a ~10px quando o botão "voltar" tem rótulo longo (B-R9).
+- Página em branco no modo leitor ao trocar de rota com `prefers-reduced-motion`.
+
+### Verified
+- Matriz completa 9 rotas × 9 larguras (320–1920) × 4 escalas = **324 células sem
+  rolagem horizontal**, sem alvo abaixo de 44×44 e sem texto abaixo de 16px.
+- Paisagem (740×400 e 640×360) e zoom 200%/400% (640 e 320 CSS px): 144 células sem
+  perda de conteúdo.
+- `npm test` 16/16 verde, snapshots do leitor inalterados.
+
 ## [1.3.0] - 2026-10-28 — Leitor de tela: ativação, quiz, resultado e testes (Etapa E)
 
 ### Added

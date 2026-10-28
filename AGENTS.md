@@ -5,9 +5,28 @@
 ---
 
 ## Última Atualização
-**v1.3.0 (2026-10-28)** — Etapa E: Enter direto no teclado, descoberta do leitor
-(Welcome/Home + Alt+L), quiz com a resposta certa, resultado pelo nível, análise
-com erros acessíveis e testes jsdom com snapshots do que é falado.
+**v1.4.0 (2026-10-28)** — Etapa F: responsividade. Menu no topo no desktop (rodapé no
+mobile), escala de fonte aplicada uma única vez, títulos com dono único, breakpoints
+360/600/900/1200, alvos ≥ 44×44, alto contraste com todos os pares ≥ 7:1 e matriz de
+324 células (9 rotas × 9 larguras × 4 escalas) sem rolagem horizontal.
+
+### Etapa F — responsividade (v1.4.0)
+
+| Regra | Onde |
+|-------|------|
+| `reset.css` carregado primeiro; `style.css` não existe mais | `public/index.html` |
+| Escala 0,875/1/1,25/1,5 aplicada **só** no `font-size` do `html`; body = 18px × escala | `variables.css` `html[data-font-scale]` |
+| Menu desktop no **topo** (DOM: header → nav → main); mobile fixo no rodapé | `index.html`, `components.js` `createBottomNav()` |
+| `<main>` reserva `--nav-height` + `env(safe-area-inset-bottom)` abaixo de 900px | `variables.css` |
+| Títulos com dono único: h1 2rem, h2 1,5rem, h3 1,25rem + `text-wrap: balance` | `variables.css` |
+| Breakpoints finais 360/600/900/1200 + `(max-height: 500px)`, um bloco por tema | `responsive.css`, `components.css` |
+| Padding lateral apenas no `<main>`, via `--gutter` | `variables.css` |
+| Alvos ≥ 44×44; botões empilham < 480px; `.btn-back` pode encolher | `components.css` |
+| Cards empilham ícone/texto ≤ 599px (~31 caracteres por linha em 360px) | `components.css` |
+| Título do cabeçalho em linha própria ≤ 599px | `components.css` |
+| Nenhum texto < 16px na escala normal (`xs` 0,9rem, `sm` 0,95rem) | `variables.css` |
+| Alto contraste: tokens de texto `--color-*-text` garantem ≥ 7:1 | `variables.css`, `components.css` |
+| Leitor de tela segue lendo `[main, nav]` nessa ordem | `screen-reader.js` `_contentContainers()` |
 
 ### Etapa E — ativação, quiz, resultado e testes (v1.3.0)
 
@@ -84,14 +103,15 @@ idoso-seguro-manaus/
 │   └── routes/
 │       └── apiRoutes.js         ✅ Rotas /api/conteudos*, /api/analises, /api/saude
 ├── public/
-│   ├── index.html               ✅ SPA shell (header, main, bottom nav, skip link) - sem Material Symbols
+│   ├── index.html               ✅ SPA shell (header → nav → main, skip link) - sem Material Symbols
 │   ├── manifest.json            ✅ PWA manifest
-│   ├── service-worker.js        ✅ SW cache-first para assets estáticos
+│   ├── service-worker.js        ✅ SW cache-first para assets estáticos (v38)
 │   ├── css/
-│   │   ├── variables.css        ✅ Design system (paleta, tipografia, espaçamento, acessibilidade)
-│   │   ├── components.css       ✅ Componentes (botões, cards, formulários, quiz, alertas)
-│   │   ├── accessibility.css    ✅ Alto contraste, escala de fonte, motion reduction
-│   │   └── responsive.css       ✅ Breakpoints 360/600/900/1200, desktop nav, touch targets
+│   │   ├── reset.css            ✅ Camada base: box-sizing, body, títulos, links (carregado 1º)
+│   │   ├── variables.css        ✅ Design system (paleta, tipografia, escala de fonte, header/main/nav, títulos)
+│   │   ├── components.css       ✅ Componentes (botões, cards, formulários, quiz, alertas, banners, nav)
+│   │   ├── accessibility.css    ✅ Alto contraste, motion reduction, .sr-* (foco do leitor)
+│   │   └── responsive.css       ✅ Breakpoints 360/600/900/1200, nav desktop, tokens por escala
 │   ├── js/
 │   │   ├── router.js            ✅ Hash router SPA (init síncrono, logs detalhados)
 │   │   ├── api.js               ✅ Cliente API (fetch wrapper, logs request/response)
