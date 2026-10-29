@@ -63,6 +63,11 @@ const ACTION_PHRASES = {
   'voice-command': 'Abre o microfone para falar um comando.'
 };
 
+/** Controles da própria barra do leitor (fora do conteúdo da página). */
+const READER_ACTION_PHRASES = {
+  toggle: 'Desliga a leitura por voz.'
+};
+
 /**
  * Destino textual de um hash de navegação.
  * @param {string} hash ex.: '#conteudo/links-suspeitos'
@@ -100,6 +105,12 @@ export function describeDestination(element) {
   // 1. Frase escrita à mão tem prioridade absoluta.
   const explicit = element.getAttribute('data-sr-destino');
   if (explicit) return withPeriod(explicit);
+
+  // Controles da barra do leitor (mic e "Desativar").
+  const readerAction = element.getAttribute('data-reader-action');
+  if (readerAction && READER_ACTION_PHRASES[readerAction]) {
+    return READER_ACTION_PHRASES[readerAction];
+  }
 
   const action = element.getAttribute('data-action');
   const isBack = element.hasAttribute('data-sr-back');

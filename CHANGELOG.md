@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this format.
 The format is based on [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.4.2] - 2026-10-29 — Barra do leitor na ordem de leitura e contexto de rota
+
+### Fixed
+- **"Desativar" inalcançável**: a barra fixa do leitor não entrava na ordem de
+  leitura (o Tab percorria só `main` + `nav`). Agora ela é o **último** item: o
+  Tab chega em "Botão: Desativar leitor de tela. Desliga a leitura por voz." e o
+  Esc continua desligando quando nada está acontecendo.
+- **Chegada sem o formato da rota**: se a pessoa ligava o leitor com a tela já
+  aberta, o router não informava a rota (`routeInfo` nulo) e a chegada perdia
+  "Aula: ..." e "Resultado: <nível>". O router agora informa a rota sempre — o
+  leitor ignora quando está desligado.
+- **Pulo de rolagem**: ao destacar um elemento `position: fixed` (barra do
+  leitor, menu do celular) a página saltava, porque no DOM eles ficam no fim do
+  `<body>`. Elemento fixo já está sempre visível: não rola mais até ele.
+
+### Changed
+- Service worker: cache `idoso-seguro-v44`.
+- Testes do leitor: 18 casos (novos: barra do leitor na ordem de leitura e
+  ligar o leitor no meio da tela).
+
 ## [1.4.1] - 2026-10-29 — Fonte única, pesos reais e botão do leitor
 
 ### Fixed

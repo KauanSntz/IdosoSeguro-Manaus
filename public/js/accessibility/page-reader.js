@@ -32,7 +32,6 @@ const BLACKLIST_SELECTORS = [
   '[aria-hidden="true"]',
   '[hidden]',
   '.sr-only',
-  '.screen-reader-indicator',
   '.sr-position-indicator',
   '.nav-icon',
   '.icon',

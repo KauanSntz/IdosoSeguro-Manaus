@@ -421,3 +421,61 @@ test('destinos: card, menu atual, voltar e alternativa encerrada', async () => {
   assert.equal(describeDestination(voltar), 'Volta para a lista de assuntos.');
   assert.equal(describeDestination(alternativa), '');
 });
+
+// ── Barra fixa do leitor (sair) ──────────────────────────────────────────────
+
+test('barra do leitor: "Desativar" entra na leitura e é falado', async () => {
+  const tela = await abrirTela(() => renderEnsinarPage(), 'aprender');
+
+  // Liga de verdade: a barra fixa é criada no DOM, como no app.
+  tela.leitor.enabled = false;
+  tela.leitor.enable();
+
+  const barra = document.querySelector('.screen-reader-indicator');
+  assert.ok(barra, 'a barra fixa deveria existir com o leitor ligado');
+  assert.ok(
+    tela.leitor._contentContainers().includes(barra),
+    'a barra precisa entrar na ordem de leitura (Tab)'
+  );
+
+  tela.reader.extract(tela.leitor._contentContainers());
+  const falas = tela.reader.chunks.map(describeChunk).filter(Boolean);
+
+  assert.ok(
+    falas.includes('Botão: Desativar leitor de tela. Desliga a leitura por voz.'),
+    'o "Desativar" da barra deveria ser falado com o nome e o que faz'
+  );
+
+  // Último item navegável: o Tab chega nele antes de "Fim da tela".
+  const ultimo = [...tela.reader.chunks].reverse().find((c) => c.navigable !== false);
+  assert.equal(ultimo.element.getAttribute('data-reader-action'), 'toggle');
+});
+
+test('ligar o leitor no meio da tela mantém a chegada da rota', async () => {
+  const montado = montar();
+  montado.main.innerHTML = await renderResultadoPage({
+    id: encodeURIComponent(JSON.stringify(RESULTADOS.alto))
+  });
+
+  const reader = new PageReader();
+  const falas = [];
+  const speech = {
+    isSpeaking: false,
+    onStateChange: null,
+    speak(texto) { falas.push(texto); return Promise.resolve(); },
+    stop() {}
+  };
+  const leitor = new ScreenReader({ pageReader: reader, speech, onExecute: () => {} });
+
+  // O router informa a rota mesmo com o leitor DESLIGADO.
+  leitor.onNavigate(montado.main, { route: 'resultado/1', section: 'resultado', params: {} });
+  assert.equal(leitor.enabled, false);
+
+  leitor.enable();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(
+    falas[falas.length - 1],
+    'Resultado: Alto nível de atenção. Encontramos sinais fortes de golpe nesta mensagem. Não clique em nada.'
+  );
+});

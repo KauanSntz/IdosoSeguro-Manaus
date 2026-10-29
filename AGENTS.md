@@ -5,10 +5,18 @@
 ---
 
 ## Última Atualização
-**v1.4.0 (2026-10-28)** — Etapa F: responsividade. Menu no topo no desktop (rodapé no
-mobile), escala de fonte aplicada uma única vez, títulos com dono único, breakpoints
-360/600/900/1200, alvos ≥ 44×44, alto contraste com todos os pares ≥ 7:1 e matriz de
-324 células (9 rotas × 9 larguras × 4 escalas) sem rolagem horizontal.
+**v1.4.2 (2026-10-29)** — Barra do leitor na ordem de leitura, rota sempre
+informada ao leitor e rolagem estável em elemento fixo.
+
+### Etapa G — saída do leitor e contexto de rota (v1.4.2)
+
+| Regra | Onde |
+|-------|------|
+| Barra fixa do leitor é o **último** item do Tab: "Botão: Desativar leitor de tela. Desliga a leitura por voz." | `screen-reader.js` `_contentContainers`, `destinos.js` `READER_ACTION_PHRASES` |
+| Esc com o leitor ocioso desliga ("Leitor de tela desativado.") | `screen-reader.js` `_cancelAll` |
+| Router informa a rota **sempre** (o leitor ignora desligado) — ligar no meio da tela mantém "Aula: …" e "Resultado: <nível> …" | `router.js` `handleRoute` |
+| Elemento `position: fixed` não recebe `scrollIntoView` (evita pulo de rolagem) | `screen-reader.js` `_highlight`/`_isFixed` |
+| Barra fixa saiu da lista de exclusão do extrator | `page-reader.js` `BLACKLIST_SELECTORS` |
 
 ### Etapa F — responsividade (v1.4.0)
 

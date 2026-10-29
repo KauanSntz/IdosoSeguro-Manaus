@@ -124,7 +124,11 @@ export class ScreenReader {
   _contentContainers() {
     const main = document.getElementById('main-content');
     const nav = document.querySelector('.bottom-nav');
-    return [main, nav].filter(Boolean);
+    // A barra fixa do leitor entra por ÚLTIMO: é o "sair" da leitura. Assim ela
+    // é alcançável com Tab até o fim da tela (o Tab não dá a volta) e o Esc
+    // continua desligando quando nada está acontecendo.
+    const indicator = document.querySelector('.screen-reader-indicator');
+    return [main, nav, indicator].filter(Boolean);
   }
 
   /** Descrição falável de um chunk (atualiza estado volátil antes). */
@@ -724,14 +728,27 @@ export class ScreenReader {
     this._clearHighlights();
     if (!element) return;
     element.classList.add('sr-current-chunk');
-    try {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } catch { /* ignorado */ }
+    // Elemento fixo (barra do leitor, menu no rodapé do celular) já está sempre
+    // visível: rolar até ele só faz a página pular, porque no DOM ele vive no
+    // fim do <body>.
+    if (!this._isFixed(element)) {
+      try {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch { /* ignorado */ }
+    }
     this._updatePositionIndicator();
   }
 
   _clearHighlights() {
     document.querySelectorAll('.sr-current-chunk').forEach((el) => el.classList.remove('sr-current-chunk'));
+  }
+
+  /** O elemento (ou um ancestral) está preso na tela com `position: fixed`? */
+  _isFixed(element) {
+    for (let el = element; el && el !== document.body; el = el.parentElement) {
+      if (window.getComputedStyle(el).position === 'fixed') return true;
+    }
+    return false;
   }
 
   _updatePositionIndicator() {
