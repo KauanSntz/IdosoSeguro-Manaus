@@ -13,13 +13,14 @@ export async function renderAcessibilidadePage() {
   const readerEnabled = !!window.screenReader?.enabled;
 
   const speeds = [
-    { value: 0.8, label: 'Lenta' },
-    { value: 1, label: 'Normal' },
-    { value: 1.2, label: 'Rápida' }
+    { value: 0.8, label: 'Lenta', destino: 'Deixa a voz mais devagar.' },
+    { value: 1, label: 'Normal', destino: 'Usa a velocidade normal da voz.' },
+    { value: 1.5, label: 'Rápida', destino: 'Deixa a voz mais rápida.' },
+    { value: 2, label: 'Muito rápida', destino: 'Deixa a voz bem rápida, para quem já está acostumado.' }
   ];
 
-  const speedButtons = speeds.map(({ value, label }) => `
-    <button type="button" class="btn btn-outline" data-action="tts-speed" data-tts-speed="${value}" aria-pressed="${speed === value}">
+  const speedButtons = speeds.map(({ value, label, destino }) => `
+    <button type="button" class="btn btn-outline" data-action="tts-speed" data-tts-speed="${value}" data-sr-destino="${destino}" aria-pressed="${speed === value}">
       ${label}
     </button>
   `).join('');

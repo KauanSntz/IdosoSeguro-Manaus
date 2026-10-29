@@ -38,7 +38,7 @@ Preferências salvas em `localStorage` (`idoso_seguro_access_prefs`) e aplicadas
 - `data-font-scale`: `small` (0.875) · `normal` (1) · `large` (1.25) · `xlarge` (1.5)
 - `data-high-contrast`: paleta de alto contraste real (não só opacidade)
 - `data-reduced-motion`
-- velocidade de voz: 0.8 / 1 / 1.2
+- velocidade de voz: 0.8 / 1 / 1.5 / 2.0
 
 Fontes **Atkinson Hyperlegible** (CDN), ícones em **SVG sprite local**, navegação inferior fixa com 5 abas (Início, Aprender, Assistir, Acessibilidade, Ajuda), skip link, foco visível, alvos de toque ≥44px.
 

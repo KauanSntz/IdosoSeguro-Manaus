@@ -21,6 +21,18 @@ class AccessibilityManager {
     try {
       const saved = localStorage.getItem(ACCESSIBILITY_STORAGE_KEY);
       const prefs = saved ? { ...defaultPrefs, ...JSON.parse(saved) } : { ...defaultPrefs };
+
+      // Velocidades aceitas: 0.8 / 1 / 1.5 / 2. A "Rápida" antiga era 1.2.
+      const validSpeeds = [0.8, 1, 1.5, 2];
+      const savedSpeed = Number(prefs.ttsSpeed);
+      if (savedSpeed === 1.2) {
+        prefs.ttsSpeed = 1.5;
+      } else if (!validSpeeds.includes(savedSpeed)) {
+        prefs.ttsSpeed = 1;
+      } else {
+        prefs.ttsSpeed = savedSpeed;
+      }
+
       console.log('[Accessibility] loadPrefs - carregado do localStorage:', prefs);
       return prefs;
     } catch (e) {
@@ -126,15 +138,15 @@ class AccessibilityManager {
     window.speechEngine?.setRate?.(validSpeed);
     if (window.screenReader?.enabled) {
       // Confirmação falada já na nova velocidade: a pessoa ouve a diferença.
-      window.screenReader.speak(`Velocidade da voz: ${this.speedLabel(validSpeed)}.`);
+      window.screenReader.speak(`Velocidade: ${this.speedLabel(validSpeed)}.`);
     }
   }
 
-  /** Nome amigável da velocidade (mesmos rótulos dos botões: Lenta/Normal/Rápida). */
+  /** Nome amigável da velocidade (mesmos rótulos dos botões: Lenta/Normal/Rápida/Muito rápida). */
   speedLabel(speed) {
     if (speed <= 0.9) return 'lenta';
     if (speed <= 1.1) return 'normal';
-    if (speed <= 1.4) return 'rápida';
+    if (speed < 1.8) return 'rápida';
     return 'muito rápida';
   }
 
