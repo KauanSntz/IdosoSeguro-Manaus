@@ -2,8 +2,9 @@ node_modules/
 .env
 database/*.db
 database/*.db-*
-motor-analise/__pycache__/
-motor-analise/estrategias/__pycache__/
+# Python: qualquer cache compilado, em qualquer pasta
+__pycache__/
+*.pyc
 *.log
 npm-debug.log*
 .DS_Store
