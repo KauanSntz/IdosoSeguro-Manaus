@@ -86,19 +86,20 @@ class Router {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         console.log('[Router] Renderização concluída para:', cleanHash);
 
-        // Se modo leitor ativo, preparar o PageReader e anunciar a tela.
+        // Informa SEMPRE a rota ao leitor. Ele guarda o contexto mesmo desligado
+        // (e sai na hora se `enabled` for falso) — assim, ligar o leitor NO MEIO
+        // de uma tela já aberta não perde o formato de chegada de cada rota
+        // ("Aula: ...", "Resultado: <nível> ...").
         // setTimeout(0) em vez de requestAnimationFrame: rAF não dispara em
         // aba oculta/background e o leitor ficava mudo até o próximo comando.
-        if (window.screenReader?.enabled) {
-          setTimeout(() => {
-            const routeInfo = {
-              route: cleanHash,
-              section: this.getSectionFromRoute(cleanHash),
-              params: params
-            };
-            window.screenReader.onNavigate(container, routeInfo);
-          }, 0);
-        }
+        setTimeout(() => {
+          const routeInfo = {
+            route: cleanHash,
+            section: this.getSectionFromRoute(cleanHash),
+            params: params
+          };
+          window.screenReader?.onNavigate(container, routeInfo);
+        }, 0);
       } catch (err) {
         console.error('[Router] Erro ao renderizar rota:', err);
         container.innerHTML = `<div class="card stack-md text-center" style="padding: var(--space-8);"><h2 style="margin-bottom: var(--space-4);">Ops!</h2><p style="margin-bottom: var(--space-4);">Não foi possível carregar esta tela.</p><button data-action="navigate" data-href="#home" class="btn btn-primary">Voltar ao Início</button></div>`;
