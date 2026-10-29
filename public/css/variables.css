@@ -91,9 +91,10 @@
 
   /* ========================================
      TIPOGRAFIA - Atkinson Hyperlegible
+     Família ÚNICA do app. Só aqui se define fonte: body, títulos, botões e
+     campos usam esta variável (ou herdam dela). Não existe outra família.
      ======================================== */
-  --font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+  --font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 
   --font-scale: 1;
   /* Fonte-base: 18px * escala. O html usa este valor e TODO o resto do app
@@ -112,11 +113,15 @@
   --font-size-3xl: 1.875rem;
   --font-size-4xl: 2.25rem;
 
+  /* Só existem os arquivos 400 (regular), 700 (bold) e 400 itálico.
+     Pesos intermediários não têm face própria: o navegador usa a mais próxima e,
+     acima de 700, sintetiza o negrito (glifo mais largo/borrado). Cada token
+     aponta para uma face real. */
   --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 700;
   --font-weight-bold: 700;
-  --font-weight-black: 800;
+  --font-weight-black: 700;
 
   /* ========================================
      ESPAÇAMENTO - Escala 4px base
@@ -294,7 +299,11 @@ html[data-high-contrast="true"] {
 
 html {
   font-size: var(--font-base-size);
+  font-family: var(--font-family);
   -webkit-text-size-adjust: 100%;
+  /* Só existem as faces 400/700 (e 400 itálico). Sem síntese, o navegador
+     usa a face real mais próxima em vez de "engordar" o glifo artificialmente. */
+  font-synthesis: none;
 }
 
 body {
@@ -306,6 +315,13 @@ body {
   background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Títulos, botões e campos usam a MESMA família da raiz. Nenhuma regra troca
+   a fonte do app: --font-family é o único lugar que define a família. */
+h1, h2, h3, h4, h5, h6,
+button, input, select, textarea {
+  font-family: var(--font-family);
 }
 
 /* ========================================

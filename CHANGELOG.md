@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this format.
 The format is based on [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.4.1] - 2026-10-29 — Fonte única, pesos reais e botão do leitor
+
+### Fixed
+- **Família única**: `--font-family` no `:root` (`'Atkinson Hyperlegible',
+  system-ui, sans-serif`) é a única definição de fonte do app e vale para `html`,
+  `body`, títulos, botões e campos. Removido `--font-family-mono`, que apontava para
+  "Atkinson Hyperlegible Mono" (fonte que não existe no projeto) e não era usado.
+- **Pesos sem arquivo**: os tokens `--font-weight-medium` (500), `--font-weight-semibold`
+  (600) e `--font-weight-black` (800) pediam pesos que não existem no projeto (só há
+  400 e 700). O navegador caía na face mais próxima e, quando o peso pedido era maior
+  que o disponível (800, título do fechamento), **sintetizava** o negrito — texto mais
+  largo e borrado. Os tokens agora apontam só para faces reais (400/700) e o `<html>`
+  usa `font-synthesis: none`.
+- **Ícone do leitor**: o símbolo `#accessibility` do sprite era o ícone de **globo**
+  (Material "public"). Trocado pelo ícone de acessibilidade (pessoa com braços abertos).
+- **Botão duplicado na Home**: com o leitor LIGADO, o botão "Desativar leitor de tela"
+  do cabeçalho da página some — a barra superior fixa já oferece o comando. Desligado,
+  "Ativar leitor de tela" continua sendo o primeiro focável da tela.
+
+### Changed
+- Service worker: cache `idoso-seguro-v43`.
+
 ## [1.4.0] - 2026-10-28 — Responsividade: menu no topo, escala de fonte e telas pequenas
 
 ### Added

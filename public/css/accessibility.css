@@ -324,6 +324,14 @@ html[data-screen-reader="true"] {
   color: var(--color-text-on-secondary);
 }
 
+/* Com o leitor LIGADO, a barra superior fixa já mostra "Desativar leitor de
+   tela". O botão do cabeçalho da página serve para ATIVAR, então some nesse
+   estado para não duplicar o comando (Home). Desligado, ele continua lá como
+   primeiro focável da tela. */
+html[data-screen-reader="true"] .page-header-actions [data-action="toggle-screen-reader"] {
+  display: none;
+}
+
 .sr-focused {
   outline: 4px solid var(--color-secondary) !important;
   outline-offset: 3px !important;

@@ -34,7 +34,7 @@ mobile), escala de fonte aplicada uma única vez, títulos com dono único, brea
 |-------|------|
 | Enter ativa direto após Tab/setas/atalhos; 2 toques só em toque/gesto | `screen-reader.js` `_arm`/`_activate` |
 | "Toque duas vezes para ativar." (toque) e nunca "Pressione de novo" | `screen-reader.js`, `pages/acessibilidade.js` |
-| "Ativar leitor de tela" é o 1º focável da Welcome e da Home | `pages/welcome.js`, `pages/home.js` |
+| "Ativar leitor de tela" é o 1º focável da Welcome e da Home; com o leitor LIGADO o botão do cabeçalho some (a barra superior assume o "Desativar") | `pages/welcome.js`, `pages/home.js`, `accessibility.css` |
 | Atalho global **Alt+L** liga/desliga (funciona desligado) | `inputs/keyboard.js` |
 | Ativação fala as instruções e só depois a chegada da tela | `screen-reader.js` `enable()` (token) |
 | Erro no quiz diz a letra/texto da correta | `pages/quiz.js` `renderFeedback` |
