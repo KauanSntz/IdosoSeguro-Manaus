@@ -70,7 +70,7 @@ if ($LASTEXITCODE -ne 0 -or $remoteRevision -ne $localRevision) {
 }
 
 Write-Host "[4/4] Testando aplicacao..." -ForegroundColor Green
-$response = Invoke-WebRequest -Uri "$ApplicationUrl/api/health" -UseBasicParsing -TimeoutSec 15
+$response = Invoke-WebRequest -Uri "$ApplicationUrl/api/saude" -UseBasicParsing -TimeoutSec 15
 
 if ($response.StatusCode -ne 200) {
     throw "A aplicacao respondeu com HTTP $($response.StatusCode)."

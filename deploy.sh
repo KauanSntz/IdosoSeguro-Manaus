@@ -25,7 +25,7 @@ success=0
 for attempt in $(seq 1 30); do
     http_code="$(curl --silent --output /dev/null \
         --write-out '%{http_code}' \
-        "http://127.0.0.1:${PORT}/api/health" || true)"
+        "http://127.0.0.1:${PORT}/api/saude" || true)"
 
     echo "Tentativa ${attempt}/30 - HTTP ${http_code:-sem resposta}"
 
