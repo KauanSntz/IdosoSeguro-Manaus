@@ -2,6 +2,8 @@
 
 Aplicação web acessível, educativa e preventiva de segurança digital para pessoas idosas.
 
+**Demo online:** http://31.97.147.114:8085/ (rodando em VPS própria)
+
 ## Objetivo
 
 Oferecer duas vertentes integradas:
