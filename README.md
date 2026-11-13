@@ -172,7 +172,7 @@ Ver `docs/IMPLANTACAO.md` (a criar).
 
 ## Decisões Técnicas
 
-1. **Atkinson Hyperlegible via CDN no MVP** - documentado para servir localmente em produção
+1. **Atkinson Hyperlegible servida localmente** - cacheada pelo service worker
 2. **Ícones SVG próprios** - `icons.svg` sprite + `logo.svg` (a criar na Etapa 4)
 3. **Python adapter com fallback** - detecta `python`, `py -3`, `python3`; timeout 10s; erro gracioso
 4. **Sem framework front-end** - vanilla JS com ES Modules, hash router
@@ -180,9 +180,8 @@ Ver `docs/IMPLANTACAO.md` (a criar).
 
 ## Limitações do MVP
 
-- Font Atkinson via Google Fonts (não local)
+- Fonte Atkinson Hyperlegible servida localmente e cacheada pelo service worker
 - Ícones SVG básicos (apenas essenciais)
-- PWA não implementado
 - Testes automatizados limitados
 - `check:contraste` e `lint` como stubs
 - Reconhecimento de voz depende de suporte do navegador
