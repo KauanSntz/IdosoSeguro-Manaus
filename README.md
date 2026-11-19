@@ -130,10 +130,12 @@ Acesse `http://localhost:3000`. Para rodar os testes: `npm test`.
 
 ## Autores
 
-John Erik de Araujo Santos (2422168), Franciane de Carvalho Nogueira (2418640) e Kauan Ferreira dos Santos (2422557). Orientação: Profa. Luana Leal — CEUNI FAMETRO, ADS/Noturno.
+John Erik de Araujo Santos
+Franciane de Carvalho Nogueira
+Kauan Ferreira dos Santos 
 
 ---
 
-## Referências
+## Orientação
 
-VAN DIJK (2020); HELSPER (2021); GRILLI et al. (2021); SOMMERVILLE (2019); PRESSMAN; MAXIM (2021); ISO/IEC 25010:2023; ISO/IEC 25059:2023; W3C WCAG 2.2 (2023).
+Profa. Luana Leal
