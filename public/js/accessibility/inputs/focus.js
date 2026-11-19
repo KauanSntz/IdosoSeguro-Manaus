@@ -61,7 +61,7 @@ export function initFocusInput({ reader }) {
 
   function onFocusIn(event) {
     if (!reader.enabled) return;
-    if (!awaitingNativeFocus) return; // clique/foco do app → tratados por fora
+    if (!awaitingNativeFocus && !isTextEntry(event.target)) return;
     awaitingNativeFocus = false;
     reader.handleFocus(event.target);
   }

@@ -34,10 +34,10 @@ export function matchCommand(transcript) {
   if (!transcript) return null;
   const normalized = normalize(transcript);
 
+  // Exact phrases prevent "sim" in "assim" and "parar" masking "parar leitura".
+  const phrase = normalized.replace(/^(por favor |pode |quero )/, '').replace(/ por favor$/, '');
   for (const command of COMMANDS) {
-    for (const word of command.words) {
-      if (normalized.includes(normalize(word))) return command.intent;
-    }
+    if (command.words.some(word => normalize(word) === phrase)) return command.intent;
   }
   return null;
 }
@@ -65,7 +65,7 @@ export function initVoiceCommands({ speech }) {
     listening = true;
 
     speech.startRecognition({
-      onResult(transcript, alternatives) {
+      onResult(transcript, alternatives = []) {
         listening = false;
         const intent = matchCommand(transcript) ||
           alternatives.map(matchCommand).find(Boolean) ||
@@ -80,7 +80,8 @@ export function initVoiceCommands({ speech }) {
       onError() {
         listening = false;
         speech.speak('Não consegui ouvir. Toque no microfone e tente novamente.');
-      }
+      },
+      onEnd() { listening = false; }
     });
   }
 

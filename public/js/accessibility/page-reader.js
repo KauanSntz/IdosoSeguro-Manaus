@@ -173,6 +173,8 @@ export class PageReader {
     if (BLACKLIST_TAGS.has(element.tagName)) return false;
     try {
       if (element.matches(BLACKLIST_SELECTORS)) return false;
+      const style = window.getComputedStyle(element);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
     } catch { /* seletor inválido, ignora */ }
     return true;
   }

@@ -207,6 +207,15 @@
   width: 100%;
 }
 
+/* At 320px five text labels cannot fit without breaking words. Two rows keep
+   familiar, full labels and large touch targets available on narrow phones. */
+@media (max-width: 359px) {
+  .bottom-nav { flex-wrap: wrap; }
+  .bottom-nav .nav-item { flex: 0 0 33.333%; }
+  .bottom-nav .nav-label { white-space: nowrap; }
+  .main-content { padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px)); }
+}
+
 .form-label {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
@@ -1610,6 +1619,8 @@
    FECHAMENTO PAGE
    ======================================== */
 .fechamento-page {
+  width: 100%;
+  min-width: 0;
   max-width: 480px;
   margin: 0 auto;
   text-align: center;
@@ -1632,7 +1643,7 @@
 }
 
 .fechamento-page .card {
-  padding: var(--space-6);
+  padding: clamp(var(--space-3), 4vw, var(--space-6));
   text-align: center;
 }
 
@@ -1668,6 +1679,12 @@
 
 .fechamento-page .result-actions {
   margin-top: var(--space-4);
+}
+
+.fechamento-page .btn > span,
+.fechamento-page .golden-tip > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* ========================================

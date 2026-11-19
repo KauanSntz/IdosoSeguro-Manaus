@@ -142,7 +142,8 @@ export function createFormField(type, id, label, options = {}) {
     button = null,
     error = '',
     description = '',
-    describedBy = ''
+    describedBy = '',
+    maxLength = 5000
   } = options;
 
   const requiredAttr = required ? 'required' : '';
@@ -158,7 +159,7 @@ export function createFormField(type, id, label, options = {}) {
   let inputHtml = '';
 
   if (type === 'textarea') {
-    inputHtml = `<textarea id="${id}" class="form-textarea" placeholder="${escapeAttr(placeholder)}" rows="${rows}" ${requiredAttr} ${ariaRequired} ${ariaDescribedByAttr}></textarea>`;
+    inputHtml = `<textarea id="${id}" class="form-textarea" maxlength="${maxLength}" placeholder="${escapeAttr(placeholder)}" rows="${rows}" ${requiredAttr} ${ariaRequired} ${ariaDescribedByAttr}></textarea>`;
   } else if (type === 'file') {
     inputHtml = `<input type="file" id="${id}" class="form-input" accept="${escapeAttr(accept)}" ${requiredAttr} ${ariaRequired} ${ariaDescribedByAttr}>`;
   } else if (type === 'url') {
@@ -191,6 +192,7 @@ export function createFormField(type, id, label, options = {}) {
       ${helpText}
       ${errorHtml}
       ${buttonHtml}
+      ${['textarea', 'text', 'url'].includes(type) ? `<button type="button" class="btn btn-outline btn-block" data-action="read-field" data-target="${id}" data-sr-destino="Lê em voz alta o texto deste campo. Durante a leitura, permite parar."><span class="btn-label">Ouvir o que escrevi</span></button>` : ''}
     </div>
   `;
 }
@@ -378,8 +380,8 @@ export function createBottomNav() {
   const items = [
     { href: '#home', icon: 'home', label: 'Início', key: 'home' },
     { href: '#aprender', icon: 'school', label: 'Aprender', key: 'aprender' },
-    { href: '#assistir', icon: 'shield', label: 'Assistir', key: 'assistir' },
-    { href: '#acessibilidade', icon: 'settings', label: 'Acessibilidade', key: 'acessibilidade' },
+    { href: '#assistir', icon: 'shield', label: 'Verificar', key: 'assistir' },
+    { href: '#acessibilidade', icon: 'settings', label: 'Ajustes', key: 'acessibilidade' },
     { href: '#ajuda', icon: 'help', label: 'Ajuda', key: 'ajuda' }
   ];
 
@@ -401,38 +403,9 @@ export function initializeBottomNav() {
   const bottomNav = document.querySelector('.bottom-nav');
   if (!bottomNav) return;
 
-  let lastScrollY = window.scrollY;
-  let ticking = false;
-
-  function onScroll() {
-    const currentScrollY = window.scrollY;
-
-    if (!ticking) {
-      window.requestAnimationFrame(() => {
-        const navHeight = bottomNav.offsetHeight;
-        const focusedElement = document.activeElement;
-        const isFocusInNav = bottomNav.contains(focusedElement);
-
-        if (isFocusInNav) {
-          bottomNav.classList.remove('nav-hidden');
-        } else if (currentScrollY > lastScrollY && currentScrollY > navHeight) {
-          bottomNav.classList.add('nav-hidden');
-        } else if (currentScrollY < lastScrollY) {
-          bottomNav.classList.remove('nav-hidden');
-        }
-
-        lastScrollY = currentScrollY;
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }
-
-  bottomNav.addEventListener('focusin', () => {
-    bottomNav.classList.remove('nav-hidden');
-  });
-
-  window.addEventListener('scroll', onScroll, { passive: true });
+  // Keep the navigation visible instead of hiding it while the person scrolls.
+  bottomNav.classList.remove('nav-hidden');
+  bottomNav.addEventListener('focusin', () => bottomNav.classList.remove('nav-hidden'));
 
   console.log('[BottomNav] Navegação inferior inicializada');
 }

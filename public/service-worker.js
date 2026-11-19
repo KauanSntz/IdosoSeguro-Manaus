@@ -1,4 +1,4 @@
-const CACHE_NAME = 'idoso-seguro-v44';
+const CACHE_NAME = 'idoso-seguro-v46';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -14,6 +14,29 @@ const STATIC_ASSETS = [
   '/js/sw-register.js',
   '/js/components.js',
   '/js/events.js',
+  '/js/action-router.js',
+  '/js/accessibility/speech-engine.js',
+  '/js/accessibility/screen-reader.js',
+  '/js/accessibility/page-reader.js',
+  '/js/accessibility/chunk-descriptor.js',
+  '/js/accessibility/destinos.js',
+  '/js/accessibility/inputs/voice-commands.js',
+  '/js/accessibility/inputs/keyboard.js',
+  '/js/accessibility/inputs/gestures.js',
+  '/js/accessibility/inputs/focus.js',
+  '/js/pages/welcome.js',
+  '/js/pages/home.js',
+  '/js/pages/ensinar.js',
+  '/js/pages/conteudo.js',
+  '/js/pages/quiz.js',
+  '/js/pages/assistir.js',
+  '/js/pages/assistente.js',
+  '/js/pages/analisar.js',
+  '/js/pages/resultado.js',
+  '/js/pages/acessibilidade.js',
+  '/js/pages/ajuda.js',
+  '/js/pages/fechamento.js',
+  '/manifest.json',
   '/assets/icons.svg',
   '/assets/logo.svg',
   '/fonts/atkinson-hyperlegible-400.woff2',
@@ -31,7 +54,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(STATIC_ASSETS))
       .then(() => self.skipWaiting())
-      .catch((err) => console.error('[SW] Install failed:', err))
+      .catch((err) => { console.error('[SW] Install failed:', err); throw err; })
   );
 });
 
@@ -39,7 +62,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
-        keys.filter((key) => key !== CACHE_NAME)
+        keys.filter((key) => key.startsWith('idoso-seguro-') && key !== CACHE_NAME)
           .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())
@@ -56,6 +79,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .catch(() => new Response(JSON.stringify({ ok: false, erro: { codigo: 'OFFLINE', mensagem: 'Você está offline. Conecte-se para verificar.' } }), {
+          status: 503,
           headers: { 'Content-Type': 'application/json' }
         }))
     );
@@ -65,8 +89,9 @@ self.addEventListener('fetch', (event) => {
   const isNavigation = request.mode === 'navigate' || request.destination === 'document';
 
   event.respondWith(
-    caches.match(request)
-      .then((cached) => {
+    caches.open(CACHE_NAME)
+      .then(async (cache) => {
+        const cached = await cache.match(request);
         if (cached) return cached;
         return fetch(request)
           .then((response) => {
@@ -74,14 +99,13 @@ self.addEventListener('fetch', (event) => {
               return response;
             }
             const responseClone = response.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => cache.put(request, responseClone))
-              .catch((err) => console.warn('[SW] Cache put failed:', err));
+            event.waitUntil(cache.put(request, responseClone)
+              .catch((err) => console.warn('[SW] Cache put failed:', err)));
             return response;
           })
           .catch(() => {
             if (isNavigation) {
-              return caches.match('/index.html');
+              return cache.match('/index.html');
             }
             return new Response('', { status: 503, statusText: 'Service Unavailable' });
           });

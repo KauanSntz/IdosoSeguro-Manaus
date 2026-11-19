@@ -22,7 +22,7 @@ Aplicação web acessível, educativa e preventiva de segurança digital para pe
 |---|
 | ![Página de ajuda com 7 perguntas frequentes](docs/screenshots/ajuda.png) |
 
-> Capturas da versão em demonstração. A tela de verificação dessa versão inclui a ajuda guiada de 3 perguntas; o código local versionado ainda não contém esse fluxo.
+> Capturas da versão atual do aplicativo, incluindo a ajuda guiada de 3 perguntas.
 
 ## Sobre o projeto
 
@@ -41,13 +41,14 @@ Aplicação web acessível, educativa e preventiva de segurança digital para pe
 | Área | O que está implementado |
 |---|---|
 | **Modo Aprender** (rota `#ensinar`) | 7 temas com aula curta, sinais de alerta, ações seguras, exemplo e quiz. |
-| **Modo Assistir** | Verificação de **texto** e **link** com nível de risco (baixo, atenção, alto), indícios encontrados, orientações e indicação do conteúdo educativo relacionado. |
+| **Modo Assistir** (na interface, **Verificar**) | Verificação de **texto** e **link** com nível de risco (baixo, atenção, alto), indícios encontrados, orientações e indicação do conteúdo educativo relacionado. |
 | **Leitor de tela (TTS)** | Leitura em voz alta com 4 velocidades: lenta (0.8), normal (1.0), rápida (1.5) e muito rápida (2.0). |
 | **Alto contraste** | Paleta de alto contraste aplicada ao aplicativo inteiro. |
 | **Tamanho do texto** | 4 níveis: pequeno, normal, grande e muito grande. |
 | **Navegação assistiva** | Teclado e gestos de toque; estrutura de comandos de voz (em desenvolvimento); regra dos dois toques para ativar itens. |
 | **Quiz** | Uma pergunta por vez, com resumo final. |
 | **Ajuda** | Página com **7 perguntas frequentes**. |
+| **Ajuda guiada** | Na tela de verificação, **3 perguntas simples** orientam quem não sabe por onde começar. |
 | **Preferências** | Modo leitor, contraste e tamanho de fonte são salvos no `localStorage`. |
 | **Service worker** | Cache de arquivos estáticos do aplicativo. |
 
@@ -59,7 +60,7 @@ Aplicação web acessível, educativa e preventiva de segurança digital para pe
 | **Upload e análise automática de foto** | O seletor de imagem existe, mas a foto **não é analisada automaticamente**. A verificação usa o texto que a pessoa descreve. |
 | **Análise de imagem e áudio** | Hoje entram como **descrição em texto**; não há OCR nem transcrição automática. |
 
-> A página **Ajuda** reúne 7 perguntas frequentes. A versão em demonstração também oferece uma ajuda guiada de 3 perguntas na tela de verificação.
+> A página **Ajuda** reúne 7 perguntas frequentes, e a tela de verificação oferece uma **ajuda guiada de 3 perguntas** para quem não sabe por onde começar.
 
 ### Modo Aprender — 7 temas
 
@@ -73,7 +74,7 @@ Aplicação web acessível, educativa e preventiva de segurança digital para pe
 
 ### Modo Assistir — como a análise funciona
 
-> Na versão em demonstração, essa área aparece como **Verificar**. No código local, a rota é `#assistir`.
+> Na interface, essa área aparece como **Verificar**; a rota continua `#assistir`.
 
 A pessoa escolhe o tipo, escreve ou cola o conteúdo e envia. O resultado mostra:
 
@@ -186,6 +187,7 @@ IdosoSeguro/
 │   │   │   ├── conteudo.js
 │   │   │   ├── quiz.js
 │   │   │   ├── assistir.js
+│   │   │   ├── assistente.js
 │   │   │   ├── analisar.js
 │   │   │   ├── resultado.js
 │   │   │   ├── acessibilidade.js
@@ -320,7 +322,8 @@ O reconhecimento de voz **está em desenvolvimento**. Além disso, o navegador s
 ### Funciona
 
 - Modo Aprender com 7 temas, aulas, exemplos e quiz.
-- Modo Assistir para **texto** e **link**, com nível, indícios e orientações.
+- Modo Assistir/Verificar para **texto** e **link**, com nível, indícios e orientações.
+- Ajuda guiada de **3 perguntas** na tela de verificação.
 - Leitor de tela com TTS em 4 velocidades.
 - Alto contraste e 4 tamanhos de fonte.
 - Navegação por teclado e gestos.

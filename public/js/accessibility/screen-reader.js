@@ -73,12 +73,19 @@ export class ScreenReader {
     this._saveState();
     this._applyDomFlag(true);
     this._renderIndicator();
+    // Navigation must work even when the person interrupts the instructions.
+    const container = this.container || document.getElementById('main-content');
+    if (container) {
+      this.container = container;
+      this.reader.extract(this._contentContainers());
+      this._connectObserver(container);
+    }
 
     // A chegada só é falada DEPOIS da mensagem de ativação (o motor de voz
     // interrompe a fala anterior ao falar a próxima).
     const token = {};
     this._enableToken = token;
-    this.speak('Leitor de tela ativado. Use Tab ou deslize para a direita para ouvir. Toque duas vezes para ativar. Aperte S para o resumo.')
+    this.speak('Leitor de tela ativado. Use Tab ou deslize para a direita para ouvir. Toque duas vezes para ativar. Aperte S para o resumo.', { activation: true })
       .then(() => {
         if (!this.enabled || this._enableToken !== token) return;
         this._enableToken = null;
@@ -99,6 +106,7 @@ export class ScreenReader {
     this._stopReadingAll();
     this.reader.reset();
     this._disconnectObserver();
+    this.speech.stopRecognition?.();
     this.speech.stop();
     // Fala depois de desligar: `speak()` só funciona com o leitor ativo,
     // então vai direto no motor de voz.
@@ -142,6 +150,10 @@ export class ScreenReader {
     if (!this.enabled) return Promise.resolve();
     const value = String(text || '').trim();
     if (!value) return Promise.resolve();
+    // A requested announcement owns the voice until it ends. Only the read-all
+    // loop itself may keep its sequence alive while replacing an utterance.
+    if (!options.sequential) this._stopReadingAll();
+    if (!options.activation) this._enableToken = null;
 
     // Deduplica: o mesmo texto em sequência (foco nativo + leitor) sai uma vez.
     const now = Date.now();
@@ -155,8 +167,10 @@ export class ScreenReader {
   }
 
   stop() {
-    this.speech.stop();
     this._stopReadingAll();
+    this._enableToken = null;
+    this.speech.stopRecognition?.();
+    this.speech.stop();
   }
 
   /** Chamado pelo router a cada troca de rota. */
@@ -226,7 +240,7 @@ export class ScreenReader {
       case 'context': return this._announceContext();
       case 'summary': return this._announceSummary();
       case 'read-all': return this._startReadingAll();
-      case 'stop-read-all': return this._stopReadingAll();
+      case 'stop-read-all': return this.stop();
       case 'jump-heading': return this._jump((c) => c.type === 'heading', 'Nenhum título nesta tela.');
       case 'jump-button': return this._jump((c) => c.interactive, 'Nenhum botão nesta tela.');
       case 'jump:list': return this._jump((c) => c.type === 'list', 'Nenhuma lista nesta tela.');
@@ -346,6 +360,7 @@ export class ScreenReader {
     const chunk = direction > 0 ? this.reader.next() : this.reader.previous();
     if (!chunk) return;
 
+    this._applyRealFocus(chunk);
     this._arm(chunk);
     this._highlight(chunk.element);
     this.speak(this._describe(chunk));
@@ -533,6 +548,11 @@ export class ScreenReader {
       return /[.!?]$/.test(head) ? `${head} ${tail}` : `${head}. ${tail}`;
     };
 
+    if (base === 'assistente' && firstHeading) {
+      const help = rest.find(c => c.index > firstHeading.index && c.type === 'paragraph');
+      return { text: `${title}. ${firstParagraph?.text || ''} ${firstHeading.text}. ${help?.text || ''}`, endIndex: help?.index ?? firstHeading.index };
+    }
+
     if (base === 'conteudo') {
       const introTitle = firstHeading ? firstHeading.text.replace(/[.!?]+$/, '') : 'Introdução';
       const parts = [`Aula: ${title.replace(/[.!?]+$/, '')}.`, `${introTitle}.`];
@@ -647,6 +667,7 @@ export class ScreenReader {
     // Já está lendo → pausar.
     if (this._readingAll) {
       this._readingAll = false;
+      this._readAllToken = null;
       this._readAllPausedAt = this._readAllPos;
       this.speech.stop();
       this.speak('Leitura pausada. Aperte P para continuar.');
@@ -675,21 +696,23 @@ export class ScreenReader {
 
     this._cancelPending();
     this._readingAll = true;
+    const token = {};
+    this._readAllToken = token;
     this._readAllPausedAt = null;
-    this._readAllFrom(readable, start);
+    this._readAllFrom(readable, start, token);
   }
 
-  async _readAllFrom(readable, startIndex) {
+  async _readAllFrom(readable, startIndex, token) {
     for (let i = startIndex; i < readable.length; i++) {
-      if (!this._readingAll || !this.enabled) return;
+      if (!this._readingAll || !this.enabled || this._readAllToken !== token) return;
       const chunk = readable[i];
       this._readAllPos = chunk.index;
       this.reader.goTo(chunk.index);
       this._highlight(chunk.element);
       this._updatePositionIndicator();
-      await this.speak(this._describe(chunk));
+      await this.speak(this._describe(chunk), { sequential: true, force: true });
     }
-    if (this._readingAll) {
+    if (this._readingAll && this._readAllToken === token) {
       this._readingAll = false;
       this._readAllPausedAt = null;
       this.speak('Fim da leitura da tela.');
@@ -698,6 +721,7 @@ export class ScreenReader {
 
   _stopReadingAll() {
     this._readingAll = false;
+    this._readAllToken = null;
   }
 
   /** Esc: cancela o que estiver acontecendo; se nada acontecia, desliga. */
@@ -851,7 +875,10 @@ export class ScreenReader {
     // O botão de voz é opcional: se o módulo de voz não existir, some.
     const micBtn = indicator.querySelector('.sr-mic-btn');
     if (this._voiceInput) {
-      micBtn?.addEventListener('click', () => this._voiceInput.startListening((intent) => this.handleIntent(intent)));
+      micBtn?.addEventListener('click', () => {
+        this.stop();
+        this._voiceInput.startListening((intent) => this.handleIntent(intent));
+      });
     } else if (micBtn) {
       micBtn.style.display = 'none';
     }
@@ -884,6 +911,7 @@ export class ScreenReader {
   /** Permite injetar o módulo de comandos de voz (mobile). */
   setVoiceInput(voiceInput) {
     this._voiceInput = voiceInput;
+    if (this.enabled) this._renderIndicator();
   }
 
   // ── Persistência ───────────────────────────────────────────────────────────

@@ -15,7 +15,7 @@ export async function renderWelcomePage() {
         <p class="form-help">O leitor fala a tela em voz alta. No computador, o atalho é Alt + L.</p>
       </div>
 
-      ${createAlert('info', 'Como funciona', 'Este aplicativo tem duas partes: <strong>Aprender</strong> com aulas curtas sobre golpes comuns, e <strong>Assistir</strong> para verificar mensagens, links ou áudios suspeitos.', 'info', { role: 'none' })}
+      ${createAlert('info', 'Como funciona', '<strong>Aprender</strong> traz aulas curtas sobre golpes comuns. Em <strong>Verificar</strong>, você pode conferir uma mensagem ou receber ajuda com perguntas simples.', 'info', { role: 'none' })}
 
       <div class="action-group">
         <a href="#home" class="btn btn-primary btn-block btn-xl">

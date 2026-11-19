@@ -36,6 +36,7 @@ const SECTION_TARGETS = {
   aprender: 'a lista de assuntos',
   ensinar: 'a lista de assuntos',
   assistir: 'as opções de verificação',
+  assistente: 'a ajuda passo a passo para reconhecer golpes',
   acessibilidade: 'os ajustes de acessibilidade',
   ajuda: 'as perguntas frequentes',
   duvidas: 'as perguntas frequentes',

@@ -72,22 +72,21 @@ function renderLinkForm() {
 function renderImageForm() {
   return `
     <div class="analisar-page analisar-imagem stack-lg" data-analyze-type="imagem">
-      ${createPageHeader('Imagem ou comprovante', {
+      ${createPageHeader('Texto de uma imagem', {
         backHref: '#assistir',
         backLabel: 'Escolher outro tipo'
       })}
 
       <div class="card stack-lg">
-        ${createFormField('file', 'input-analysis-image', 'Escolher imagem do celular', {
-          accept: 'image/*'
-        })}
-
-        ${createFormField('text', 'input-image-desc', 'Se preferir, conte o que aparece na imagem', {
-          placeholder: 'Exemplo: Comprovante de transferência Pix no valor de 500 reais'
+        <p>Não analisamos a foto. Conte ou copie o texto que aparece nela, sem informar senhas ou dados bancários.</p>
+        ${createFormField('textarea', 'input-image-desc', 'O que está escrito na imagem?', {
+          placeholder: 'Exemplo: Comprovante de transferência Pix no valor de 500 reais',
+          required: true,
+          button: 'Falar em vez de digitar'
         })}
 
         ${createResultActions([
-          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'Verificar imagem' },
+          { action: 'analyze-submit', variant: 'btn-primary', size: 'btn-xl', icon: 'search', label: 'Verificar descrição' },
           { action: 'navigate', href: '#assistir', variant: 'btn-outline', size: 'btn-lg', label: 'Voltar às opções' }
         ])}
       </div>
@@ -104,6 +103,7 @@ function renderAudioForm() {
       })}
 
       <div class="card stack-lg">
+        <p>Ouça o áudio recebido e conte a mensagem abaixo. Não recebemos nem transcrevemos o arquivo de áudio.</p>
         ${createFormField('textarea', 'input-analysis-audio', 'O que você ouviu?', {
           placeholder: 'Exemplo: A pessoa disse que era do banco e precisava que eu fizesse um Pix...',
           required: true,

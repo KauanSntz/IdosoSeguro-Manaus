@@ -2,13 +2,19 @@ import {
   createPageHeader,
   createAlert,
   createIconListItem,
-  createResultActions
+  createResultActions,
+  escapeAttr
 } from '../components.js';
 
 export async function renderResultadoPage(params) {
   let analysis;
   try {
-    analysis = JSON.parse(decodeURIComponent(params.id));
+    analysis = params.id === 'atual' ? window.lastAnalysis : JSON.parse(decodeURIComponent(params.id));
+    if (!analysis || !['baixo', 'atencao', 'alto'].includes(analysis.nivel)
+      || typeof analysis.descricao !== 'string'
+      || !Array.isArray(analysis.indicios) || !Array.isArray(analysis.orientacoes)
+      || !analysis.indicios.every(s => s && typeof s.label === 'string' && typeof s.explicacao === 'string')
+      || !analysis.orientacoes.every(s => typeof s === 'string')) throw new Error('invalid result');
   } catch (e) {
     return `
       <div class="resultado-page stack-md text-center">
@@ -26,11 +32,11 @@ export async function renderResultadoPage(params) {
   const levelTitles = {
     alto: 'Alto nível de atenção',
     atencao: 'Atenção necessária',
-    baixo: 'Sinais aparentemente normais'
+    baixo: 'Não encontramos sinais claros'
   };
 
   const signalsHtml = (indicios || []).map(signal =>
-    createIconListItem('warning', signal.label, signal.explicacao, {
+    createIconListItem('warning', escapeAttr(signal.label), escapeAttr(signal.explicacao), {
       iconColor: 'var(--color-warning)',
       bgColor: 'var(--color-bg)',
       borderColor: 'var(--color-border)'
@@ -38,7 +44,7 @@ export async function renderResultadoPage(params) {
   ).join('');
 
   const recommendationsHtml = (orientacoes || []).map(rec =>
-    createIconListItem('shield', '', rec, {
+    createIconListItem('shield', '', escapeAttr(rec), {
       iconColor: 'var(--color-primary)',
       borderColor: 'var(--color-border)'
     })
@@ -58,7 +64,7 @@ export async function renderResultadoPage(params) {
         </div>
 
         <div class="result-description ${isHighOrAttention ? (nivel === 'alto' ? 'danger' : 'attention') : ''}">
-          <p>${descricao}</p>
+          <p>${escapeAttr(descricao)}</p>
         </div>
 
         ${indicios && indicios.length > 0 ? `

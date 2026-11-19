@@ -19,6 +19,13 @@ class Router {
   }
 
   navigate(path) {
+    if (String(path).replace(/^#/, '') === 'main-content') {
+      const main = document.getElementById('main-content');
+      const target = main?.querySelector('h1') || main;
+      target?.focus({ preventScroll: false });
+      window.screenReader?.announceElement?.(target);
+      return;
+    }
     console.log('[Router] navigate para:', path);
     window.location.hash = path;
   }
@@ -26,13 +33,15 @@ class Router {
   getSectionFromRoute(hash) {
     if (hash === 'welcome' || hash === 'home' || hash === '') return 'home';
     if (hash.startsWith('aprender') || hash.startsWith('ensinar') || hash.startsWith('conteudo') || hash.startsWith('quiz') || hash.startsWith('resultado') || hash.startsWith('fechamento')) return 'ensinar';
-    if (hash.startsWith('assistir') || hash.startsWith('analisar')) return 'assistir';
+    if (hash.startsWith('assistir') || hash.startsWith('assistente') || hash.startsWith('analisar')) return 'assistir';
     if (hash.startsWith('acessibilidade')) return 'acessibilidade';
     if (hash.startsWith('ajuda') || hash.startsWith('duvidas')) return 'ajuda';
     return 'home';
   }
 
   async handleRoute() {
+    const navigation = {};
+    this._navigation = navigation;
     const hash = window.location.hash || '#welcome';
     const cleanHash = hash.replace(/^#/, '');
     const container = document.getElementById('main-content');
@@ -42,7 +51,7 @@ class Router {
       return;
     }
 
-    console.log('[Router] handleRoute - hash:', hash, 'cleanHash:', cleanHash);
+    window.speechEngine?.stopRecognition();
 
     if (window.screenReader) {
       window.screenReader.stop();
@@ -64,7 +73,7 @@ class Router {
         paramKeys.forEach((key, index) => {
           params[key] = match[index + 1];
         });
-        console.log('[Router] Rota matched:', pattern, 'params:', params);
+        console.log('[Router] Rota matched:', pattern);
         break;
       }
     }
@@ -73,6 +82,7 @@ class Router {
       container.innerHTML = `<div class="loader"><div class="spinner"></div><p class="loader-text">Carregando...</p></div>`;
       try {
         const html = await matchedRoute(params);
+        if (this._navigation !== navigation) return;
         container.innerHTML = html;
 
         // Foco no título (tabindex="-1"): a tela é lida pelo CONTEÚDO, não
@@ -93,6 +103,7 @@ class Router {
         // setTimeout(0) em vez de requestAnimationFrame: rAF não dispara em
         // aba oculta/background e o leitor ficava mudo até o próximo comando.
         setTimeout(() => {
+          if (this._navigation !== navigation) return;
           const routeInfo = {
             route: cleanHash,
             section: this.getSectionFromRoute(cleanHash),
@@ -101,8 +112,13 @@ class Router {
           window.screenReader?.onNavigate(container, routeInfo);
         }, 0);
       } catch (err) {
+        if (this._navigation !== navigation) return;
         console.error('[Router] Erro ao renderizar rota:', err);
-        container.innerHTML = `<div class="card stack-md text-center" style="padding: var(--space-8);"><h2 style="margin-bottom: var(--space-4);">Ops!</h2><p style="margin-bottom: var(--space-4);">Não foi possível carregar esta tela.</p><button data-action="navigate" data-href="#home" class="btn btn-primary">Voltar ao Início</button></div>`;
+        container.innerHTML = `<div class="card stack-md text-center" style="padding: var(--space-8);"><h1 tabindex="-1" style="margin-bottom: var(--space-4);">Não foi possível carregar esta tela</h1><p style="margin-bottom: var(--space-4);">Tente novamente ou volte ao início.</p><button data-action="navigate" data-href="#home" class="btn btn-primary">Voltar ao Início</button></div>`;
+        container.querySelector('h1')?.focus({ preventScroll: true });
+        window.screenReader?.onNavigate(container, {
+          route: cleanHash, section: this.getSectionFromRoute(cleanHash), params
+        });
       }
     } else {
       console.warn('[Router] Nenhuma rota matched para:', cleanHash, '- redirecionando para home');
@@ -117,7 +133,7 @@ class Router {
       activeSection = 'home';
     } else if (currentPath.startsWith('aprender') || currentPath.startsWith('ensinar') || currentPath.startsWith('conteudo') || currentPath.startsWith('quiz') || currentPath.startsWith('resultado') || currentPath.startsWith('fechamento')) {
       activeSection = 'aprender';
-    } else if (currentPath.startsWith('assistir') || currentPath.startsWith('analisar')) {
+    } else if (currentPath.startsWith('assistir') || currentPath.startsWith('assistente') || currentPath.startsWith('analisar')) {
       activeSection = 'assistir';
     } else if (currentPath.startsWith('acessibilidade')) {
       activeSection = 'acessibilidade';

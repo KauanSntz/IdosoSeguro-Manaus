@@ -10,16 +10,25 @@
  * Não conhece chunks nem navegação do leitor — só executa a ação.
  */
 
+import { handleAssistantAction } from './pages/assistente.js';
+
 const noopEvent = { preventDefault() {}, stopPropagation() {} };
 
 export function runAction(action, element, event = noopEvent) {
   switch (action) {
+    case 'assistant-answer':
+    case 'assistant-back':
+    case 'assistant-restart':
+      event.preventDefault();
+      return handleAssistantAction(action, element);
     case 'navigate':
       return navigate(element, event);
     case 'back':
       return navigate(element, event);
     case 'voice-input':
       return voiceInput(element, event);
+    case 'read-field':
+      return readField(element, event);
     case 'quiz-answer':
       return quizAnswer(element, event);
     case 'quiz-next':
@@ -41,12 +50,39 @@ export function runAction(action, element, event = noopEvent) {
   }
 }
 
+let fieldReading = null;
+function readField(element, event) {
+  event.preventDefault();
+  const wasReading = fieldReading?.element === element;
+  const previous = fieldReading;
+  window.screenReader?.stop();
+  window.speechEngine?.stop();
+  previous?.finish();
+  if (wasReading) return;
+
+  const text = document.getElementById(element.dataset.target)?.value?.trim();
+  const label = element.querySelector('.btn-label') || element;
+  const original = label.textContent;
+  const session = { element, finish() {
+    if (fieldReading !== session) return;
+    fieldReading = null;
+    label.textContent = original;
+    element.removeAttribute('aria-pressed');
+  } };
+  fieldReading = session;
+  label.textContent = 'Parar leitura';
+  element.setAttribute('aria-pressed', 'true');
+  return Promise.resolve(window.speechEngine?.speak(text || 'O campo está vazio. Digite ou fale uma mensagem primeiro.'))
+    .finally(() => session.finish());
+}
+
 function navigate(element, event) {
   event.preventDefault();
   const href = element.dataset.href || element.getAttribute('href');
   if (href && window.router) window.router.navigate(href);
 }
 
+let dictation = null;
 function voiceInput(element, event) {
   event.preventDefault();
   const targetId = element.dataset.target;
@@ -54,26 +90,69 @@ function voiceInput(element, event) {
 
   if (!input) return;
 
+  if (dictation?.element === element) {
+    const session = dictation;
+    window.speechEngine?.stopRecognition();
+    session.finish();
+    publishStatus('Microfone desligado. Você pode continuar digitando.', element);
+    return;
+  }
+  dictation?.finish();
+
   if (!window.speechEngine?.startRecognition) {
     announceNear(element, 'Este navegador não permite ditado por voz. Digite normalmente.');
     return;
   }
 
-  announceNear(element, 'Pode falar. Estou ouvindo.');
+  window.screenReader?.stop();
+  const initialValue = input.value;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? start;
+  const original = element.innerHTML;
+  let finished = false;
+  const session = { element, finish() {
+    if (finished) return;
+    finished = true;
+    element.innerHTML = original;
+    element.removeAttribute('aria-pressed');
+    if (dictation === session) dictation = null;
+  } };
+  dictation = session;
+  element.textContent = 'Parar microfone';
+  element.setAttribute('aria-pressed', 'true');
+  publishStatus('Abrindo o microfone. Aguarde a permissão do navegador.', element);
 
   window.speechEngine.startRecognition({
+    onStart() { publishStatus('Pode falar agora. Estou ouvindo.', element); },
     onResult(transcript) {
+      if (!element.isConnected || dictation !== session || !transcript) return;
       const field = document.getElementById(targetId);
       if (!field) return;
-      field.value = transcript;
+      // Preserve existing text and any edits made while the microphone was open.
+      const value = field.value === initialValue
+        ? initialValue.slice(0, start) + transcript + initialValue.slice(end)
+        : `${field.value} ${transcript}`.trim();
+      const limit = field.maxLength > 0 ? field.maxLength : 5000;
+      if (value.length > limit) {
+        session.finish();
+        announceNear(element, `O texto ultrapassa o limite de ${limit} caracteres. Seu texto foi preservado. Dite uma mensagem menor ou retire um trecho antes de tentar novamente.`);
+        return;
+      }
+      field.value = value;
       field.focus();
       field.dispatchEvent(new Event('input', { bubbles: true }));
-      announceNear(element, `Texto ditado: ${transcript}`);
+      session.finish();
+      announceNear(element, 'Mensagem escrita no campo. Confira o texto ou escolha Ouvir o que escrevi.');
     },
     onError(error) {
-      console.error('[ActionRouter] Erro no reconhecimento:', error);
-      announceNear(element, 'Não consegui ouvir. Verifique a permissão do microfone e tente de novo.');
-    }
+      session.finish();
+      if (!element.isConnected) return;
+      const message = error === 'not-supported' ? 'Este navegador não permite ditado por voz. Você pode digitar ou colar a mensagem.'
+        : error === 'not-allowed' ? 'O microfone não foi autorizado. Permita o microfone no navegador ou digite a mensagem.'
+        : 'Não consegui ouvir. Tente falar de novo ou digite a mensagem.';
+      announceNear(element, message);
+    },
+    onEnd() { session.finish(); }
   });
 }
 
@@ -96,7 +175,7 @@ function publishStatus(message, anchor) {
   if (!live) {
     live = document.createElement('div');
     live.id = 'app-live-status';
-    live.className = 'sr-only';
+    live.className = 'form-help';
     live.setAttribute('role', 'status');
     live.setAttribute('aria-live', 'polite');
     (anchor?.parentElement || document.body).appendChild(live);
@@ -170,7 +249,7 @@ async function analyzeSubmit(element, event) {
     return;
   }
 
-  await executeAnalysis(type, content);
+  await executeAnalysis(type, content, container);
 }
 
 const EMPTY_MESSAGES = {
@@ -244,72 +323,56 @@ function showFieldError(container, type, message) {
   speakOnly(`Aviso: ${message}`);
 }
 
-async function executeAnalysis(type, content) {
-  const container = document.getElementById('main-content');
-  if (container) container.innerHTML = createLoader();
+async function executeAnalysis(type, content, source) {
+  if (source.getAttribute('aria-busy') === 'true') return;
+  source.setAttribute('aria-busy', 'true');
+  source.querySelector('.analysis-error')?.remove();
+  const buttons = [...source.querySelectorAll('[data-action="analyze-submit"]')];
+  buttons.forEach(button => { button.disabled = true; });
+  const loader = document.createElement('div');
+  loader.innerHTML = createLoader();
+  source.appendChild(loader);
   speakOnly('Analisando. Aguarde um instante.');
 
   try {
     const response = await window.apiClient.analyze(type, content);
+    if (!source.isConnected) return;
 
     if (response.ok && response.dados) {
-      window.router.navigate(`resultado/${JSON.stringify(response.dados)}`);
+      window.lastAnalysis = response.dados;
+      window.router.navigate('resultado/atual');
     } else {
-      showAnalysisError(response.erro?.mensagem || 'Não foi possível concluir a verificação agora. Tente de novo em instantes.');
+      showAnalysisError(response.erro?.mensagem || 'Não foi possível concluir a verificação agora. Tente de novo em instantes.', source);
     }
   } catch (e) {
     console.error('[ActionRouter] Erro na análise:', e);
-    showAnalysisError('Ocorreu uma instabilidade na verificação. Verifique sua internet e tente de novo.');
+    if (source.isConnected) showAnalysisError('Ocorreu uma instabilidade na verificação. Verifique sua internet e tente de novo.', source);
+  } finally {
+    loader.remove();
+    source.removeAttribute('aria-busy');
+    buttons.forEach(button => { button.disabled = false; });
   }
 }
 
-/** Falha da API: tela de aviso com foco e fala — nunca um alert() do navegador. */
-function showAnalysisError(message) {
-  const container = document.getElementById('main-content');
-  if (!container) return;
-
-  container.innerHTML = `
-    <div class="analisar-page stack-lg">
-      <h1 class="page-header-title" tabindex="-1">Não foi possível verificar</h1>
-
-      <div class="alert alert-danger" role="alert">
-        <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#warning"></use></svg>
-        <div class="content">
-          <div class="title">Verificação não concluída</div>
-          <div class="desc">${escapeHtml(message)}</div>
-        </div>
-      </div>
-
-      <div class="result-actions">
-        <button type="button" class="btn btn-primary btn-block btn-xl" data-action="navigate" data-href="#assistir">
-          <svg class="nav-icon" aria-hidden="true"><use href="/assets/icons.svg#arrow"></use></svg>
-          <span>Escolher outro tipo de verificação</span>
-        </button>
-      </div>
-    </div>
-  `;
-
-  const title = container.querySelector('h1');
-  try { title?.focus({ preventScroll: true }); } catch { /* ignorado */ }
-  speakOnly(`Aviso: verificação não concluída. ${message}`);
+/** Preserve the form so a failed request can be retried without retyping. */
+function showAnalysisError(message, source) {
+  const alert = document.createElement('p');
+  alert.className = 'analysis-error alert alert-danger';
+  alert.setAttribute('role', 'alert');
+  alert.tabIndex = -1;
+  alert.textContent = `${message} Seu texto continua no campo. Você pode tentar novamente.`;
+  source.appendChild(alert);
+  alert.focus();
+  speakOnly(alert.textContent);
 }
 
 function createLoader() {
   return `
     <div class="loader" role="status" aria-live="polite">
       <div class="spinner" aria-hidden="true"></div>
-      <h1 class="loader-title" tabindex="-1" style="color: var(--color-primary-dark); font-size: var(--font-size-lg); margin: 0;">Analisando…</h1>
+      <p class="loader-title" style="color: var(--color-primary-dark); font-size: var(--font-size-lg); margin: 0;">Analisando…</p>
       <p style="color: var(--color-text-secondary); font-size: var(--font-size-base); margin: 0;">Isso pode levar alguns segundos.</p>
     </div>
   `;
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }
 

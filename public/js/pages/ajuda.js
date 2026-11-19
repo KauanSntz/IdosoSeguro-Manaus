@@ -23,14 +23,14 @@ export async function renderAjudaPage() {
     },
     {
       q: 'Como faço para aumentar o tamanho da letra?',
-      a: 'Vá em "Acessibilidade" no menu inferior e use os botões de tamanho de texto (Pequeno, Normal, Grande, Muito grande). A preferência fica salva no seu navegador.'
+      a: 'Vá em "Ajustes" no menu e use os botões de tamanho de texto (Pequeno, Normal, Grande, Muito grande). A preferência fica salva no seu navegador.'
     },
     {
       q: 'O que é a área "Aprender"?',
       a: 'São 7 aulas curtas sobre golpes comuns: Links Suspeitos, Golpes no WhatsApp, Senhas e Dados, Pix e Transferências, Falsa Central Bancária, Promoções Falsas e CPF e Documentos. Cada aula tem sinais de alerta, como se proteger, um exemplo e um quiz no final.'
     },
     {
-      q: 'O que é a área "Assistir"?',
+      q: 'O que é a área "Verificar"?',
       a: 'Você envia voluntariamente uma mensagem, link, descrição de imagem ou texto de áudio suspeito. O sistema analisa e mostra o nível de risco (baixo, atenção, alto), os indícios encontrados e orientações do que fazer.'
     }
   ];

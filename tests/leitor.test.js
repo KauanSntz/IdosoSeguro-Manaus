@@ -387,7 +387,7 @@ test('resultado: a chegada começa pelo NÍVEL (baixo)', async () => {
 
   assert.equal(
     tela.chegada,
-    'Resultado: Sinais aparentemente normais. Não encontramos sinais claros de golpe. Mesmo assim, confirme antes de agir.'
+    'Resultado: Não encontramos sinais claros. Não encontramos sinais claros de golpe. Mesmo assim, confirme antes de agir.'
   );
 });
 

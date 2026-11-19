@@ -16,6 +16,7 @@ import { renderResultadoPage } from './pages/resultado.js';
 import { renderAcessibilidadePage } from './pages/acessibilidade.js';
 import { renderAjudaPage } from './pages/ajuda.js';
 import { renderFechamentoPage } from './pages/fechamento.js';
+import { renderAssistentePage } from './pages/assistente.js';
 
 import './router.js';
 import './api.js';
@@ -44,6 +45,7 @@ window.router.addRoute('ensinar', renderEnsinarPage);
 window.router.addRoute('conteudo/:slug', renderConteudoPage);
 window.router.addRoute('quiz/:slug', renderQuizPage);
 window.router.addRoute('assistir', renderAssistirPage);
+window.router.addRoute('assistente', renderAssistentePage);
 window.router.addRoute('analisar/:type', renderAnalisarPage);
 window.router.addRoute('resultado/:id', renderResultadoPage);
 window.router.addRoute('acessibilidade', renderAcessibilidadePage);

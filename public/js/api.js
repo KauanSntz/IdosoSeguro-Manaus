@@ -2,7 +2,7 @@ class ApiClient {
   constructor() {
     console.log('[ApiClient] Constructor - baseUrl: /api');
     this.baseUrl = '/api';
-    this.defaultTimeout = 10000; // 10 segundos
+    this.defaultTimeout = 15000; // Allows the server's 10s engine timeout to return its fallback.
   }
 
   async request(path, options = {}) {
@@ -23,11 +23,10 @@ class ApiClient {
     defaultOptions.signal = controller.signal;
 
     const startTime = performance.now();
-    console.log('[ApiClient] request -', options.method || 'GET', url, 'body:', defaultOptions.body?.substring?.(0, 200));
+    console.log('[ApiClient] request -', options.method || 'GET', url);
 
     try {
       const res = await fetch(url, defaultOptions);
-      clearTimeout(timeoutId);
       const duration = Math.round(performance.now() - startTime);
 
       // Tentar parsear resposta
@@ -40,7 +39,7 @@ class ApiClient {
         data = { raw: text };
       }
 
-      console.log('[ApiClient] response -', res.status, res.ok ? 'OK' : 'ERROR', `${duration}ms`, 'data:', JSON.stringify(data).substring(0, 200));
+      console.log('[ApiClient] response -', res.status, res.ok ? 'OK' : 'ERROR', `${duration}ms`);
 
       if (!res.ok) {
         // Classificar por status HTTP
@@ -61,6 +60,10 @@ class ApiClient {
           mensagem = data?.erro?.mensagem || 'Dados inválidos.';
         }
 
+        if (typeof data?.erro?.codigo === 'string' && typeof data?.erro?.mensagem === 'string') {
+          codigo = data.erro.codigo;
+          mensagem = data.erro.mensagem;
+        }
         return { status: res.status, ok: false, data: { erro: { codigo, mensagem } } };
       }
 
@@ -83,34 +86,34 @@ class ApiClient {
       
       // Erro desconhecido
       return { status: 0, ok: false, data: { erro: { codigo: 'ERRO_DESCONHECIDO', mensagem: 'Erro inesperado. Tente novamente.' } } };
-    }
+    } finally { clearTimeout(timeoutId); }
   }
 
   async getTopics() {
     console.log('[ApiClient] getTopics - buscando...');
     const { status, ok, data } = await this.request('/conteudos');
-    return ok ? data : { ok: false, erro: { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar tópicos' } };
+    return ok ? data : { ok: false, erro: data?.erro || { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar tópicos' } };
   }
 
   async getTopicDetail(slug) {
     console.log('[ApiClient] getTopicDetail - slug:', slug);
     const { status, ok, data } = await this.request(`/conteudos/${slug}`);
-    return ok ? data : { ok: false, erro: { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar conteúdo' } };
+    return ok ? data : { ok: false, erro: data?.erro || { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar conteúdo' } };
   }
 
   async getQuiz(slug) {
     console.log('[ApiClient] getQuiz - slug:', slug);
     const { status, ok, data } = await this.request(`/conteudos/${slug}/quiz`);
-    return ok ? data : { ok: false, erro: { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar quiz' } };
+    return ok ? data : { ok: false, erro: data?.erro || { codigo: 'ERRO_REDE', mensagem: 'Falha ao carregar quiz' } };
   }
 
   async analyze(tipo, conteudo) {
-    console.log('[ApiClient] analyze - tipo:', tipo, 'conteudo preview:', conteudo?.substring?.(0, 100));
+    console.log('[ApiClient] analyze - tipo:', tipo, 'tamanho:', conteudo?.length);
     const { status, ok, data } = await this.request('/analises', {
       method: 'POST',
       body: { tipo, conteudo }
     });
-    console.log('[ApiClient] analyze response - ok:', ok, 'data:', JSON.stringify(data).substring(0, 200));
+    console.log('[ApiClient] analyze response - ok:', ok);
     return ok ? data : { ok: false, erro: data?.erro || { codigo: 'ERRO_ANALISE', mensagem: 'Falha na análise' } };
   }
 }

@@ -37,6 +37,8 @@ export function initGestureInput({ reader }) {
 
   function onTouchStart(event) {
     if (!reader.enabled) return;
+    startTouches = 0;
+    if (event.target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
     if (event.touches.length !== 1) {
       // Dois dedos encostando → resumo.
       if (event.touches.length === 2) {
@@ -72,7 +74,7 @@ export function initGestureInput({ reader }) {
   function onTouchEnd(event) {
     if (!reader.enabled) return;
     clearLongPress();
-    if (startTouches !== 1 || moved) {
+    if (startTouches !== 1) {
       startTouches = 0;
       return;
     }

@@ -24,6 +24,13 @@ export function initializeEventDelegation() {
 }
 
 function handleClick(event) {
+  const skipLink = event.target.closest('.skip-link[href="#main-content"]');
+  if (skipLink) {
+    event.preventDefault();
+    event.stopPropagation();
+    window.router?.navigate('#main-content');
+    return;
+  }
   // Interromper leitura (controle de fala).
   const voiceBtn = event.target.closest('[data-voice-btn]');
   if (voiceBtn) {
@@ -78,13 +85,17 @@ function handleVoiceButton(element, event) {
 
   // Se já está falando, o botão vira controle de parar.
   if (engine.isSpeaking) {
+    window.screenReader?.stop();
     engine.stop();
     return;
   }
 
   // Caso contrário, lê o conteúdo associado ao botão.
   const text = element.dataset.voiceText || element.textContent;
-  if (text) engine.speak(text);
+  if (text) {
+    window.screenReader?.stop();
+    engine.speak(text);
+  }
 }
 
 function handleTtsSpeed(element) {

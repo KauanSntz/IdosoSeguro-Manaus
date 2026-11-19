@@ -59,9 +59,11 @@ export function initKeyboardInput({ reader }) {
     }
 
     if (!reader.enabled) return;
+    if (event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
 
     // Nunca sequestrar teclas dentro de campos de texto editáveis.
     const tag = event.target?.tagName;
+    if (event.target?.closest?.('[contenteditable]:not([contenteditable="false"])')) return;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
     if (event.key === 'Escape') {
