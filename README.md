@@ -130,9 +130,9 @@ Acesse `http://localhost:3000`. Para rodar os testes: `npm test`.
 
 ## Autores
 
-John Erik de Araujo Santos
-Franciane de Carvalho Nogueira
-Kauan Ferreira dos Santos 
+| John Erik de Araujo Santos |
+| Franciane de Carvalho Nogueira |
+| Kauan Ferreira dos Santos |
 
 ---
 
