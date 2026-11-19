@@ -1,22 +1,47 @@
+# Dependências
 node_modules/
+package-lock.json
+yarn.lock
+
+# Variáveis de ambiente (o exemplo fica versionado)
 .env
+.env.*
+!.env.example
+
+# Banco local gerado em tempo de execução
 database/*.db
 database/*.db-*
-# Python: qualquer cache compilado, em qualquer pasta
+
+# Python
 __pycache__/
 *.pyc
+
+# Logs e temporários
 *.log
 npm-debug.log*
+*.tmp
+.cache/
+
+# Sistema operacional e editores
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# Cobertura de testes
 coverage/
 .nyc_output/
 
-# Test/debug scripts (local only)
+# Arquivos compactados e backups
+*.zip
+*.rar
+*.7z
+site-novo/
+site-novo.zip
+
+# Scripts locais de teste/debug
 check_*.js
 check_*.mjs
 test-*.cjs

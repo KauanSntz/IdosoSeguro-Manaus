@@ -2,13 +2,29 @@
 
 Aplicação web acessível, educativa e preventiva de segurança digital para pessoas idosas.
 
-**Demo online:** http://31.97.147.114:8085/ (rodando em VPS própria)
+**Demo online:** http://31.97.147.114:8085/ (VPS própria; pode estar com a versão anterior até a próxima atualização)
 
 ## Objetivo
 
 Oferecer duas vertentes integradas:
-- **Modo Aprender**: 7 tópicos educativos com aulas curtas, sinais de alerta, ações seguras, exemplos e quiz.
+- **Modo Ensinar** (chamado de "Aprender" na interface): 7 tópicos educativos com aulas curtas, sinais de alerta, ações seguras, exemplos e quiz.
 - **Modo Assistir**: Análise voluntária de mensagens, links, imagens ou áudios com motor heurístico determinístico, retornando nível de risco, indícios, orientações e direcionamento ao conteúdo educativo correspondente.
+
+## Status atual
+
+**Funcional**
+- **Modo Assistir**: verificação de texto e link, com nível de risco, indícios encontrados e orientações.
+- **Modo Ensinar** (rota `#ensinar`): 7 temas com aula curta, sinais de alerta, ações seguras, exemplo e quiz.
+- **Leitor de tela (TTS)** com 4 velocidades: lenta, normal, rápida e muito rápida.
+- **Alto contraste** e **4 tamanhos de fonte** (pequeno, normal, grande e muito grande).
+- **Quiz** com uma pergunta por vez e resumo final.
+- **Ajuda** com perguntas frequentes (7 respostas).
+
+**Em desenvolvimento**
+- **Reconhecimento de voz (STT)**: o botão de microfone existe, mas a captura de voz ainda não está estável.
+- **Upload e análise automática de foto**: é possível escolher a imagem e/ou descrever o conteúdo; a leitura automática da foto ainda não está implementada.
+
+> **Voz em HTTP:** no servidor atual (`http://31.97.147.114:8085`) o navegador bloqueia o microfone. O reconhecimento de voz só funciona em HTTPS ou em `localhost`.
 
 ## Requisitos
 
@@ -186,7 +202,9 @@ Ver `docs/IMPLANTACAO.md` (a criar).
 - Ícones SVG básicos (apenas essenciais)
 - Testes automatizados limitados
 - `check:contraste` e `lint` como stubs
-- Reconhecimento de voz depende de suporte do navegador
+- Reconhecimento de voz depende de suporte do navegador e de HTTPS ou `localhost`
+- Upload de foto ainda não é analisado automaticamente
+- O service worker guarda arquivos estáticos, mas não há garantia de uso offline completo: aulas e análises dependem da API
 - Motor Python: apenas regras de texto e link (imagem/áudio usam texto fornecido pelo usuário)
 
 ## Rastreabilidade
